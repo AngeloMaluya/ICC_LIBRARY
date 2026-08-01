@@ -1,0 +1,90 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: Arial, sans-serif;
+}
+
+.map-title {
+  width: 100%;
+  text-align: center;
+  padding: 15px 0;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px); /* subtract title */
+  width: 100vw;
+}
+
+/* Map grows to fill available space */
+.map-container {
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+/* Info box scrollable if content overflows */
+.map-info-box {
+  background-color: #333;
+  color: #fff;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 40%; /* mobile: max 40% of viewport */
+  overflow-y: auto;
+}
+
+.alert-btn {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.leaflet-control-container {
+  box-sizing: border-box;
+}
+
+/* Desktop layout */
+@media(min-width: 768px) {
+  .dashboard-container {
+    flex-direction: row;
+  }
+
+  .map-container {
+    flex: 2;
+    height: auto;
+  }
+
+  .map-info-box {
+    flex: 1;
+    max-width: 400px;
+    max-height: none;
+    margin-left: 15px;
+  }
+}
+
+/* Small mobile adjustments */
+@media(max-width: 480px) {
+  .map-title {
+    font-size: 1.2rem;
+  }
+}
+
+/* Disable scrolling and hide scrollbar on desktop (min-width 1024px) */
+@media (min-width: 1024px) {
+  body {
+    overflow: hidden;  /* No scrolling, no scrollbar */
+  }
+}

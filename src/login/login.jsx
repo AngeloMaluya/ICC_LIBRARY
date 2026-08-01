@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./LoginSignup.css";
 import Image from "../assets/icon.png";
+import { GoogleLogin } from "@react-oauth/google";
 
 export const LoginSignup = () => {
   const [mode, setMode] = useState("login");
