@@ -1,20 +1,28 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./login.css";
 import Image from "../assets/icon.png";
 import { GoogleLogin } from "@react-oauth/google";
 
 export const LoginSignup = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = "Login";
+  }, []);
+
+  const handleLogIn = (e) => {
+    e.preventDefault();
+    navigate("/library");
+  };
 
   return (
     <div className="page">
       <div className="login-container">
 
         {/* LEFT PANEL */}
-
         <div className="left-panel">
-
           <div className="illustration">
-
             <div className="window"></div>
 
             <div className="person">
@@ -30,7 +38,6 @@ export const LoginSignup = () => {
               <div className="book b2"></div>
               <div className="book b3"></div>
             </div>
-
           </div>
 
           <h2>DISCOVER KNOWLEDGE</h2>
@@ -40,32 +47,32 @@ export const LoginSignup = () => {
             <br />
             and stay connected with your campus library.
           </p>
-
         </div>
 
         {/* RIGHT PANEL */}
-
         <div className="right-panel">
-
           <div className="logo">
             <img src={Image} alt="Logo" />
           </div>
 
           <h1>Welcome Back</h1>
 
-          <label>Email</label>
+          <label>Username</label>
           <input
             type="email"
-            placeholder="your.name@example.com"
+            placeholder="Username"
           />
 
           <label>Password</label>
           <input
             type="password"
-            placeholder="*************"
+            placeholder="Password"
           />
 
-          <button className="signin">
+          <button
+            className="signin"
+            onClick={handleLogIn}
+          >
             Sign In
           </button>
 
@@ -79,11 +86,11 @@ export const LoginSignup = () => {
             <div className="google-icon">G</div>
             Continue with Google
           </button>
-
         </div>
 
       </div>
     </div>
   );
-}
+};
+
 export default LoginSignup;
