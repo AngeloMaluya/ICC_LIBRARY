@@ -31,12 +31,6 @@ export const Landing = () => {
 
         <nav className="nav-links">
 
-          <a href="#services">Services</a>
-
-          <a href="#about">About</a>
-
-          <a href="#contact">Contact Us</a>
-
           <button
             className="login-btn"
             onClick={() => navigate("/login")}

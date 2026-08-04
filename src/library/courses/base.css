@@ -1,0 +1,226 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  background: #f7f8fb;
+}
+
+.library {
+  min-height: 100vh;
+}
+
+/* ===========================
+   NAVBAR
+=========================== */
+
+.navbar {
+  width: 100%;
+  height: 70px;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.menu-icon {
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.logo {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+}
+
+.school h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.icon {
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.profile {
+  font-size: 34px;
+  color: #0b4ea2;
+  cursor: pointer;
+}
+
+/* ===========================
+   HERO
+=========================== */
+
+.hero {
+  width: 100%;
+  max-width: 1200px;
+  margin: 70px auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero h1 {
+  color: #0b4ea2;
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 30px;
+}
+
+/* SEARCH */
+
+.search-box {
+  width: 100%;
+  max-width: 600px;
+  height: 52px;
+  background: #ececec;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+}
+
+.search-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  margin-left: 12px;
+}
+
+/* CATEGORY BUTTONS */
+
+.categories {
+  width: 100%;
+  max-width: 850px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.categories button {
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  background: #a9bfd9;
+  color: white;
+  cursor: pointer;
+  transition: .3s;
+  min-width: 120px;
+}
+
+.categories button:hover {
+  background: #0b4ea2;
+}
+
+/* ===========================
+   TABLET
+=========================== */
+
+@media (max-width: 768px) {
+
+  .navbar {
+    padding: 0 15px;
+  }
+
+  .school h3 {
+    font-size: 13px;
+  }
+
+  .hero {
+    margin-top: 50px;
+  }
+
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+
+  .search-box {
+    height: 48px;
+  }
+
+  .categories button {
+    flex: 1 1 40%;
+    min-width: 140px;
+  }
+}
+
+/* ===========================
+   MOBILE
+=========================== */
+
+@media (max-width: 480px) {
+
+  .navbar {
+    height: 65px;
+  }
+
+  .school h3 {
+    display: none;
+  }
+
+  .logo {
+    width: 38px;
+    height: 38px;
+  }
+
+  .menu-icon {
+    font-size: 20px;
+  }
+
+  .profile {
+    font-size: 28px;
+  }
+
+  .hero {
+    margin-top: 35px;
+    padding: 0 15px;
+  }
+
+  .hero h1 {
+    font-size: 1.3rem;
+    line-height: 1.4;
+  }
+
+  .search-box {
+    height: 45px;
+  }
+
+  .search-box input {
+    font-size: 14px;
+  }
+
+  .categories {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .categories button {
+    width: 100%;
+  }
+}
