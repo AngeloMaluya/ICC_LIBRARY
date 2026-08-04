@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import "./login.css";
 import Image from "../assets/icon.png";
 import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
-export const LoginSignup = () => {
+export const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,6 +16,7 @@ export const LoginSignup = () => {
     e.preventDefault();
     navigate("/library");
   };
+  
 
   return (
     <div className="page">
@@ -82,10 +84,30 @@ export const LoginSignup = () => {
             <span></span>
           </div>
 
-          <button className="google">
-            <div className="google-icon">G</div>
-            Continue with Google
-          </button>
+        
+            <div>
+   <GoogleLogin
+    onSuccess={(credentialResponse) => {
+      const user = jwtDecode(credentialResponse.credential);
+
+      // Change this to your school's domain
+      const allowedDomain = "immaculada.edu.ph";
+
+      if (user.email.endsWith(`@${allowedDomain}`)) {
+        alert(`Welcome ${user.name}!`);
+        navigate("/profile");
+      } else {
+        alert("Only school email accounts are allowed.");
+      }
+    }}
+    onError={() => {
+      alert("Google Login Failed");
+    }}
+    theme="outline"
+    size="large"
+    width="300"
+  />
+</div>
         </div>
 
       </div>
@@ -93,4 +115,4 @@ export const LoginSignup = () => {
   );
 };
 
-export default LoginSignup;
+export default Login;

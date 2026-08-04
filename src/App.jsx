@@ -1,8 +1,9 @@
 import { Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import "./index.css";
-import { LoginSignup } from "./login/login.jsx";
-import { Library } from "./library/library.jsx";
+import Login from "./login/login";
+import Library from "./library/library";
+import Profile from "./profile/profile";
 
 function App() {
   useEffect(() => {
@@ -20,8 +21,9 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<LoginSignup />} />
+      <Route path="/" element={<Login />} />
       <Route path="/library" element={<Library />} />
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   );
 }
