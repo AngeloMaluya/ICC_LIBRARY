@@ -1,59 +1,160 @@
+import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import "./library.css";
-import Logo from "../assets/icon.png";
-import { FaBars, FaBell, FaSearch, FaUserCircle } from "react-icons/fa";
+import "./landing.css";
+import Logo from "../assets/icon.png";      
 
-export const landing = () => {
-  useEffect(() => {
-    document.title = "Library Management System";
+export const Landing = () => {
+  const navigate = useNavigate();
+
+   useEffect(() => {
+    document.title = "ICC LIBRARY";
   }, []);
 
   return (
-    <div className="library">
+    <div className="home">
 
-      {/* Header */}
+
+
       <header className="navbar">
+
         <div className="nav-left">
-          <FaBars className="menu-icon" />
 
-          <img src={Logo} alt="Logo" className="logo" />
+          <img
+            src={Logo}
+            alt="ICC Logo"
+            className="logo"
+          />
 
-          <div className="school">
-            <h3>Immaculada Concepcion College</h3>
-          </div>
+          <h2>ICC Research Management</h2>
+
         </div>
 
-        <div className="nav-right">
-          <FaBell className="icon" />
-          <FaUserCircle className="profile" />
-        </div>
+        <nav className="nav-links">
+
+          <a href="#services">Services</a>
+
+          <a href="#about">About</a>
+
+          <a href="#contact">Contact Us</a>
+
+          <button
+            className="login-btn"
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </button>
+
+        </nav>
+
       </header>
 
-      {/* Hero */}
-      <main className="hero">
+    
+      <section className="hero">
 
-        <h1>What research are you looking for?</h1>
+        <h1>
+          ICC <span>DIGITAL LIBRARY</span>
+        </h1>
 
-        <div className="search-box">
-          <FaSearch />
-          <input
-            type="text"
-            placeholder="Search books, thesis, journals..."
-          />
+        <p>
+          Explore research and thesis works from our academic community.
+        </p>
+
+      </section>
+
+   
+
+      <section className="welcome-card">
+
+        <h2>WELCOME!</h2>
+
+      
+      </section>
+
+    
+      <section
+        className="services"
+        id="services"
+      >
+
+        <h2>Our Services</h2>
+
+        <div className="service-container">
+
+          <div className="service-card">
+            <h3>Research Repository</h3>
+
+            <p>
+              Browse approved research papers and
+              undergraduate theses.
+            </p>
+          </div>
+
+          <div className="service-card">
+            <h3>Digital Archive</h3>
+
+            <p>
+              Store and access academic documents
+              anytime.
+            </p>
+          </div>
+
+          <div className="service-card">
+            <h3>Easy Search</h3>
+
+            <p>
+              Search by title, author,
+              adviser or year.
+            </p>
+          </div>
+
         </div>
 
-        <div className="categories">
-          <button>BSCS</button>
-          <button>BSED</button>
-          <button>BEED</button>
-          <button>BSCrim</button>
-          <button>BSTM</button>
-        </div>
+      </section>
 
-      </main>
+      <section
+        className="about"
+        id="about"
+      >
+
+        <h2>About</h2>
+
+        <p>
+
+          The ICC Digital Library is designed to
+          provide students and faculty with quick
+          access to research papers, theses, and
+          other academic publications.
+
+        </p>
+
+      </section>
+
+     
+      <section
+        className="contact"
+        id="contact"
+      >
+
+        <h2>Contact Us</h2>
+
+        <p>Email : library@immaculada.edu.ph</p>
+
+        <p>Phone : (000) 123-4567</p>
+
+        <p>Immaculada Concepcion College</p>
+
+      </section>
+
+    
+
+      <footer>
+
+        © 2026 ICC Digital Library |
+        All Rights Reserved.
+
+      </footer>
 
     </div>
   );
-};
-
-export default landing;
+}
+export default Landing;

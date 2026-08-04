@@ -1,9 +1,11 @@
 import { Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import "./index.css";
+import Landing from "./landing/landing";
 import Login from "./login/login";
 import Library from "./library/library";
 import Profile from "./profile/profile";
+
 
 function App() {
   useEffect(() => {
@@ -21,9 +23,10 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/library" element={<Library />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/library" element={<Library />} />
     </Routes>
   );
 }
