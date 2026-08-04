@@ -1,9 +1,15 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./profile.css";
 import Image from "../assets/icon.png";
 
 export const Profile = () =>  {
+
+   useEffect(() => {
+    document.title = "Create Account";
+  }, []);
+
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -28,7 +34,7 @@ export const Profile = () =>  {
     localStorage.setItem("libraryUser", JSON.stringify(form));
 
     alert("Account Created!");
-    navigate("/");
+    navigate("/library");
   };
 
   return (
