@@ -13,6 +13,10 @@ body {
   min-height: 100vh;
 }
 
+/* ===========================
+   NAVBAR
+=========================== */
+
 .navbar {
   width: 100%;
   height: 70px;
@@ -64,6 +68,10 @@ body {
   cursor: pointer;
 }
 
+/* ===========================
+   HERO
+=========================== */
+
 .hero {
   width: 100%;
   max-width: 1200px;
@@ -80,6 +88,8 @@ body {
   font-size: 2rem;
   margin-bottom: 30px;
 }
+
+/* SEARCH */
 
 .search-box {
   width: 100%;
@@ -100,6 +110,8 @@ body {
   font-size: 16px;
   margin-left: 12px;
 }
+
+/* CATEGORY BUTTONS */
 
 .categories {
   width: 100%;
@@ -126,6 +138,9 @@ body {
   background: #0b4ea2;
 }
 
+/* ===========================
+   TABLET
+=========================== */
 
 @media (max-width: 768px) {
 
@@ -155,6 +170,9 @@ body {
   }
 }
 
+/* ===========================
+   MOBILE
+=========================== */
 
 @media (max-width: 480px) {
 
@@ -205,4 +223,50 @@ body {
   .categories button {
     width: 100%;
   }
+
+  .search-bar{
+    width:500px;
+    height:45px;
+    border-radius:30px;
+    padding:0 20px;
+    border:none;
+    background:#eee;
+}
+
+.program-buttons{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    margin:20px 0;
+}
+
+.program-buttons button{
+    width:110px;
+    height:40px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:#ffe7a5;
+}
+
+.card-container{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.card{
+    width:180px;
+    background:white;
+    border-radius:10px;
+    box-shadow:0 0 5px rgba(0,0,0,.2);
+    padding:10px;
+}
+
+.cover{
+    width:100%;
+    height:180px;
+    background:#0d4f8b;
+    border-radius:5px;
+}
 }

@@ -5,7 +5,7 @@ import Landing from "./landing/landing";
 import Login from "./login/login";
 import Library from "./library/library";
 import Profile from "./profile/profile";
-
+import  Program from "./library/program";
 
 function App() {
   useEffect(() => {
@@ -27,6 +27,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/library" element={<Library />} />
+      <Route path="/library/:program" element={<Program />} />
     </Routes>
   );
 }
