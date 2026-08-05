@@ -11,7 +11,6 @@ export const Library = () => {
   return (
     <div className="library">
 
-      {/* Header */}
       <header className="navbar">
         <div className="nav-left">
           <FaBars className="menu-icon" />

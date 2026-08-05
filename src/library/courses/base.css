@@ -13,10 +13,6 @@ body {
   min-height: 100vh;
 }
 
-/* ===========================
-   NAVBAR
-=========================== */
-
 .navbar {
   width: 100%;
   height: 70px;
@@ -68,10 +64,6 @@ body {
   cursor: pointer;
 }
 
-/* ===========================
-   HERO
-=========================== */
-
 .hero {
   width: 100%;
   max-width: 1200px;
@@ -88,8 +80,6 @@ body {
   font-size: 2rem;
   margin-bottom: 30px;
 }
-
-/* SEARCH */
 
 .search-box {
   width: 100%;
@@ -110,8 +100,6 @@ body {
   font-size: 16px;
   margin-left: 12px;
 }
-
-/* CATEGORY BUTTONS */
 
 .categories {
   width: 100%;
@@ -138,9 +126,6 @@ body {
   background: #0b4ea2;
 }
 
-/* ===========================
-   TABLET
-=========================== */
 
 @media (max-width: 768px) {
 
@@ -170,9 +155,6 @@ body {
   }
 }
 
-/* ===========================
-   MOBILE
-=========================== */
 
 @media (max-width: 480px) {
 
