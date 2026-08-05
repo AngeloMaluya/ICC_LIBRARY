@@ -59,8 +59,6 @@ export const Profile = () =>  {
 
         </div>
 
-        {/* RIGHT */}
-
         <form className="right-side" onSubmit={handleSubmit}>
 
           <label>First Name</label>

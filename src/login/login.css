@@ -27,7 +27,6 @@ body{
     box-shadow:0 10px 30px rgba(0,0,0,.12);
 }
 
-/* LEFT */
 
 .left-panel{
     flex:1;
@@ -151,15 +150,15 @@ body{
 .logo {
     margin-bottom: 10px;
     display: flex;
-    justify-content: center; /* horizontal center */
-    align-items: center;     /* vertical center */
+    justify-content: center; 
+    align-items: center;     
 }
 
 .logo img {
-    max-width: 100%;  /* image will never be wider than its container */
-    height: auto;     /* maintains aspect ratio */
-    width: auto;      /* optional if you want height-based scaling */
-    max-height: 25vh; /* optional to limit vertical space */
+    max-width: 100%;  
+    height: auto;     
+    width: auto;          
+    max-height: 25vh; 
 }
 
 
