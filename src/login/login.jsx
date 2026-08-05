@@ -57,7 +57,7 @@ export const Login = () => {
             <img src={Image} alt="Logo" />
           </div>
 
-          <h1>Welcome Back</h1>
+          <h1>Welcome!</h1>
 
           <label>Username</label>
           <input
