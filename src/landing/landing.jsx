@@ -13,8 +13,6 @@ export const Landing = () => {
   return (
     <div className="home">
 
-
-
       <header className="navbar">
 
         <div className="nav-left">
@@ -41,7 +39,6 @@ export const Landing = () => {
         </nav>
 
       </header>
-
     
       <section className="hero">
 
@@ -55,16 +52,12 @@ export const Landing = () => {
 
       </section>
 
-   
-
       <section className="welcome-card">
 
         <h2>WELCOME!</h2>
 
-      
       </section>
-
-    
+   
       <section
         className="services"
         id="services"
@@ -113,17 +106,14 @@ export const Landing = () => {
         <h2>About</h2>
 
         <p>
-
           The ICC Digital Library is designed to
           provide students and faculty with quick
           access to research papers, theses, and
           other academic publications.
-
         </p>
 
       </section>
-
-     
+    
       <section
         className="contact"
         id="contact"
@@ -139,13 +129,9 @@ export const Landing = () => {
 
       </section>
 
-    
-
       <footer>
-
         © 2026 ICC Digital Library |
         All Rights Reserved.
-
       </footer>
 
     </div>
