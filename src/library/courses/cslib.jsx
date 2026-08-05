@@ -28,7 +28,6 @@ export const Library = () => {
         </div>
       </header>
 
-      {/* Hero */}
       <main className="hero">
 
         <h1>What research are you looking for?</h1>
