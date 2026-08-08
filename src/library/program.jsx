@@ -5,6 +5,8 @@ import Logo from "../assets/icon.png";
 import { FaBars, FaBell, FaSearch, FaUserCircle } from "react-icons/fa";
 
 export const Program = () => {
+  const [selectedResearch, setSelectedResearch] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
   const { program } = useParams();
 
