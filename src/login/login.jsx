@@ -8,33 +8,34 @@ import { jwtDecode } from "jwt-decode";
 export const Login = () => {
   const navigate = useNavigate();
 
+   const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     document.title = "Login";
   }, []);
 
- const handleLogIn = async (e) => {
+  const handleLogIn = async (e) => {
     e.preventDefault();
 
     const email = e.target.email.value;
     const password = e.target.password.value;
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/login",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        }
-      );
-       const data = await response.json();
+    const response = await fetch(
+  `${API_URL}/api/login`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  }
+);
+  
+      const data = await response.json();
 
       if (!response.ok) {
         alert(data.message);
@@ -49,13 +50,17 @@ export const Login = () => {
       navigate("/library");
 
     } catch (error) {
-      console.error(error);
+      console.error(
+        "Normal Login Error:",
+        error
+      );
 
       alert(
-        "Cannot connect to the server. Make sure your backend is running."
+        "Unable to connect to the server. Please try again."
       );
     }
   };
+
   
   const handleGoogleLogin = async (credentialResponse) => {
     try {
@@ -79,12 +84,10 @@ export const Login = () => {
         user.email
       );
 
-      // Check if the Google email already exists
-      const response = await fetch(
-        `http://localhost:5000/api/user/${encodeURIComponent(
-          user.email
-        )}`
-      );
+     
+    const response = await fetch(
+  `${API_URL}/api/user/${encodeURIComponent(user.email)}`
+);
 
       const data = await response.json();
 
