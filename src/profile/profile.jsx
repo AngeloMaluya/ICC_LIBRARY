@@ -1,0 +1,122 @@
+import { useState } from "react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "./profile.css";
+import Image from "../assets/icon.png";
+
+export const Profile = () =>  {
+
+   useEffect(() => {
+    document.title = "Create Account";
+  }, []);
+
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    course: "",
+    year: "",
+    username: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    localStorage.setItem("libraryUser", JSON.stringify(form));
+
+    alert("Account Created!");
+    navigate("/library");
+  };
+
+  return (
+    <div className="register-page">
+      <div className="register-card">
+
+        {/* LEFT */}
+
+        <div className="left-side">
+
+          <h1>Create Account</h1>
+
+          <img src={Image} alt="Illustration" />
+
+          <h2>DISCOVER KNOWLEDGE</h2>
+
+          <p>
+            Sign in to manage your library activities
+            <br />
+            and stay connected with your campus library.
+          </p>
+
+        </div>
+
+        <form className="right-side" onSubmit={handleSubmit}>
+
+          <label>First Name</label>
+          <input
+            type="text"
+            name="firstName"
+            placeholder="Enter first name"
+            onChange={handleChange}
+          />
+
+          <label>Last Name</label>
+          <input
+            type="text"
+            name="lastName"
+            placeholder="Enter last name"
+            onChange={handleChange}
+          />
+
+          <label>Course</label>
+          <input
+            type="text"
+            name="course"
+            placeholder="Enter course"
+            onChange={handleChange}
+          />
+
+          <label>Year</label>
+          <input
+            type="text"
+            name="year"
+            placeholder="Enter year"
+            onChange={handleChange}
+          />
+
+          <label>Username</label>
+          <input
+            type="text"
+            name="username"
+            placeholder="Enter username"
+            onChange={handleChange}
+          />
+
+          <label>Password</label>
+          <input
+            type="password"
+            name="password"
+            placeholder="Enter password"
+            onChange={handleChange}
+          />
+
+          <button type="submit">
+            Create Account
+          </button>
+
+        </form>
+
+      </div>
+    </div>
+  );
+}
+export default Profile;

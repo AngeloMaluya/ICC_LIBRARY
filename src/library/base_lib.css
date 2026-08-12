@@ -1,0 +1,586 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  background: #f7f8fb;
+}
+
+.library {
+  width: 100%;
+  min-height: 100vh;
+  background: #f7f8fb;
+}
+
+
+.navbar {
+  width: 100%;
+  height: 70px;
+
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 24px;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  position: relative;
+  z-index: 10;
+}
+
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+
+
+.menu-icon {
+  font-size: 22px;
+  color: #0b4ea2;
+  cursor: pointer;
+}
+
+
+
+.logo {
+  width: 45px;
+  height: 45px;
+
+  object-fit: contain;
+}
+
+
+
+.school h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+
+
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+
+
+
+.icon {
+  font-size: 20px;
+  color: #222;
+  cursor: pointer;
+}
+
+
+
+.profile {
+  font-size: 34px;
+  color: #0b4ea2;
+  cursor: pointer;
+}
+
+
+.hero {
+  width: 100%;
+  max-width: 1200px;
+
+  margin: 50px auto 70px;
+
+  padding: 0 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+
+.hero h1 {
+  color: #0b4ea2;
+
+  text-align: center;
+
+  font-size: 2rem;
+
+  margin-bottom: 25px;
+}
+
+
+
+.search-box {
+  width: 100%;
+  max-width: 600px;
+
+  height: 48px;
+
+  background: #dedede;
+
+  border-radius: 30px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 18px;
+}
+
+
+.search-icon {
+  color: #111;
+  font-size: 15px;
+}
+
+
+.search-box input {
+  width: 100%;
+
+  flex: 1;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  font-size: 14px;
+
+  margin-left: 10px;
+}
+
+
+.search-box input::placeholder {
+  color: #777;
+}
+
+
+
+
+.categories {
+  width: 100%;
+  max-width: 850px;
+
+  display: flex;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 10px;
+
+  margin-top: 12px;
+}
+
+
+.categories button {
+  min-width: 105px;
+
+  height: 32px;
+
+  border: 1px solid #e1c76b;
+
+  border-radius: 8px;
+
+  background: #fff7d9;
+
+  color: #111;
+
+  font-size: 10px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+
+.categories button:hover {
+  background: #0b4ea2;
+  color: #ffffff;
+
+  border-color: #0b4ea2;
+}
+
+
+.categories button:active {
+  transform: scale(0.97);
+}
+
+
+
+.recommend-section {
+  width: 100%;
+
+  margin-top: 15px;
+
+  background: #cfcfcf;
+
+  border-radius: 5px;
+
+  padding: 14px 10px 16px;
+}
+
+
+
+.recommend-section h2 {
+  font-size: 14px;
+
+  font-weight: 700;
+
+  color: #111;
+
+  margin-bottom: 10px;
+
+  padding-left: 0;
+}
+
+
+.card-container {
+  width: 100%;
+
+  display: flex;
+
+  gap: 10px;
+
+  justify-content: space-between;
+}
+
+
+
+.research-card {
+  flex: 1;
+
+  min-width: 0;
+
+  height: 150px;
+
+  background: #ffffff;
+
+  border: 1px solid #aaa;
+
+  border-radius: 3px;
+
+  padding: 7px;
+
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+
+  overflow: hidden;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.research-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+
+.card-image {
+  width: 100%;
+
+  height: 115px;
+
+  background: #0d4f8b;
+
+  border-radius: 1px;
+}
+
+
+.card-info {
+  padding: 8px 3px;
+}
+
+
+.card-info h3 {
+  font-size: 12px;
+
+  color: #111;
+
+  margin-bottom: 4px;
+}
+
+
+.card-info p {
+  font-size: 10px;
+
+  color: #555;
+
+  margin-bottom: 3px;
+}
+
+
+.card-info small {
+  font-size: 9px;
+
+  color: #777;
+}
+
+
+@media (max-width: 768px) {
+
+  .navbar {
+    height: 65px;
+
+    padding: 0 15px;
+  }
+
+
+  .school h3 {
+    font-size: 13px;
+  }
+
+  .hero {
+    margin-top: 40px;
+
+    padding: 0 15px;
+  }
+
+
+  .hero h1 {
+    font-size: 1.6rem;
+
+    margin-bottom: 22px;
+  }
+
+
+  .search-box {
+    height: 45px;
+  }
+
+
+  .categories {
+    gap: 8px;
+  }
+
+
+  .categories button {
+    min-width: 90px;
+
+    flex: 1 1 25%;
+  }
+
+  .card-container {
+    overflow-x: auto;
+
+    justify-content: flex-start;
+
+    padding-bottom: 5px;
+
+    scrollbar-width: thin;
+  }
+
+
+  .research-card {
+    flex: 0 0 150px;
+
+    height: 150px;
+  }
+
+
+  .card-image {
+    height: 115px;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  /* NAVBAR */
+
+  .navbar {
+    height: 60px;
+
+    padding: 0 12px;
+  }
+
+
+  .school {
+    display: none;
+  }
+
+
+  .logo {
+    width: 38px;
+
+    height: 38px;
+  }
+
+
+  .menu-icon {
+    font-size: 19px;
+  }
+
+
+  .profile {
+    font-size: 28px;
+  }
+
+
+  .nav-right {
+    gap: 14px;
+  }
+
+
+  .icon {
+    font-size: 17px;
+  }
+
+
+  .hero {
+    margin-top: 30px;
+
+    padding: 0 12px;
+  }
+
+
+  .hero h1 {
+    font-size: 1.25rem;
+
+    line-height: 1.4;
+
+    margin-bottom: 18px;
+  }
+
+
+  .search-box {
+    width: 100%;
+
+    height: 43px;
+
+    padding: 0 14px;
+  }
+
+
+  .search-box input {
+    font-size: 13px;
+  }
+
+
+  .categories {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 7px;
+
+    margin-top: 12px;
+  }
+
+
+  .categories button {
+    width: 100%;
+
+    min-width: 0;
+
+    height: 30px;
+
+    padding: 0;
+
+    font-size: 9px;
+  }
+
+
+
+  .recommend-section {
+    margin-top: 15px;
+
+    padding: 12px 8px;
+  }
+
+
+  .recommend-section h2 {
+    font-size: 13px;
+  }
+
+
+  .card-container {
+    display: flex;
+
+    gap: 8px;
+
+    overflow-x: auto;
+
+    justify-content: flex-start;
+
+    padding-bottom: 5px;
+  }
+
+
+  .research-card {
+    flex: 0 0 135px;
+
+    height: 140px;
+
+    padding: 6px;
+  }
+
+
+  .card-image {
+    height: 105px;
+  }
+
+
+  .card-info {
+    padding: 6px 2px;
+  }
+
+
+  .card-info h3 {
+    font-size: 10px;
+  }
+
+
+  .card-info p {
+    font-size: 9px;
+  }
+
+
+  .card-info small {
+    font-size: 8px;
+  }
+
+}
+
+
+
+@media (max-width: 350px) {
+
+  .hero h1 {
+    font-size: 1.1rem;
+  }
+
+
+  .categories {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+
+  .research-card {
+    flex: 0 0 125px;
+  }
+
+}
