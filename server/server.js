@@ -4,16 +4,21 @@ import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import { createClient } from "@supabase/supabase-js";
 
-dotenv.config({
-  path: "./server/.env"
-});
+dotenv.config();
 
 const app = express();
 
 const PORT =
   process.env.PORT || 5000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://icclibrary.netlify.app/"
+    ]
+  })
+);
 
 app.use(express.json());
 
@@ -30,8 +35,6 @@ app.get("/", (req, res) => {
   });
 
 });
-
-
 
 app.post("/api/register", async (req, res) => {
 
@@ -504,11 +507,10 @@ app.get(
 
 app.listen(
   PORT,
+  "0.0.0.0",
   () => {
-
     console.log(
-      `Backend running on http://localhost:${PORT}`
+      `Backend running on port ${PORT}`
     );
-
   }
 );
