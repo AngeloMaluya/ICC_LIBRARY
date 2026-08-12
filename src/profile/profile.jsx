@@ -11,23 +11,17 @@ export const Profile = () => {
 
   useEffect(() => {
     document.title = "Create Account";
-
-    const googleEmail = localStorage.getItem("googleEmail");
-
-    if (googleEmail) {
-      setForm((prev) => ({
-        ...prev,
-        email: googleEmail,
-      }));
-    }
   }, []);
+
+  const googleEmail =
+    localStorage.getItem("googleEmail") || "";
 
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     course: "",
     year: "",
-    email: "",
+    email: googleEmail,
     password: "",
   });
 
@@ -73,14 +67,21 @@ export const Profile = () => {
         JSON.stringify(data.user)
       );
 
+      localStorage.removeItem("googleEmail");
+      localStorage.removeItem("googleName");
+      localStorage.removeItem("googlePicture");
+
       navigate("/library");
 
-    } catch (error) {
+      } catch (error) {
 
-      console.error(error);
+      console.error(
+        "Registration error:",
+        error
+      );
 
       alert(
-        "Cannot connect to the server. Make sure your backend is running."
+        "Unable to connect to the server."
       );
 
     } finally {
