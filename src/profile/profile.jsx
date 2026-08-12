@@ -34,62 +34,65 @@ export const Profile = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const response = await fetch(
-          `${API_URL}/api/login`,
-        {
-          method: "POST",
+  try {
+    const response = await fetch(
+      `${API_URL}/api/register`,
+      {
+        method: "POST",
 
-          headers: {
-            "Content-Type": "application/json",
-          },
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-          body: JSON.stringify(form),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.message);
-        return;
+        body: JSON.stringify(form),
       }
+    );
 
-      alert("Account Created!");
+    const data = await response.json();
 
-      localStorage.setItem(
-        "libraryUser",
-        JSON.stringify(data.user)
-      );
-
-      localStorage.removeItem("googleEmail");
-      localStorage.removeItem("googleName");
-      localStorage.removeItem("googlePicture");
-
-      navigate("/library");
-
-      } catch (error) {
-
-      console.error(
-        "Registration error:",
-        error
-      );
-
-      alert(
-        "Unable to connect to the server."
-      );
-
-    } finally {
-
-      setLoading(false);
-
+    if (!response.ok) {
+      alert(data.message);
+      return;
     }
-  };
+
+    alert("Account Created!");
+
+    // Save the newly created user
+    localStorage.setItem(
+      "libraryUser",
+      JSON.stringify(data.user)
+    );
+
+    // Remove temporary Google information
+    localStorage.removeItem("googleEmail");
+    localStorage.removeItem("googleName");
+    localStorage.removeItem("googlePicture");
+
+    // Go to library
+    navigate("/library");
+
+  } catch (error) {
+
+    console.error(
+      "Registration error:",
+      error
+    );
+
+    alert(
+      "Unable to connect to the server."
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+};
 
   return (
     <div className="register-page">
