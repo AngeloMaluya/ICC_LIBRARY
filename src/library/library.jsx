@@ -12,6 +12,15 @@ import {
 export const Library = () => {
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+  localStorage.removeItem("libraryUser");
+  localStorage.removeItem("googleEmail");
+  localStorage.removeItem("googleName");
+  localStorage.removeItem("googlePicture");
+
+  navigate("/");
+};
+
   useEffect(() => {
     document.title = "Library Management System";
   }, []);
@@ -60,8 +69,13 @@ export const Library = () => {
 
   return (
     <div className="library">
-
       
+     <button
+  className="logout-btn"
+  onClick={handleLogout}
+>
+  Log Out
+</button>
 
       <main className="hero">
 
