@@ -7,10 +7,11 @@ export const Profile = () => {
 
   const navigate = useNavigate();
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     document.title = "Create Account";
 
-    // Get Google email
     const googleEmail = localStorage.getItem("googleEmail");
 
     if (googleEmail) {
@@ -46,7 +47,7 @@ export const Profile = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/register",
+          `${API_URL}/api/login`,
         {
           method: "POST",
 
