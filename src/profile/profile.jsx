@@ -5,42 +5,46 @@ import Image from "../assets/icon.png";
 
 export const Profile = () => {
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     document.title = "Create Account";
-  }, []);
 
-  const navigate = useNavigate();
+    // Get Google email
+    const googleEmail = localStorage.getItem("googleEmail");
+
+    if (googleEmail) {
+      setForm((prev) => ({
+        ...prev,
+        email: googleEmail,
+      }));
+    }
+  }, []);
 
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     course: "",
     year: "",
-    username: "",
+    email: "",
     password: "",
   });
 
   const [loading, setLoading] = useState(false);
 
-
   const handleChange = (e) => {
-
     setForm({
       ...form,
       [e.target.name]: e.target.value,
     });
-
   };
 
-
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     setLoading(true);
 
     try {
-
       const response = await fetch(
         "http://localhost:5000/api/register",
         {
@@ -54,29 +58,21 @@ export const Profile = () => {
         }
       );
 
-
       const data = await response.json();
 
-
       if (!response.ok) {
-
         alert(data.message);
-
         return;
       }
 
-
       alert("Account Created!");
 
-      // Save returned user information
       localStorage.setItem(
         "libraryUser",
         JSON.stringify(data.user)
       );
 
-
       navigate("/library");
-
 
     } catch (error) {
 
@@ -91,9 +87,7 @@ export const Profile = () => {
       setLoading(false);
 
     }
-
   };
-
 
   return (
     <div className="register-page">
@@ -101,7 +95,6 @@ export const Profile = () => {
       <div className="register-card">
 
         {/* LEFT */}
-
         <div className="left-side">
 
           <h1>Create Account</h1>
@@ -121,9 +114,7 @@ export const Profile = () => {
 
         </div>
 
-
         {/* RIGHT */}
-
         <form
           className="right-side"
           onSubmit={handleSubmit}
@@ -140,7 +131,6 @@ export const Profile = () => {
             required
           />
 
-
           <label>Last Name</label>
 
           <input
@@ -151,7 +141,6 @@ export const Profile = () => {
             onChange={handleChange}
             required
           />
-
 
           <label>Course</label>
 
@@ -164,30 +153,33 @@ export const Profile = () => {
             required
           />
 
-
           <label>Year</label>
 
           <input
-            type="number"
-            name="year"
-            placeholder="Enter year"
-            value={form.year}
-            onChange={handleChange}
-            required
-          />
+          type="number"
+          name="year"
+          min="1"
+          max="4"
+          step="1"
+          placeholder="Enter year"
+          value={form.year}
+          onChange={handleChange}
+          required
+        />
 
-
-          <label>Username / Email</label>
+          <label>Email</label>
 
           <input
-            type="text"
-            name="username"
-            placeholder="Enter username"
-            value={form.username}
-            onChange={handleChange}
+            type="email"
+            name="email"
+            value={form.email}
+            readOnly
             required
           />
 
+          <small className="email-note">
+            This email is linked to your Google account and cannot be changed.
+          </small>
 
           <label>Password</label>
 
@@ -200,16 +192,13 @@ export const Profile = () => {
             required
           />
 
-
           <button
             type="submit"
             disabled={loading}
           >
-
             {loading
               ? "Creating Account..."
               : "Create Account"}
-
           </button>
 
         </form>

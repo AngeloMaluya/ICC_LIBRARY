@@ -12,11 +12,165 @@ export const Login = () => {
     document.title = "Login";
   }, []);
 
-  const handleLogIn = (e) => {
+ const handleLogIn = async (e) => {
     e.preventDefault();
-    navigate("/library");
+
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/login",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
+       const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message);
+        return;
+      }
+
+      localStorage.setItem(
+        "libraryUser",
+        JSON.stringify(data.user)
+      );
+
+      navigate("/library");
+
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        "Cannot connect to the server. Make sure your backend is running."
+      );
+    }
   };
   
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+
+      const user = jwtDecode(
+        credentialResponse.credential
+      );
+
+      console.log("Google user:", user);
+
+      const allowedDomain = "immaculada.edu.ph";
+
+      // Check school email
+      if (!user.email.endsWith(`@${allowedDomain}`)) {
+        alert("Only school email accounts are allowed.");
+        return;
+      }
+
+      console.log(
+        "Checking account:",
+        user.email
+      );
+
+      // Check if the Google email already exists
+      const response = await fetch(
+        `http://localhost:5000/api/user/${encodeURIComponent(
+          user.email
+        )}`
+      );
+
+      const data = await response.json();
+
+      console.log(
+        "Account check response:",
+        data
+      );
+
+       if (response.ok && data.exists) {
+
+        // Save database user
+        localStorage.setItem(
+          "libraryUser",
+          JSON.stringify(data.user)
+        );
+
+        // Save Google information
+        localStorage.setItem(
+          "googleEmail",
+          user.email
+        );
+
+        localStorage.setItem(
+          "googleName",
+          user.name
+        );
+
+        localStorage.setItem(
+          "googlePicture",
+          user.picture
+        );
+
+        alert(
+          `Welcome back, ${user.name}!`
+        );
+
+        // Go directly to library
+        navigate("/library");
+
+        return;
+      }
+
+       if (
+        response.status === 404 &&
+        !data.exists
+      ) {
+
+        // Save Google information
+        // for the Create Account page
+        localStorage.setItem(
+          "googleEmail",
+          user.email
+        );
+
+        localStorage.setItem(
+          "googleName",
+          user.name
+        );
+
+        localStorage.setItem(
+          "googlePicture",
+          user.picture
+        );
+
+        // Go to Create Account
+        navigate("/profile");
+
+        return;
+      }
+
+       alert(
+        "Unable to check your account. Please try again."
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Google Login Error:",
+        error
+      );
+
+      alert(
+        "Unable to connect to the server. Make sure your backend is running."
+      );
+    }
+  };
 
   return (
     <div className="page">
@@ -86,27 +240,21 @@ export const Login = () => {
 
         
             <div>
-   <GoogleLogin
-    onSuccess={(credentialResponse) => {
-      const user = jwtDecode(credentialResponse.credential);
+           <GoogleLogin
+            onSuccess={handleGoogleLogin}
 
-      const allowedDomain = "immaculada.edu.ph";
+             onError={() => {
+                alert(
+                  "Google Login Failed"
+                );
+              }}
+  
 
-      if (user.email.endsWith(`@${allowedDomain}`)) {
-        alert(`Welcome ${user.name}!`);
-        navigate("/profile");
-      } else {
-        alert("Only school email accounts are allowed.");
-      }
-    }}
-    onError={() => {
-      alert("Google Login Failed");
-    }}
-    theme="outline"
-    size="large"
-    width="300"
-  />
-</div>
+  theme="outline"
+  size="large"
+  width="300"
+/>
+        </div>
         </div>
 
       </div>
