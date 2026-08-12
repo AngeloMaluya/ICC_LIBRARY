@@ -6,7 +6,6 @@ import { createClient } from "@supabase/supabase-js";
 
 dotenv.config();
 
-
 console.log(
   "SUPABASE_URL:",
   process.env.SUPABASE_URL
@@ -34,7 +33,6 @@ const supabase = createClient(
 
 app.get("/", (req, res) => {
   res.json({
-    message: "THESIS backend is running!"
   });
 });
 
