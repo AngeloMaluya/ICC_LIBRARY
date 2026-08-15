@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./base_lib.css";
-
+import "../landing/landing.css"
+import Image from "../assets/icon.png";
 import { FaSearch } from "react-icons/fa";
 
 export const Library = () => {
@@ -211,15 +212,39 @@ export const Library = () => {
   return (
     <div className="library">
 
-      {/* LOGOUT */}
+      <div className="home">
 
-      <button
+      <header className="navbar">
+
+        <div className="nav-left">
+
+          <img
+            src={Image}
+            alt="ICC Logo"
+            className="logo"
+          />
+
+          <h2>ICC Research Management</h2>
+
+        </div>
+
+        <nav className="nav-links">
+
+          <button
         type="button"
         className="logout-btn"
         onClick={handleLogout}
       >
         Log Out
       </button>
+        </nav>
+
+      </header>
+      </div>
+
+      {/* LOGOUT */}
+
+    
 
       <main className="hero">
 

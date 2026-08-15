@@ -50,7 +50,7 @@ function App() {
     <Routes>
       <Route
         path="/"
-        element={<Library />}
+        element={<Landing />}
       />
       <Route
         path="/login"

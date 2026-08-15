@@ -1,7 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./admin-upload.css";
 
 const admin = () => {
+  
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     title: "",
     author: "",
@@ -118,6 +122,10 @@ console.log("DATA:", data);
     } finally {
       setLoading(false);
     }
+  };
+
+   const handleLogout = () => {
+    navigate("/");
   };
 
   return (
@@ -247,14 +255,24 @@ console.log("DATA:", data);
 
           </button>
 
+          
+
           {/* MESSAGE */}
           {message && (
             <p className="message">
               {message}
             </p>
           )}
+          
 
         </form>
+          <button
+        type="button"
+        className="logout-btn"
+        onClick={handleLogout}
+      >
+        Log Out
+      </button>
 
       </div>
 
