@@ -1,10 +1,8 @@
-import { useNavigate } from "react-router-dom";
+
 import { useEffect } from "react";
 import "./landing.css";
-import Logo from "../assets/icon.png";      
-
+import Header from"../components/heading/heading.jsx"  
 export const Landing = () => {
-  const navigate = useNavigate();
 
    useEffect(() => {
     document.title = "ICC LIBRARY";
@@ -13,32 +11,7 @@ export const Landing = () => {
   return (
     <div className="home">
 
-      <header className="navbar">
-
-        <div className="nav-left">
-
-          <img
-            src={Logo}
-            alt="ICC Logo"
-            className="logo"
-          />
-
-          <h2>ICC Research Management</h2>
-
-        </div>
-
-        <nav className="nav-links">
-
-          <button
-            className="login-btn"
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </button>
-
-        </nav>
-
-      </header>
+      <Header/>
     
       <section className="hero">
 

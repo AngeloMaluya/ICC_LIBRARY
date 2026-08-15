@@ -1,16 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./base_lib.css";
-import "../landing/landing.css"
-import Image from "../assets/icon.png";
-import { FaSearch } from "react-icons/fa";
+import Header from "../components/heading/heading.jsx";
+import SearchCat from "../components/searchcat/searchcat.jsx";
 
 export const Library = () => {
   const navigate = useNavigate();
-
-  // ========================================
-  // STATE
-  // ========================================
 
   const [researches, setResearches] = useState([]);
   const [selectedResearch, setSelectedResearch] = useState(null);
@@ -21,19 +16,6 @@ export const Library = () => {
 
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-
-  // ========================================
-  // LOGOUT
-  // ========================================
-
-  const handleLogout = () => {
-    localStorage.removeItem("libraryUser");
-    localStorage.removeItem("googleEmail");
-    localStorage.removeItem("googleName");
-    localStorage.removeItem("googlePicture");
-
-    navigate("/");
-  };
 
   // ========================================
   // PAGE TITLE
@@ -110,7 +92,6 @@ export const Library = () => {
     console.log("Research ID:", id);
     console.log("==============================");
 
-    // Show popup immediately
     setShowPopup(true);
     setLoadingResearch(true);
     setSelectedResearch(null);
@@ -162,24 +143,9 @@ export const Library = () => {
   // ========================================
 
   const closePopup = () => {
-    console.log("Closing research popup");
-
     setShowPopup(false);
     setSelectedResearch(null);
   };
-
-  // ========================================
-  // PROGRAMS
-  // ========================================
-
-  const programs = [
-    "BSCS",
-    "BSBA",
-    "BSED",
-    "BEED",
-    "BSTM",
-    "BSCrim",
-  ];
 
   // ========================================
   // SEARCH
@@ -212,166 +178,19 @@ export const Library = () => {
   return (
     <div className="library">
 
-      <div className="home">
+      <Header />
 
-      <header className="navbar">
+      <SearchCat
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        navigate={navigate}
+        loading={loading}
+        error={error}
+        filteredResearches={filteredResearches}
+        handleViewResearch={handleViewResearch}
+      />
 
-        <div className="nav-left">
-
-          <img
-            src={Image}
-            alt="ICC Logo"
-            className="logo"
-          />
-
-          <h2>ICC Research Management</h2>
-
-        </div>
-
-        <nav className="nav-links">
-
-          <button
-        type="button"
-        className="logout-btn"
-        onClick={handleLogout}
-      >
-        Log Out
-      </button>
-        </nav>
-
-      </header>
-      </div>
-
-      {/* LOGOUT */}
-
-    
-
-      <main className="hero">
-
-        <h1>
-          What research are you looking for?
-        </h1>
-
-        {/* SEARCH */}
-
-        <div className="search-box">
-
-          <FaSearch className="search-icon" />
-
-          <input
-            type="text"
-            placeholder="Search books, thesis, journals..."
-            value={searchTerm}
-            onChange={(event) =>
-              setSearchTerm(event.target.value)
-            }
-          />
-
-        </div>
-
-        {/* PROGRAMS */}
-
-        <div className="categories">
-
-          {programs.map((program) => (
-            <button
-              type="button"
-              key={program}
-              onClick={() =>
-                navigate(`/library/${program}`)
-              }
-            >
-              {program}
-            </button>
-          ))}
-
-        </div>
-
-        {/* RESEARCH */}
-
-        <div className="recommend-section">
-
-          <div className="card-container">
-
-            {loading && (
-              <p>
-                Loading research...
-              </p>
-            )}
-
-            {!loading && error && (
-              <p className="error-message">
-                {error}
-              </p>
-            )}
-
-            {!loading &&
-              !error &&
-              filteredResearches.length === 0 && (
-                <p>
-                  No research found.
-                </p>
-              )}
-
-            {!loading &&
-              !error &&
-              filteredResearches.map(
-                (research) => (
-
-                  <div
-                    className="research-card"
-                    key={research.id}
-                  >
-
-                    <div className="card-image"></div>
-
-                    <div className="card-info">
-
-                      <h3>
-                        {research.title}
-                      </h3>
-
-                      <p>
-                        {research.author ||
-                          "Unknown Author"}
-                      </p>
-
-                      <small>
-                        {research.year ||
-                          "Unknown Year"}
-                      </small>
-
-                      <button
-                        type="button"
-                        className="view-research-btn"
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-
-                          handleViewResearch(
-                            research.id
-                          );
-                        }}
-                      >
-                        View Research
-                      </button>
-
-                    </div>
-
-                  </div>
-
-                )
-              )}
-
-          </div>
-
-        </div>
-
-      </main>
-
-      {/* ========================================
-          POPUP
-      ======================================== */}
+      {/* POPUP */}
 
       {showPopup && (
         <div
@@ -386,8 +205,6 @@ export const Library = () => {
             }
           >
 
-            {/* CLOSE */}
-
             <button
               type="button"
               className="popup-close"
@@ -395,8 +212,6 @@ export const Library = () => {
             >
               ×
             </button>
-
-            {/* LOADING */}
 
             {loadingResearch && (
               <div className="popup-loading">
@@ -406,11 +221,8 @@ export const Library = () => {
               </div>
             )}
 
-            {/* CONTENT */}
-
             {!loadingResearch &&
               selectedResearch && (
-
                 <div className="research-details">
 
                   <h2>
@@ -447,7 +259,6 @@ export const Library = () => {
                   </div>
 
                 </div>
-
               )}
 
           </div>

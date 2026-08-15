@@ -1,198 +1,273 @@
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./base_lib.css";
-import Logo from "../assets/icon.png";
-import { FaBars, FaBell, FaSearch, FaUserCircle } from "react-icons/fa";
+import Header from "../components/heading/heading.jsx";
+import SearchCat from "../components/searchcat/searchcat.jsx";
 
 export const Program = () => {
-  const [selectedResearch, setSelectedResearch] = useState(null);
-  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
-  const { program } = useParams();
 
-  const [search, setSearch] = useState("");
+  const [researches, setResearches] = useState([]);
+  const [selectedResearch, setSelectedResearch] = useState(null);
 
-  const researchData = [
-    {
-      id: 1,
-      title: "Library Management System",
-      author: "Juan Dela Cruz",
-      year: "2024",
-      program: "BSCS",
-    },
-    {
-      id: 2,
-      title: "Online Enrollment System",
-      author: "Maria Santos",
-      year: "2023",
-      program: "BSCS",
-    },
-    {
-      id: 3,
-      title: "Teaching Strategies",
-      author: "Pedro Cruz",
-      year: "2022",
-      program: "BSED",
-    },
-    {
-      id: 4,
-      title: "Child Psychology",
-      author: "Anna Reyes",
-      year: "2024",
-      program: "BEED",
-    },
-    {
-      id: 5,
-      title: "Hotel Reservation System",
-      author: "James Lee",
-      year: "2023",
-      program: "BSTM",
-    },
-    {
-      id: 6,
-      title: "Crime Mapping System",
-      author: "Karl Reyes",
-      year: "2024",
-      program: "BSCrim",
-    },
-  ];
+  const [showPopup, setShowPopup] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadingResearch, setLoadingResearch] = useState(false);
 
-  const programs = [
-    "BSCS",
-    "BSED",
-    "BEED",
-    "BSTM",
-    "BSCrim",
-  ];
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredResearch = researchData.filter(
-    (item) =>
-      item.program === program &&
-      item.title.toLowerCase().includes(search.toLowerCase())
+  // ========================================
+  // PAGE TITLE
+  // ========================================
+
+  useEffect(() => {
+    document.title = "Library Management System";
+  }, []);
+
+  // ========================================
+  // LOAD ALL RESEARCH
+  // ========================================
+
+  useEffect(() => {
+    const fetchResearches = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        console.log("Fetching research...");
+
+        const response = await fetch("/api/research");
+
+        console.log(
+          "GET /api/research status:",
+          response.status
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch research");
+        }
+
+        const data = await response.json();
+
+        console.log("Research from server:", data);
+
+        if (Array.isArray(data)) {
+          setResearches(data);
+        } else if (Array.isArray(data.researches)) {
+          setResearches(data.researches);
+        } else {
+          console.error(
+            "Unexpected research response:",
+            data
+          );
+
+          setResearches([]);
+        }
+
+      } catch (error) {
+        console.error(
+          "Error fetching research:",
+          error
+        );
+
+        setError(
+          "Unable to load research from the database."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResearches();
+  }, []);
+
+  // ========================================
+  // VIEW RESEARCH
+  // ========================================
+
+  const handleViewResearch = async (id) => {
+    console.log("==============================");
+    console.log("VIEW RESEARCH BUTTON CLICKED");
+    console.log("Research ID:", id);
+    console.log("==============================");
+
+    setShowPopup(true);
+    setLoadingResearch(true);
+    setSelectedResearch(null);
+
+    try {
+      const response = await fetch(
+        `/api/research/${id}`
+      );
+
+      console.log(
+        "Research response status:",
+        response.status
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to load research (${response.status})`
+        );
+      }
+
+      const data = await response.json();
+
+      console.log(
+        "Research details received:",
+        data
+      );
+
+      setSelectedResearch(data);
+
+    } catch (error) {
+      console.error(
+        "Error loading research:",
+        error
+      );
+
+      setSelectedResearch({
+        title: "Error",
+        summary:
+          "Unable to load this research."
+      });
+
+    } finally {
+      setLoadingResearch(false);
+    }
+  };
+
+  // ========================================
+  // CLOSE POPUP
+  // ========================================
+
+  const closePopup = () => {
+    setShowPopup(false);
+    setSelectedResearch(null);
+  };
+
+  // ========================================
+  // SEARCH
+  // ========================================
+
+  const filteredResearches = researches.filter(
+    (research) => {
+      const search = searchTerm.toLowerCase();
+
+      return (
+        research.title
+          ?.toLowerCase()
+          .includes(search) ||
+
+        research.author
+          ?.toLowerCase()
+          .includes(search) ||
+
+        research.year
+          ?.toString()
+          .includes(search)
+      );
+    }
   );
 
+  // ========================================
+  // RENDER
+  // ========================================
+
   return (
-  <div className="library">
-  
-    {/* Header */}
-    <header className="navbar">
-      <div className="nav-left">
-        <FaBars className="menu-icon" />
+    <div className="library">
 
-         <button
-          classname="logo"
-          onClick={() => navigate("/library")}>
-          <img
-            src={Logo}
-            alt="Immaculada Concepcion College Logo"
-            className="logo"
-          />
-          
-          </button>
+      <Header />
 
-        <div className="school">
-          <h3>Immaculada Concepcion College</h3>
-        </div>
-      </div>
-
-      <div className="nav-right">
-        <FaBell className="icon" />
-        <FaUserCircle className="profile" />
-      </div>
-    </header>
-
-    {/* Title */}
-    <h1 style={{ textAlign: "center", color: "#184E9E", marginTop: "30px" }}>
-      {program} Research Library
-    </h1>
-
-    {/* Search */}
-    <div style={{ textAlign: "center", margin: "30px" }}>
-      <input
-        type="text"
-        placeholder="Search Research..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{
-          width: "450px",
-          height: "45px",
-          borderRadius: "30px",
-          border: "none",
-          paddingLeft: "20px",
-          background: "#e8e8e8",
-        }}
+      <SearchCat
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        navigate={navigate}
+        loading={loading}
+        error={error}
+        filteredResearches={filteredResearches}
+        handleViewResearch={handleViewResearch}
       />
-    </div>
 
-    {/* Program Buttons */}
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        gap: "15px",
-        marginBottom: "40px",
-      }}
-    >
-      {programs.map((item) => (
-        <button
-          key={item}
-          onClick={() => navigate(`/library/${item}`)}
-          style={{
-            padding: "10px 20px",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            background: item === program ? "#184E9E" : "#FFE7A5",
-            color: item === program ? "white" : "black",
-          }}
+      {/* POPUP */}
+
+      {showPopup && (
+        <div
+          className="research-popup-overlay"
+          onClick={closePopup}
         >
-          {item}
-        </button>
-      ))}
-    </div>
 
-    {/* Cards */}
-    <div
-      style={{
-        display: "flex",
-        gap: "20px",
-        flexWrap: "wrap",
-        justifyContent: "center",
-      }}
-    >
-      {filteredResearch.length > 0 ? (
-        filteredResearch.map((item) => (
           <div
-            key={item.id}
-            style={{
-              width: "200px",
-              background: "white",
-              borderRadius: "10px",
-              padding: "10px",
-              boxShadow: "0 2px 10px rgba(0,0,0,.15)",
-            }}
+            className="research-popup"
+            onClick={(event) =>
+              event.stopPropagation()
+            }
           >
-            <div
-              style={{
-                height: "180px",
-                background: "#0D4F8B",
-                borderRadius: "5px",
-              }}
-            />
 
-            <h3>{item.title}</h3>
+            <button
+              type="button"
+              className="popup-close"
+              onClick={closePopup}
+            >
+              ×
+            </button>
 
-            <p>{item.author}</p>
+            {loadingResearch && (
+              <div className="popup-loading">
+                <h2>
+                  Loading research...
+                </h2>
+              </div>
+            )}
 
-            <small>{item.year}</small>
+            {!loadingResearch &&
+              selectedResearch && (
+                <div className="research-details">
+
+                  <h2>
+                    {selectedResearch.title}
+                  </h2>
+
+                  <p className="research-author">
+                    <strong>
+                      Author:
+                    </strong>{" "}
+                    {selectedResearch.author ||
+                      "Unknown Author"}
+                  </p>
+
+                  <p className="research-year">
+                    <strong>
+                      Year:
+                    </strong>{" "}
+                    {selectedResearch.year ||
+                      "Unknown Year"}
+                  </p>
+
+                  <div className="summary-section">
+
+                    <h3>
+                      Summary
+                    </h3>
+
+                    <p>
+                      {selectedResearch.summary ||
+                        "No summary available."}
+                    </p>
+
+                  </div>
+
+                </div>
+              )}
+
           </div>
-        ))
-      ) : (
-        <h3>No research found.</h3>
+
+        </div>
       )}
+
     </div>
-  </div>
-);
-}
+  );
+};
 
 export default Program;
