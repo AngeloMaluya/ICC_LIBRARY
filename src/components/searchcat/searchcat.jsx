@@ -9,7 +9,10 @@ export default function Searchcat({
   error,
   filteredResearches,
   handleViewResearch,
-}) {
+  handleViewPdf,
+  selectedProgram,
+  setSelectedProgram,
+})  {
   const programs = [
     "BSCS",
     "BSBA",
@@ -41,21 +44,30 @@ export default function Searchcat({
 
       </div>
 
-      <div className="categories">
+     <div className="categories">
 
-        {programs.map((program) => (
-          <button
-            type="button"
-            key={program}
-            onClick={() =>
-              navigate(`/library/${program}`)
-            }
-          >
-            {program}
-          </button>
-        ))}
+  {programs.map((program) => (
+    <button
+      type="button"
+      key={program}
+      onClick={() => {
+        setSelectedProgram(program);
+      }}
+    >
+      {program}
+    </button>
+  ))}
 
-      </div>
+  <button
+    type="button"
+    onClick={() => {
+      setSelectedProgram("");
+    }}
+  >
+    All
+  </button>
+
+</div>
 
       <div className="recommend-section">
 
@@ -93,7 +105,10 @@ export default function Searchcat({
 
                 <div className="card-info">
 
-                  <h3>
+                  <h3
+                    className="research-title"
+                    onClick={() => handleViewPdf(research.id)}
+                  >
                     {research.title}
                   </h3>
 
@@ -123,7 +138,7 @@ export default function Searchcat({
         </div>
 
       </div>
-
     </main>
+    
   );
 }

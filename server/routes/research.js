@@ -3,6 +3,7 @@ import multer from "multer";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
+import { PDFParse } from "pdf-parse";
 
 dotenv.config();
 
@@ -18,7 +19,6 @@ const supabase = createClient(
 // ========================================
 
 // Store the uploaded PDF temporarily in memory.
-// We are NOT saving it to the server yet.
 const upload = multer({
   storage: multer.memoryStorage(),
 
@@ -41,72 +41,134 @@ const upload = multer({
   }
 });
 
+// ========================================
+// GET ALL RESEARCH
+// ========================================
+
 router.get("/", async (req, res) => {
+
   try {
-    const { data, error } = await supabase
-      .from("research")
+
+    const {
+      data,
+      error
+    } = await supabase
+      .from("summarized")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("created_at", {
+        ascending: false
+      });
 
     if (error) {
-      console.error("GET RESEARCH ERROR:", error);
+
+      console.error(
+        "GET RESEARCH ERROR:",
+        error
+      );
 
       return res.status(500).json({
+
         success: false,
-        message: "Failed to fetch research",
-        error: error.message
+
+        message:
+          "Failed to fetch research",
+
+        error:
+          error.message
+
       });
+
     }
 
     res.json(data);
 
   } catch (error) {
-    console.error("SERVER ERROR:", error);
+
+    console.error(
+      "SERVER ERROR:",
+      error
+    );
 
     res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
-  }
-});
 
+      success: false,
+
+      message:
+        "Server error"
+
+    });
+
+  }
+
+});
 
 // ========================================
 // GET ONE RESEARCH
 // ========================================
 
 router.get("/:id", async (req, res) => {
+
   try {
-    const { id } = req.params;
 
-    console.log("Fetching research ID:", id);
+    const {
+      id
+    } = req.params;
 
-    const { data, error } = await supabase
-      .from("research")
+    console.log(
+      "Fetching research ID:",
+      id
+    );
+
+    const {
+      data,
+      error
+    } = await supabase
+      .from("summarized")
       .select("*")
       .eq("id", id)
       .single();
 
     if (error) {
-      console.error("GET SINGLE RESEARCH ERROR:", error);
+
+      console.error(
+        "GET SINGLE RESEARCH ERROR:",
+        error
+      );
 
       return res.status(404).json({
+
         success: false,
-        message: "Research not found",
-        error: error.message
+
+        message:
+          "Research not found",
+
+        error:
+          error.message
+
       });
+
     }
 
     res.json(data);
 
   } catch (error) {
-    console.error("SERVER ERROR:", error);
+
+    console.error(
+      "SERVER ERROR:",
+      error
+    );
 
     res.status(500).json({
+
       success: false,
-      message: "Server error"
+
+      message:
+        "Server error"
+
     });
+
   }
+
 });
 
 // ========================================
@@ -114,7 +176,10 @@ router.get("/:id", async (req, res) => {
 // ========================================
 
 const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY
+
+  apiKey:
+    process.env.GEMINI_API_KEY
+
 });
 
 // ========================================
@@ -122,7 +187,9 @@ const ai = new GoogleGenAI({
 // ========================================
 
 router.post(
+
   "/summarize",
+
   upload.single("pdf"),
 
   async (req, res) => {
@@ -136,8 +203,12 @@ router.post(
       if (!req.file) {
 
         return res.status(400).json({
+
           success: false,
-          message: "Please upload a PDF file."
+
+          message:
+            "Please upload a PDF file."
+
         });
 
       }
@@ -153,6 +224,28 @@ router.post(
         "bytes"
       );
 
+      // ========================================
+      // EXTRACT TEXT FROM PDF
+      // ========================================
+
+      console.log(
+        "Extracting PDF text..."
+      );
+
+     const parser = new PDFParse({
+        data: req.file.buffer
+      });
+
+      const result = await parser.getText();
+
+      const pdfText = result.text;
+
+      await parser.destroy();
+
+      console.log(
+        "Extracted PDF text length:",
+        pdfText.length
+      );
 
       // ========================================
       // GET FORM DATA
@@ -165,24 +258,27 @@ router.post(
         program
       } = req.body;
 
-
       if (!title) {
 
         return res.status(400).json({
+
           success: false,
-          message: "Research title is required."
+
+          message:
+            "Research title is required."
+
         });
 
       }
-
 
       // ========================================
       // CONVERT PDF TO BASE64
       // ========================================
 
       const pdfBase64 =
-        req.file.buffer.toString("base64");
-
+        req.file.buffer.toString(
+          "base64"
+        );
 
       // ========================================
       // SEND PDF TO GEMINI
@@ -192,11 +288,11 @@ router.post(
         "Sending PDF to Gemini..."
       );
 
-
       const interaction =
         await ai.interactions.create({
 
-          model: "gemini-3.1-flash-lite",
+          model:
+            "gemini-3.1-flash-lite",
 
           input: [
 
@@ -230,9 +326,11 @@ Keep the summary clear, accurate, and suitable for students.
             {
               type: "document",
 
-              data: pdfBase64,
+              data:
+                pdfBase64,
 
-              mime_type: "application/pdf"
+              mime_type:
+                "application/pdf"
 
             }
 
@@ -240,15 +338,12 @@ Keep the summary clear, accurate, and suitable for students.
 
         });
 
-
       const summary =
         interaction.output_text;
-
 
       console.log(
         "Gemini summary received!"
       );
-
 
       // ========================================
       // CREATE UNIQUE PDF FILE NAME
@@ -258,76 +353,46 @@ Keep the summary clear, accurate, and suitable for students.
         `${Date.now()}-${req.file.originalname}`
           .replace(/\s+/g, "-");
 
+      // ========================================
+      // CHECK SUPABASE CONNECTION
+      // ========================================
 
-     console.log(
-  "Uploading PDF to Supabase Storage..."
-);
+      console.log(
+        "SUPABASE URL:",
+        process.env.SUPABASE_URL
+      );
 
-// ========================================
-// CHECK SUPABASE CONNECTION
-// ========================================
-
-console.log(
-  "SUPABASE URL:",
-  process.env.SUPABASE_URL
-);
-
-console.log(
-  "SUPABASE SECRET KEY:",
-  process.env.SUPABASE_SECRET_KEY
-    ? "LOADED"
-    : "NOT LOADED"
-);
-
-// ========================================
-// UPLOAD PDF TO SUPABASE STORAGE
-// ========================================
-
-console.log(
-  "PDF uploaded to Supabase!"
-);
-
-// ========================================
-// CHECK SUPABASE CONNECTION
-// ========================================
-
-console.log(
-  "SUPABASE URL:",
-  process.env.SUPABASE_URL
-);
-
-console.log(
-  "SUPABASE SECRET KEY:",
-  process.env.SUPABASE_SECRET_KEY
-    ? "LOADED"
-    : "NOT LOADED"
-);
-
-// ========================================
-// UPLOAD PDF TO SUPABASE STORAGE
-// ========================================
-
-const {
-  data: storageData,
-  error: storageError
-} = await supabase.storage
-  .from("research-pdfs")
-  .upload(
-    fileName,
-    req.file.buffer,
-    {
-      contentType: "application/pdf",
-      upsert: false
-    }
-  );
-
+      console.log(
+        "SUPABASE SECRET KEY:",
+        process.env.SUPABASE_SECRET_KEY
+          ? "LOADED"
+          : "NOT LOADED"
+      );
 
       // ========================================
       // UPLOAD PDF TO SUPABASE STORAGE
       // ========================================
 
-      
+      console.log(
+        "Uploading PDF to Supabase Storage..."
+      );
 
+      const {
+        data: storageData,
+        error: storageError
+      } = await supabase.storage
+        .from("research-pdfs")
+        .upload(
+          fileName,
+          req.file.buffer,
+          {
+            contentType:
+              "application/pdf",
+
+            upsert:
+              false
+          }
+        );
 
       if (storageError) {
 
@@ -350,11 +415,9 @@ const {
 
       }
 
-
       console.log(
         "PDF uploaded to Supabase!"
       );
-
 
       // ========================================
       // GET PUBLIC PDF URL
@@ -364,18 +427,17 @@ const {
         data: publicUrlData
       } = supabase.storage
         .from("research-pdfs")
-        .getPublicUrl(fileName);
-
+        .getPublicUrl(
+          fileName
+        );
 
       const pdfUrl =
         publicUrlData.publicUrl;
-
 
       console.log(
         "PDF URL:",
         pdfUrl
       );
-
 
       // ========================================
       // SAVE RESEARCH TO DATABASE
@@ -385,35 +447,46 @@ const {
         "Saving research to Supabase database..."
       );
 
-
       const {
         data: research,
         error: databaseError
       } = await supabase
-        .from("research")
+        .from("summarized")
         .insert([
 
           {
-            title: title,
 
-            author: author,
+            title:
+              title,
+
+            author:
+              author,
 
             year:
               year
                 ? Number(year)
                 : null,
 
-            program: program,
+            program:
+              program,
 
-            pdf_url: pdfUrl,
+            pdf_url:
+              pdfUrl,
 
-            summary: summary
+            // Gemini-generated summary
+            summary:
+              summary,
+
+            // FULL TEXT EXTRACTED FROM PDF
+            // This will be used by the search engine
+            content:
+              pdfText
+
           }
 
         ])
         .select()
         .single();
-
 
       if (databaseError) {
 
@@ -436,20 +509,45 @@ const {
 
       }
 
+      // ========================================
+      // SUCCESS LOGS
+      // ========================================
 
       console.log(
-  "Research saved successfully!"
-);
+        "Research saved successfully!"
+      );
 
-console.log("DATABASE RESULT:");
-console.log(research);
+      console.log(
+        "DATABASE RESULT:"
+      );
 
-console.log("PDF URL:");
-console.log(pdfUrl);
+      console.log(
+        research
+      );
 
-console.log("SUMMARY LENGTH:");
-console.log(summary?.length);
+      console.log(
+        "PDF URL:"
+      );
 
+      console.log(
+        pdfUrl
+      );
+
+      console.log(
+        "PDF TEXT LENGTH:"
+      );
+
+      console.log(
+        pdfText.length
+      );
+
+      console.log(
+        "SUMMARY LENGTH:"
+      );
+
+      console.log(
+        summary?.length
+      );
 
       // ========================================
       // RETURN EVERYTHING TO REACT
@@ -462,10 +560,10 @@ console.log(summary?.length);
         message:
           "Research uploaded and summarized successfully.",
 
-        research: research
+        research:
+          research
 
       });
-
 
     } catch (error) {
 
@@ -473,8 +571,9 @@ console.log(summary?.length);
         "PDF SUMMARY ERROR:"
       );
 
-      console.error(error);
-
+      console.error(
+        error
+      );
 
       return res.status(500).json({
 
@@ -489,6 +588,7 @@ console.log(summary?.length);
     }
 
   }
+
 );
 
 // ========================================
@@ -496,12 +596,17 @@ console.log(summary?.length);
 // ========================================
 
 router.use(
+
   (error, req, res, next) => {
 
     console.error(
       "RESEARCH ROUTE ERROR:",
       error
     );
+
+    // ========================================
+    // MULTER ERRORS
+    // ========================================
 
     if (
       error instanceof multer.MulterError
@@ -525,6 +630,10 @@ router.use(
 
     }
 
+    // ========================================
+    // INVALID FILE TYPE
+    // ========================================
+
     if (
       error.message ===
       "Only PDF files are allowed."
@@ -541,6 +650,10 @@ router.use(
 
     }
 
+    // ========================================
+    // GENERAL ERROR
+    // ========================================
+
     return res.status(500).json({
 
       success: false,
@@ -552,6 +665,7 @@ router.use(
     });
 
   }
+
 );
 
 export default router;

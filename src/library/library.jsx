@@ -7,10 +7,17 @@ import SearchCat from "../components/searchcat/searchcat.jsx";
 export const Library = () => {
   const navigate = useNavigate();
 
+  // ========================================
+  // STATE
+  // ========================================
+
+  const [selectedProgram, setSelectedProgram] = useState("");
+
   const [researches, setResearches] = useState([]);
   const [selectedResearch, setSelectedResearch] = useState(null);
 
   const [showPopup, setShowPopup] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [loadingResearch, setLoadingResearch] = useState(false);
 
@@ -64,7 +71,6 @@ export const Library = () => {
 
           setResearches([]);
         }
-
       } catch (error) {
         console.error(
           "Error fetching research:",
@@ -120,7 +126,6 @@ export const Library = () => {
       );
 
       setSelectedResearch(data);
-
     } catch (error) {
       console.error(
         "Error loading research:",
@@ -130,9 +135,10 @@ export const Library = () => {
       setSelectedResearch({
         title: "Error",
         summary:
-          "Unable to load this research."
+          "Unable to load this research.",
+        content:
+          "Unable to load the research document."
       });
-
     } finally {
       setLoadingResearch(false);
     }
@@ -148,25 +154,46 @@ export const Library = () => {
   };
 
   // ========================================
-  // SEARCH
+  // SEARCH + PROGRAM FILTER
   // ========================================
 
   const filteredResearches = researches.filter(
     (research) => {
-      const search = searchTerm.toLowerCase();
+      const search = searchTerm
+        .trim()
+        .toLowerCase();
+
+      const title = String(
+        research.title || ""
+      ).toLowerCase();
+
+      const author = String(
+        research.author || ""
+      ).toLowerCase();
+
+      const year = String(
+        research.year || ""
+      ).toLowerCase();
+
+      const program = String(
+        research.program || ""
+      ).toLowerCase();
+
+      const matchesSearch =
+        search === "" ||
+        title.includes(search) ||
+        author.includes(search) ||
+        year.includes(search) ||
+        program.includes(search);
+
+      const matchesProgram =
+        selectedProgram === "" ||
+        program ===
+          selectedProgram.toLowerCase();
 
       return (
-        research.title
-          ?.toLowerCase()
-          .includes(search) ||
-
-        research.author
-          ?.toLowerCase()
-          .includes(search) ||
-
-        research.year
-          ?.toString()
-          .includes(search)
+        matchesSearch &&
+        matchesProgram
       );
     }
   );
@@ -188,9 +215,13 @@ export const Library = () => {
         error={error}
         filteredResearches={filteredResearches}
         handleViewResearch={handleViewResearch}
+        selectedProgram={selectedProgram}
+        setSelectedProgram={setSelectedProgram}
       />
 
-      {/* POPUP */}
+      {/* ========================================
+          RESEARCH DOCUMENT POPUP
+          ======================================== */}
 
       {showPopup && (
         <div
@@ -205,6 +236,8 @@ export const Library = () => {
             }
           >
 
+            {/* CLOSE BUTTON */}
+
             <button
               type="button"
               className="popup-close"
@@ -212,6 +245,8 @@ export const Library = () => {
             >
               ×
             </button>
+
+            {/* LOADING */}
 
             {loadingResearch && (
               <div className="popup-loading">
@@ -221,13 +256,19 @@ export const Library = () => {
               </div>
             )}
 
+            {/* RESEARCH */}
+
             {!loadingResearch &&
               selectedResearch && (
                 <div className="research-details">
 
+                  {/* TITLE */}
+
                   <h2>
                     {selectedResearch.title}
                   </h2>
+
+                  {/* AUTHOR */}
 
                   <p className="research-author">
                     <strong>
@@ -237,6 +278,8 @@ export const Library = () => {
                       "Unknown Author"}
                   </p>
 
+                  {/* YEAR */}
+
                   <p className="research-year">
                     <strong>
                       Year:
@@ -245,16 +288,26 @@ export const Library = () => {
                       "Unknown Year"}
                   </p>
 
-                  <div className="summary-section">
+                  {/* DOCUMENT CONTENT */}
 
-                    <h3>
-                      Summary
-                    </h3>
+                  <div className="research-document">
 
-                    <p>
-                      {selectedResearch.summary ||
-                        "No summary available."}
-                    </p>
+                    {selectedResearch.content ? (
+                      selectedResearch.content
+                        .split("\n")
+                        .map(
+                          (line, index) => (
+                            <p key={index}>
+                              {line}
+                            </p>
+                          )
+                        )
+                    ) : (
+                      <p>
+                        No document text
+                        available.
+                      </p>
+                    )}
 
                   </div>
 

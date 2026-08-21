@@ -18,7 +18,6 @@ export default function Heading() {
   };
 
   return (
-    
     <header className="navbar">
       <div className="nav-left">
         {isLoggedIn ? (

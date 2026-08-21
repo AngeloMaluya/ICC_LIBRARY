@@ -6,6 +6,15 @@ const admin = () => {
   
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+    localStorage.removeItem("libraryUser");
+    localStorage.removeItem("googleEmail");
+    localStorage.removeItem("googleName");
+    localStorage.removeItem("googlePicture");
+
+    navigate("/");
+  };
+
   const [form, setForm] = useState({
     title: "",
     author: "",
@@ -124,9 +133,6 @@ console.log("DATA:", data);
     }
   };
 
-   const handleLogout = () => {
-    navigate("/");
-  };
 
   return (
     <div className="admin-upload-page">
@@ -207,8 +213,8 @@ console.log("DATA:", data);
                 Bachelor of Science in Computer Science
               </option>
 
-              <option value="BSIT">
-                Bachelor of Science in Information Technology
+              <option value="BSBA">
+                Bachelor of Science in Business Administration
               </option>
 
               <option value="BSED">
@@ -217,6 +223,14 @@ console.log("DATA:", data);
 
               <option value="BEED">
                 Bachelor of Elementary Education
+              </option>
+
+              <option value="BSTM">
+                Bachelor of Science in Tourism Management
+              </option>
+
+               <option value="BSCriM">
+                Bachelor of Science in Criminology
               </option>
 
             </select>

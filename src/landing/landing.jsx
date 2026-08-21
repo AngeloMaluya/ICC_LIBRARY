@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import "./landing.css";
 import Header from"../components/heading/heading.jsx"  
+
 export const Landing = () => {
 
    useEffect(() => {
@@ -9,6 +10,7 @@ export const Landing = () => {
   }, []);
 
   return (
+  
     <div className="home">
 
       <Header/>
