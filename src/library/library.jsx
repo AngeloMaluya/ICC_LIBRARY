@@ -44,7 +44,9 @@ export const Library = () => {
 
         console.log("Fetching research...");
 
-        const response = await fetch("/api/research");
+        const API_URL = import.meta.env.VITE_API_URL;
+
+        const response = await fetch(`${API_URL}/api/research`);
 
         console.log(
           "GET /api/research status:",
@@ -103,8 +105,10 @@ export const Library = () => {
     setSelectedResearch(null);
 
     try {
+     const API_URL = import.meta.env.VITE_API_URL;
+
       const response = await fetch(
-        `/api/research/${id}`
+        `${API_URL}/api/research/${id}`
       );
 
       console.log(
