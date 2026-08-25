@@ -140,9 +140,6 @@ export const Login = () => {
           user.picture
         );
 
-        alert(
-          `Welcome back, ${user.name}!`
-        );
 
         // Go directly to library
         navigate("/library");
