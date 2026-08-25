@@ -6,6 +6,9 @@ import SearchCat from "../components/searchcat/searchcat.jsx";
 
 export const Program = () => {
   const navigate = useNavigate();
+  
+  const API_URL = import.meta.env.VITE_API_URL;
+  console.log("API_URL:", API_URL);
 
   const [researches, setResearches] = useState([]);
   const [selectedResearch, setSelectedResearch] = useState(null);
@@ -37,7 +40,7 @@ export const Program = () => {
 
         console.log("Fetching research...");
 
-        const response = await fetch("/api/research");
+        const response = await fetch(`${API_URL}/api/research`);
 
         console.log(
           "GET /api/research status:",
@@ -97,9 +100,7 @@ export const Program = () => {
     setSelectedResearch(null);
 
     try {
-      const response = await fetch(
-        `/api/research/${id}`
-      );
+      const response = await fetch(`${API_URL}/api/research`);
 
       console.log(
         "Research response status:",
