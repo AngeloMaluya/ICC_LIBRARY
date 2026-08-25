@@ -87,14 +87,18 @@ function App() {
         <Route
           path="/library"
           element={
+            <GoogleProtectedRoute>
             <Library />
+            </GoogleProtectedRoute>
           }
         />
 
         <Route
           path="/library/:program"
           element={
+            <GoogleProtectedRoute>
             <Program />
+            </GoogleProtectedRoute>
           }
         />
 
