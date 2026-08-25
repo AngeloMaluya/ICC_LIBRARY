@@ -7,6 +7,9 @@ import SearchCat from "../components/searchcat/searchcat.jsx";
 export const Library = () => {
   const navigate = useNavigate();
 
+  const API_URL = import.meta.env.VITE_API_URL;
+  console.log("API_URL:", API_URL);
+
   const [researches, setResearches] = useState([]);
 
   // Research selected for summary popup
@@ -45,7 +48,7 @@ export const Library = () => {
 
         console.log("Fetching research...");
 
-        const response = await fetch("/api/research");
+        const response = await fetch(`${API_URL}/api/research`); 
 
         console.log(
           "GET /api/research status:",
@@ -110,8 +113,8 @@ export const Library = () => {
     try {
 
       const response = await fetch(
-        `/api/research/${id}`
-      );
+      `${API_URL}/api/research/${id}`
+    );
 
       console.log(
         "Research response status:",
@@ -172,8 +175,8 @@ export const Library = () => {
     try {
 
       const response = await fetch(
-        `/api/research/${id}`
-      );
+      `${API_URL}/api/research/${id}`
+    );
 
       console.log(
         "PDF text response status:",
