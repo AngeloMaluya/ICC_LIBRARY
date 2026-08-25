@@ -40,7 +40,7 @@ export const Program = () => {
 
         console.log("Fetching research...");
 
-        const response = await fetch("/api/research");
+        const response = await fetch(`${API_URL}/api/research`);
 
         console.log(
           "GET /api/research status:",
@@ -100,9 +100,7 @@ export const Program = () => {
     setSelectedResearch(null);
 
     try {
-      const response = await fetch(
-        `/api/research/${id}`
-      );
+      const response = await fetch(`${API_URL}/api/research`);
 
       console.log(
         "Research response status:",
