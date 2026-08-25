@@ -1,3 +1,7 @@
+/* ========================================
+   GLOBAL
+======================================== */
+
 * {
   margin: 0;
   padding: 0;
@@ -6,158 +10,510 @@
 }
 
 html,
-body {
+body,
+#root {
   width: 100%;
   min-height: 100%;
 }
 
 body {
-  background: #f7f8fb;
-}
-
-.library {
-  width: 100%;
-  min-height: 100vh;
-  background: #f7f8fb;
+  background: #f5f5f5;
 }
 
 
 /* ========================================
-   NAVBAR
+   LIBRARY MAIN LAYOUT
 ======================================== */
 
-.navbar {
+.library-layout {
   width: 100%;
-  height: 70px;
+  min-height: 100vh;
+
+  display: flex;
+
+  background: #ffffff;
+}
+
+
+/* ========================================
+   ICC LOGO
+======================================== */
+
+.icc-logo {
+  width: 40px;
+  height: 40px;
+
+  border-radius: 50%;
 
   background: #ffffff;
 
+  color: #0d4f82;
+
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
 
-  padding: 0 24px;
+  font-size: 11px;
+  font-weight: 800;
 
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 2px solid #e8c95c;
 
-  position: relative;
-  z-index: 10;
+  flex-shrink: 0;
 }
 
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+.icc-logo.small {
+  width: 34px;
+  height: 34px;
 }
 
-.menu-icon {
-  font-size: 22px;
-  color: #0b4ea2;
-  cursor: pointer;
-}
+/* ========================================
+   MAIN CONTENT
+======================================== */
 
+.library-main {
+  flex: 1;
 
+  min-width: 0;
 
-.school h3 {
-  font-size: 15px;
-  font-weight: 600;
-  color: #222;
-}
+  min-height: 100vh;
 
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
+  background: #ffffff;
 
-.icon {
-  font-size: 20px;
-  color: #222;
-  cursor: pointer;
-}
-
-.profile {
-  font-size: 34px;
-  color: #0b4ea2;
-  cursor: pointer;
+  overflow-x: hidden;
 }
 
 
 /* ========================================
-   HERO
+   MOBILE HEADER
 ======================================== */
+
+.mobile-library-header {
+  display: none;
+}
 
 
 /* ========================================
-   TABLET
+   LIBRARY CONTENT
 ======================================== */
 
-@media (max-width: 768px) {
+.library-content {
+  width: 100%;
 
-  .navbar {
-    height: 65px;
+  max-width: 1050px;
 
-    padding: 0 15px;
-  }
+  margin: 0 auto;
 
-  .school h3 {
-    font-size: 13px;
-  }
-
-  .search-box {
-    height: 45px;
-  }
-
-  .categories {
-    gap: 8px;
-  }
-
-  .categories button {
-    min-width: 90px;
-
-    flex: 1 1 25%;
-  }
-
-  .card-container {
-    overflow-x: auto;
-
-    flex-wrap: nowrap;
-
-    justify-content: flex-start;
-
-    padding-bottom: 5px;
-
-    scrollbar-width: thin;
-  }
-
-  .research-card {
-    flex: 0 0 180px;
-
-    min-height: 230px;
-  }
-
-  .card-image {
-    height: 115px;
-  }
+  padding: 20px 20px 50px;
 }
+
+
+/* ========================================
+   SEARCH BAR
+======================================== */
+
+.search-box {
+  width: 100%;
+
+  height: 34px;
+
+  background: #d5d5d5;
+
+  border-radius: 20px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 14px;
+
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.search-icon {
+  color: #111;
+
+  font-size: 13px;
+
+  flex-shrink: 0;
+}
+
+.search-box input {
+  width: 100%;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  font-size: 11px;
+
+  margin-left: 9px;
+}
+
+.search-box input::placeholder {
+  color: #777;
+}
+
+
+/* ========================================
+   PROGRAM CATEGORIES
+======================================== */
+
+.categories {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 9px;
+
+  margin-top: 10px;
+}
+
+.categories button {
+  width: 84px;
+
+  height: 21px;
+
+  border: 1px solid #e1c76b;
+
+  border-radius: 7px;
+
+  background: #fff9df;
+
+  color: #111;
+
+  font-size: 8px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Hover */
+
+.categories button:hover {
+  background: #0d4f82;
+
+  color: #ffffff;
+
+  border-color: #0d4f82;
+}
+
+
+/* Click */
+
+.categories button:active {
+  transform: scale(0.96);
+}
+
+
+/* ========================================
+   ACTIVE PROGRAM BUTTON
+======================================== */
+
+.categories button.active-program {
+  background: #0d4f82;
+
+  color: #ffffff;
+
+  border-color: #0d4f82;
+
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+
+/* ========================================
+   PROGRAM PAGE HEADING
+======================================== */
+
+.program-heading {
+  width: 100%;
+
+  margin-top: 18px;
+
+  margin-bottom: -8px;
+}
+
+.program-heading h1 {
+  color: #0d4f82;
+
+  font-size: 18px;
+
+  font-weight: 700;
+}
+
+.program-heading p {
+  margin-top: 3px;
+
+  color: #777;
+
+  font-size: 10px;
+}
+
+
+/* ========================================
+   RECOMMEND / RESEARCH AREA
+======================================== */
+
+.recommend-section {
+  width: 100%;
+
+  margin-top: 20px;
+
+  background: #cecece;
+
+  border-radius: 6px;
+
+  padding: 42px 24px 24px;
+
+  min-height: 305px;
+}
+
+
+/* ========================================
+   CARD CONTAINER
+======================================== */
+
+.card-container {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 14px;
+
+  align-items: start;
+}
+
+
+/* ========================================
+   RESEARCH CARD
+======================================== */
+
+.research-card {
+  width: 100%;
+
+  min-width: 0;
+
+  background: #ffffff;
+
+  border: 1px solid #aaaaaa;
+
+  border-radius: 3px;
+
+  padding: 8px;
+
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.18);
+
+  cursor: default;
+
+  transition: 0.2s ease;
+}
+
+.research-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 4px 9px rgba(0, 0, 0, 0.15);
+}
+
+
+/* ========================================
+   CARD IMAGE
+======================================== */
+
+.card-image {
+  width: 100%;
+
+  height: 142px;
+
+  background: #0d4f82;
+
+  border-radius: 1px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.card-image:hover {
+  background: #0a416d;
+}
+
+
+/* ========================================
+   CARD INFORMATION
+======================================== */
+
+.card-info {
+  padding: 9px 2px 3px;
+}
+
+.card-info h3 {
+  font-size: 11px;
+
+  color: #111;
+
+  margin-bottom: 5px;
+
+  line-height: 1.3;
+
+  display: -webkit-box;
+
+  -webkit-line-clamp: 2;
+
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+}
+
+.card-info p {
+  font-size: 9px;
+
+  color: #555;
+
+  margin-bottom: 3px;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+.card-info small {
+  display: block;
+
+  font-size: 8px;
+
+  color: #777;
+}
+
+
+/* ========================================
+   RESEARCH TITLE
+======================================== */
+
+.research-title {
+  cursor: pointer;
+}
+
+.research-title:hover {
+  color: #0b4ea2;
+
+  text-decoration: underline;
+}
+
+
+/* ========================================
+   VIEW SUMMARY BUTTON
+======================================== */
+
+.view-research-btn {
+  display: block;
+
+  margin-top: 8px;
+
+  padding: 6px 9px;
+
+  border: none;
+
+  border-radius: 5px;
+
+  background: #0b4ea2;
+
+  color: #ffffff;
+
+  font-size: 8px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.view-research-btn:hover {
+  background: #083b7d;
+}
+
+.view-research-btn:active {
+  transform: scale(0.97);
+}
+
+
+/* ========================================
+   LOADING / EMPTY MESSAGE
+======================================== */
+
+.library-message {
+  grid-column: 1 / -1;
+
+  width: 100%;
+
+  text-align: center;
+
+  padding: 50px 20px;
+
+  color: #333;
+
+  font-size: 13px;
+}
+
+.error-message {
+  color: #d00000;
+}
+
+
+/* ========================================
+   SUMMARY POPUP OVERLAY
+======================================== */
+
 .research-popup-overlay {
   position: fixed;
+
   inset: 0;
 
-  background: rgba(0, 0, 0, 0.7);
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0, 0, 0, 0.65);
 
   display: flex;
-  justify-content: center;
-  align-items: center;
 
-  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 99999;
+
+  padding: 20px;
 }
+
+
+/* ========================================
+   SUMMARY POPUP
+======================================== */
 
 .research-popup {
   position: relative;
 
-  width: 90%;
-  height: 90%;
+  width: 700px;
+
+  max-width: 95%;
+
+  max-height: 85vh;
+
+  overflow-y: auto;
 
   background: #ffffff;
 
@@ -165,139 +521,360 @@ body {
 
   padding: 30px;
 
-  overflow: hidden;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.35);
 }
+
+
+/* ========================================
+   POPUP CLOSE
+======================================== */
 
 .popup-close {
   position: absolute;
 
-  top: 10px;
-  right: 15px;
+  top: 8px;
+  right: 12px;
+
+  width: 35px;
+  height: 35px;
 
   border: none;
+
   background: transparent;
 
-  font-size: 32px;
+  font-size: 30px;
+
+  line-height: 30px;
 
   cursor: pointer;
 
-  z-index: 10;
+  color: #333;
 }
 
-.research-details {
-  height: 100%;
-
-  display: flex;
-  flex-direction: column;
+.popup-close:hover {
+  color: #0b4ea2;
 }
+
+
+/* ========================================
+   RESEARCH DETAILS
+======================================== */
 
 .research-details h2 {
-  margin-right: 40px;
+  margin-top: 0;
+
+  margin-bottom: 15px;
+
+  padding-right: 35px;
+
+  color: #0b4ea2;
+
+  font-size: 22px;
 }
 
 .research-author,
-.research-year {
-  margin: 5px 0;
+.research-year,
+.research-program {
+  margin: 6px 0;
+
+  color: #555;
+
+  font-size: 13px;
 }
 
-.research-document {
-  flex: 1;
+
+/* ========================================
+   SUMMARY
+======================================== */
+
+.summary-section {
+  margin-top: 25px;
+}
+
+.summary-section h3 {
+  margin-bottom: 10px;
+
+  color: #0b4ea2;
+
+  font-size: 17px;
+}
+
+.summary-section p {
+  line-height: 1.7;
+
+  white-space: pre-wrap;
+
+  color: #333;
+
+  font-size: 14px;
+}
+
+
+/* ========================================
+   FULL TEXT
+======================================== */
+
+.full-text-heading {
+  margin-top: 20px;
+
+  margin-bottom: 12px;
+
+  color: #0b4ea2;
+
+  font-size: 17px;
+}
+
+.pdf-text-content {
+  margin-top: 15px;
+
+  max-height: 55vh;
 
   overflow-y: auto;
 
-  margin-top: 20px;
+  padding: 25px;
 
-  padding: 40px 60px;
-
-  background: #ffffff;
+  background: #fafafa;
 
   border: 1px solid #ddd;
 
-  font-family: Georgia, "Times New Roman", serif;
+  border-radius: 5px;
+}
 
-  font-size: 16px;
+.pdf-text-content pre {
+  white-space: pre-wrap;
+
+  word-wrap: break-word;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 14px;
 
   line-height: 1.8;
 
-  white-space: normal;
+  color: #222;
 }
 
-.research-document p {
-  margin: 0 0 12px 0;
-}
+
+/* ========================================
+   POPUP LOADING
+======================================== */
 
 .popup-loading {
-  height: 100%;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.pdf-container {
-  flex: 1;
-  margin-top: 15px;
-  min-height: 0;
-}
-
-.pdf-viewer {
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-.no-pdf {
   text-align: center;
-  margin-top: 30px;
-}
-.research-title {
-  cursor: pointer;
+
+  padding: 60px 20px;
 }
 
-.research-title:hover {
-  text-decoration: underline;
+.popup-loading h2 {
+  color: #0b4ea2;
+
+  font-size: 18px;
 }
 
-.pdf-popup-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
+
+/* ========================================
+   TABLET
+======================================== */
+
+@media (max-width: 900px) {
+
+  .library-sidebar {
+    width: 135px;
+
+    min-width: 135px;
+  }
+
+  .brand-text strong,
+  .brand-text span {
+    font-size: 12px;
+  }
+
+  .sidebar-item {
+    font-size: 10px;
+
+    gap: 9px;
+  }
+
+  .card-container {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .recommend-section {
+    padding: 30px 18px 20px;
+  }
+
 }
 
-.pdf-popup {
-  position: relative;
-  width: 90vw;
-  height: 90vh;
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
+
+/* ========================================
+   SMALL TABLET
+======================================== */
+
+@media (max-width: 700px) {
+
+  .library-sidebar {
+    width: 60px;
+
+    min-width: 60px;
+
+    padding: 15px 7px;
+  }
+
+  .sidebar-brand {
+    justify-content: center;
+
+    padding-bottom: 25px;
+  }
+
+  .brand-text {
+    display: none;
+  }
+
+  .sidebar-item {
+    justify-content: center;
+
+    padding: 10px 5px;
+  }
+
+  .sidebar-item span {
+    display: none;
+  }
+
+  .sidebar-item svg {
+    font-size: 18px;
+  }
+
+  .library-content {
+    padding: 15px 12px 40px;
+  }
+
+  .card-container {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .card-image {
+    height: 130px;
+  }
+
+  .program-heading h1 {
+    font-size: 17px;
+  }
+
 }
 
-.pdf-popup-close {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-  border: none;
-  background: none;
-  font-size: 32px;
-  cursor: pointer;
-  z-index: 2;
-}
 
-.pdf-viewer-container {
-  flex: 1;
-  min-height: 0;
-  margin-top: 10px;
-}
+/* ========================================
+   MOBILE
+======================================== */
 
-.pdf-viewer {
-  width: 100%;
-  height: 100%;
-  border: none;
+@media (max-width: 480px) {
+
+  .library-sidebar {
+    width: 55px;
+
+    min-width: 55px;
+  }
+
+  .icc-logo {
+    width: 35px;
+    height: 35px;
+
+    font-size: 9px;
+  }
+
+  .library-content {
+    padding: 12px 10px 30px;
+  }
+
+  .categories {
+    gap: 5px;
+  }
+
+  .categories button {
+    width: 72px;
+
+    height: 24px;
+
+    font-size: 8px;
+  }
+
+  .program-heading {
+    margin-top: 15px;
+  }
+
+  .program-heading h1 {
+    font-size: 16px;
+  }
+
+  .program-heading p {
+    font-size: 9px;
+  }
+
+  .recommend-section {
+    margin-top: 15px;
+
+    padding: 20px 10px 15px;
+  }
+
+  .card-container {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+  }
+
+  .card-image {
+    height: 110px;
+  }
+
+  .research-card {
+    padding: 6px;
+  }
+
+  .card-info h3 {
+    font-size: 10px;
+  }
+
+  .card-info p {
+    font-size: 8px;
+  }
+
+  .view-research-btn {
+    font-size: 8px;
+
+    padding: 6px 7px;
+  }
+
+  .research-popup {
+    width: 95%;
+
+    padding: 22px;
+
+    border-radius: 10px;
+  }
+
+  .research-details h2 {
+    font-size: 18px;
+  }
+
+  .summary-section p {
+    font-size: 13px;
+  }
+
+  .pdf-text-content {
+    padding: 15px;
+  }
+
+  .pdf-text-content pre {
+    font-size: 12px;
+
+    line-height: 1.7;
+  }
+
 }

@@ -20,24 +20,11 @@ export default function Heading() {
   return (
     <header className="navbar">
       <div className="nav-left">
-        {isLoggedIn ? (
-          <button
-          type="button"
-          className="logo"
-          onClick={()=> navigate("/library")}>
           <img
           src={Logo}
           alt="ICC Logo"
           className="logo"
         />
-        </button>
-        ) : (
-          <img
-          src={Logo}
-          alt="ICC Logo"
-          className="logo"
-        />
-        )}
 
         <h2>ICC Research Management</h2>
 

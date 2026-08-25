@@ -10,6 +10,7 @@ export default function Searchcat({
   filteredResearches,
   handleViewResearch,
   handleViewPdfText,
+  getProgramImage,
 }) {
 
   const programs = [
@@ -23,14 +24,10 @@ export default function Searchcat({
 
   return (
 
-    <main className="hero">
-
-      <h1>
-        What research are you looking for?
-      </h1>
+    <div className="library-content">
 
       {/* ========================================
-          SEARCH
+          SEARCH BAR
       ======================================== */}
 
       <div className="search-box">
@@ -48,8 +45,9 @@ export default function Searchcat({
 
       </div>
 
+
       {/* ========================================
-          PROGRAMS
+          PROGRAM BUTTONS
       ======================================== */}
 
       <div className="categories">
@@ -63,48 +61,58 @@ export default function Searchcat({
               navigate(`/library/${program}`)
             }
           >
-
             {program}
-
           </button>
 
         ))}
 
       </div>
 
+
       {/* ========================================
-          RESEARCH CARDS
+          RESEARCH AREA
       ======================================== */}
 
       <div className="recommend-section">
 
         <div className="card-container">
 
+          {/* LOADING */}
+
           {loading && (
 
-            <p>
+            <div className="library-message">
               Loading research...
-            </p>
+            </div>
 
           )}
+
+
+          {/* ERROR */}
 
           {!loading && error && (
 
-            <p className="error-message">
+            <div className="library-message error-message">
               {error}
-            </p>
+            </div>
 
           )}
+
+
+          {/* NO RESULTS */}
 
           {!loading &&
             !error &&
             filteredResearches.length === 0 && (
 
-              <p>
+              <div className="library-message">
                 No research found.
-              </p>
+              </div>
 
             )}
+
+
+          {/* RESEARCH */}
 
           {!loading &&
             !error &&
@@ -116,14 +124,21 @@ export default function Searchcat({
                   key={research.id}
                 >
 
-                  <div className="card-image">
-                  </div>
+                  {/* PLACEHOLDER IMAGE */}
+
+                <img
+                className="card-image"
+                src={getProgramImage(research.program)}
+                alt={research.program || "Program"}
+                onClick={() =>
+                  handleViewPdfText(research.id)
+                }
+              />
+
+
+                  {/* CARD INFORMATION */}
 
                   <div className="card-info">
-
-                    {/* ========================================
-                        CLICKABLE TITLE
-                    ======================================== */}
 
                     <h3
                       className="research-title"
@@ -133,24 +148,21 @@ export default function Searchcat({
                         )
                       }
                     >
-
                       {research.title}
-
                     </h3>
+
 
                     <p>
                       {research.author ||
                         "Unknown Author"}
                     </p>
 
+
                     <small>
                       {research.year ||
                         "Unknown Year"}
                     </small>
 
-                    {/* ========================================
-                        VIEW SUMMARY
-                    ======================================== */}
 
                     <button
                       type="button"
@@ -161,9 +173,7 @@ export default function Searchcat({
                         )
                       }
                     >
-
                       View Summary
-
                     </button>
 
                   </div>
@@ -177,8 +187,7 @@ export default function Searchcat({
 
       </div>
 
-    </main>
+    </div>
 
   );
-
 }
