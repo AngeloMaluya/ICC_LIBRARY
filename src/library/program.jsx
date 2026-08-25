@@ -6,6 +6,9 @@ import SearchCat from "../components/searchcat/searchcat.jsx";
 
 export const Program = () => {
   const navigate = useNavigate();
+  
+  const API_URL = import.meta.env.VITE_API_URL;
+  console.log("API_URL:", API_URL);
 
   const [researches, setResearches] = useState([]);
   const [selectedResearch, setSelectedResearch] = useState(null);
