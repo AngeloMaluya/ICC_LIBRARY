@@ -9,10 +9,9 @@ export default function Searchcat({
   error,
   filteredResearches,
   handleViewResearch,
-  handleViewPdf,
-  selectedProgram,
-  setSelectedProgram,
-})  {
+  handleViewPdfText,
+}) {
+
   const programs = [
     "BSCS",
     "BSBA",
@@ -23,11 +22,16 @@ export default function Searchcat({
   ];
 
   return (
+
     <main className="hero">
 
       <h1>
         What research are you looking for?
       </h1>
+
+      {/* ========================================
+          SEARCH
+      ======================================== */}
 
       <div className="search-box">
 
@@ -44,101 +48,137 @@ export default function Searchcat({
 
       </div>
 
-     <div className="categories">
+      {/* ========================================
+          PROGRAMS
+      ======================================== */}
 
-  {programs.map((program) => (
-    <button
-      type="button"
-      key={program}
-      onClick={() => {
-        setSelectedProgram(program);
-      }}
-    >
-      {program}
-    </button>
-  ))}
+      <div className="categories">
 
-  <button
-    type="button"
-    onClick={() => {
-      setSelectedProgram("");
-    }}
-  >
-    All
-  </button>
+        {programs.map((program) => (
 
-</div>
+          <button
+            type="button"
+            key={program}
+            onClick={() =>
+              navigate(`/library/${program}`)
+            }
+          >
+
+            {program}
+
+          </button>
+
+        ))}
+
+      </div>
+
+      {/* ========================================
+          RESEARCH CARDS
+      ======================================== */}
 
       <div className="recommend-section">
 
         <div className="card-container">
 
           {loading && (
+
             <p>
               Loading research...
             </p>
+
           )}
 
           {!loading && error && (
+
             <p className="error-message">
               {error}
             </p>
+
           )}
 
           {!loading &&
             !error &&
             filteredResearches.length === 0 && (
+
               <p>
                 No research found.
               </p>
+
             )}
 
           {!loading &&
             !error &&
-            filteredResearches.map((research) => (
-              <div
-                className="research-card"
-                key={research.id}
-              >
+            filteredResearches.map(
+              (research) => (
 
-                <div className="card-image"></div>
+                <div
+                  className="research-card"
+                  key={research.id}
+                >
 
-                <div className="card-info">
+                  <div className="card-image">
+                  </div>
 
-                  <h3
-                    className="research-title"
-                    onClick={() => handleViewPdf(research.id)}
-                  >
-                    {research.title}
-                  </h3>
+                  <div className="card-info">
 
-                  <p>
-                    {research.author || "Unknown Author"}
-                  </p>
+                    {/* ========================================
+                        CLICKABLE TITLE
+                    ======================================== */}
 
-                  <small>
-                    {research.year || "Unknown Year"}
-                  </small>
+                    <h3
+                      className="research-title"
+                      onClick={() =>
+                        handleViewPdfText(
+                          research.id
+                        )
+                      }
+                    >
 
-                  <button
-                    type="button"
-                    className="view-research-btn"
-                    onClick={() =>
-                      handleViewResearch(research.id)
-                    }
-                  >
-                    View Research
-                  </button>
+                      {research.title}
+
+                    </h3>
+
+                    <p>
+                      {research.author ||
+                        "Unknown Author"}
+                    </p>
+
+                    <small>
+                      {research.year ||
+                        "Unknown Year"}
+                    </small>
+
+                    {/* ========================================
+                        VIEW SUMMARY
+                    ======================================== */}
+
+                    <button
+                      type="button"
+                      className="view-research-btn"
+                      onClick={() =>
+                        handleViewResearch(
+                          research.id
+                        )
+                      }
+                    >
+
+                      View Summary
+
+                    </button>
+
+                  </div>
 
                 </div>
 
-              </div>
-            ))}
+              )
+            )}
 
         </div>
 
       </div>
+
     </main>
-    
+
   );
+
 }
