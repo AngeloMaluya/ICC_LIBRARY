@@ -306,12 +306,13 @@ Read the uploaded research paper carefully and create a clear academic summary.
 
 Provide the following:
 
-1. Research Problem or Purpose
-2. Objectives
-3. Methodology
-4. Important Findings
-5. Conclusion
-6. Overall Summary
+1. topic
+2. problem
+3. objectives
+4. methodology 
+5. findings
+6. conclusion
+
 
 Do not invent information that is not present in the paper.
 
