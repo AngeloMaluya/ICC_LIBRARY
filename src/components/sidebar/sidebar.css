@@ -114,34 +114,3 @@
   transform: scale(0.97);
 }
 
-
-/* ========================================
-   TABLET
-======================================== */
-
-@media (max-width: 900px) {
-
-  .library-sidebar {
-    width: 135px;
-    min-width: 135px;
-  }
-
-  .brand-text strong,
-  .brand-text span {
-    font-size: 12px;
-  }
-
-  .sidebar-item {
-    font-size: 10px;
-    gap: 9px;
-  }
-
-}
-
-.logo-button {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-}

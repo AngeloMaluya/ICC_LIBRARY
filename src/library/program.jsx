@@ -454,30 +454,6 @@ export const Program = () => {
 
 
           {/* ========================================
-              SEARCH
-          ======================================== */}
-
-          <div className="search-box">
-
-            <span className="search-icon">
-              🔍
-            </span>
-
-            <input
-              type="text"
-              placeholder={`Search ${displayProgram} research...`}
-              value={searchTerm}
-              onChange={(event) =>
-                setSearchTerm(
-                  event.target.value
-                )
-              }
-            />
-
-          </div>
-
-
-          {/* ========================================
               PROGRAM BUTTONS
           ======================================== */}
 
