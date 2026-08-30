@@ -178,7 +178,7 @@ export const Login = () => {
             <span></span>
           </div>
 
-          <div>
+           <div className="google-login">
             <GoogleLogin
               onSuccess={handleGoogleLogin}
               onError={() => {
@@ -188,7 +188,7 @@ export const Login = () => {
               size="large"
               width="300"
             />
-          </div>
+         </div>
         </div>
 
       </div>

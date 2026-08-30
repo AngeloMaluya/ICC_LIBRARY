@@ -1,20 +1,3 @@
-/* ========================================
-   LOGIN PAGE
-   (global reset removed - see styles/reset.css.
-   The whole file had a second, unscoped copy of
-   label / input / input:focus / .signin /
-   .signin:hover sitting right below the
-   .login-form versions - identical properties,
-   just without the .login-form prefix. Since
-   every input/label/button here already lives
-   inside .login-form, the bare copies were pure
-   duplication and have been removed.
-   ".logo" renamed to ".login-logo" - it clashed
-   with the ".logo" class used by both the navbar
-   (heading.css) and the sidebar image. See
-   notes.md.)
-======================================== */
-
 .page {
   width: 100%;
   height: 100vh;
@@ -26,12 +9,19 @@
 
 .login-container {
   width: 900px;
-  height: 480px;
+  height: 540px;
+
   background: white;
+
   border: 2px solid #222;
   border-radius: 18px;
+
   display: flex;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.12);
+
+  overflow: hidden;
 }
 
 
@@ -148,29 +138,44 @@
 
 .right-panel {
   flex: 1;
-  padding: 40px;
+
+  padding: 25px 40px;
+
   display: flex;
   flex-direction: column;
+
   justify-content: center;
+  align-items: stretch;
+
+  overflow: hidden;
 }
 
 .login-logo {
-  margin-bottom: 10px;
+  width: 100%;
+
   display: flex;
+
   justify-content: center;
   align-items: center;
+
+  margin-bottom: 5px;
 }
 
 .login-logo img {
-  max-width: 100%;
-  height: auto;
-  width: auto;
-  max-height: 25vh;
+  width: 120px;
+  height: 120px;
+
+  object-fit: contain;
+
+  display: block;
 }
 
 .right-panel h1 {
   text-align: center;
-  margin: 20px 0;
+
+  margin: 8px 0 18px;
+
+  font-size: 28px;
 }
 
 .login-form {
@@ -181,7 +186,7 @@
 
 .login-form label {
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
 
 .login-form input {
@@ -252,4 +257,10 @@
   align-items: center;
   color: #4285F4;
   font-weight: bold;
+}
+
+.google-login {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
