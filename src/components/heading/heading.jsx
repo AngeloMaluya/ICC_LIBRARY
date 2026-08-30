@@ -1,6 +1,7 @@
 import "./heading.css";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/icon.png";
+import { logout } from "../../utils/auth.js";
 
 export default function Heading() {
   const navigate = useNavigate();
@@ -8,26 +9,18 @@ export default function Heading() {
   const user = localStorage.getItem("libraryUser");
   const isLoggedIn = !!user;
 
-  const handleLogout = () => {
-    localStorage.removeItem("libraryUser");
-    localStorage.removeItem("googleEmail");
-    localStorage.removeItem("googleName");
-    localStorage.removeItem("googlePicture");
-
-    navigate("/");
-  };
+  const handleLogout = () => logout(navigate);
 
   return (
     <header className="navbar">
       <div className="nav-left">
-          <img
+        <img
           src={Logo}
           alt="ICC Logo"
-          className="logo"
+          className="nav-logo"
         />
 
         <h2>ICC Research Management</h2>
-
       </div>
 
       <nav className="nav-links">

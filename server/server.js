@@ -28,10 +28,6 @@ const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-// ========================================
-// MIDDLEWARE
-// ========================================
-
 app.use(cors({
   origin: [
     "http://localhost:5173",
@@ -42,18 +38,13 @@ app.use(cors({
 
 app.use(express.json());
 
-// ========================================
-// ROUTES
-// ========================================
-
 app.use(
   "/api/research",
   researchRoutes
 );
 
-// ========================================
-// CHECK API KEY
-// ========================================
+/* CHECK API KEY */
+
 
 console.log(
   "GEMINI_API_KEY:",
@@ -62,17 +53,11 @@ console.log(
     : "NOT LOADED"
 );
 
-// ========================================
-// GEMINI
-// ========================================
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY
 });
 
-// ========================================
-// HOME
-// ========================================
 
 app.get("/", (req, res) => {
   res.json({
@@ -80,9 +65,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// ========================================
-// TEST GEMINI
-// ========================================
 
 app.get("/api/test-gemini", async (req, res) => {
 
@@ -199,9 +181,9 @@ app.get("/api/test-db", async (req, res) => {
 
 });
 
-// ========================================
-// CHECK GOOGLE USER ACCOUNT
-// ========================================
+
+/* CHECK GOOGLE USER ACCOUNT */
+
 
 app.get("/api/user/:email", async (req, res) => {
 
@@ -295,10 +277,6 @@ app.get("/api/user/:email", async (req, res) => {
   }
 
 });
-
-// ========================================
-// START SERVER
-// ========================================
 
 app.listen(PORT, () => {
 

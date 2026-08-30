@@ -14,10 +14,6 @@ const supabase = createClient(
   process.env.SUPABASE_SECRET_KEY
 );
 
-// ========================================
-// MULTER
-// ========================================
-
 // Store the uploaded PDF temporarily in memory.
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -41,9 +37,9 @@ const upload = multer({
   }
 });
 
-// ========================================
-// GET ALL RESEARCH
-// ========================================
+
+/* GET ALL RESEARCH */
+
 
 router.get("/", async (req, res) => {
 
@@ -102,9 +98,9 @@ router.get("/", async (req, res) => {
 
 });
 
-// ========================================
-// GET ONE RESEARCH
-// ========================================
+
+/* GET ONE RESEARCH */
+
 
 router.get("/:id", async (req, res) => {
 
@@ -171,10 +167,6 @@ router.get("/:id", async (req, res) => {
 
 });
 
-// ========================================
-// GEMINI
-// ========================================
-
 const ai = new GoogleGenAI({
 
   apiKey:
@@ -182,9 +174,7 @@ const ai = new GoogleGenAI({
 
 });
 
-// ========================================
-// UPLOAD PDF + SUMMARIZE
-// ========================================
+/* UPLOAD PDF + SUMMARIZE */
 
 router.post(
 
@@ -196,9 +186,7 @@ router.post(
 
     try {
 
-      // ========================================
-      // CHECK PDF
-      // ========================================
+      /* CHECK PDF */
 
       if (!req.file) {
 
@@ -223,10 +211,9 @@ router.post(
         req.file.size,
         "bytes"
       );
+    
+      /* EXTRACT TEXT FROM PDF */
 
-      // ========================================
-      // EXTRACT TEXT FROM PDF
-      // ========================================
 
       console.log(
         "Extracting PDF text..."
@@ -247,9 +234,9 @@ router.post(
         pdfText.length
       );
 
-      // ========================================
-      // GET FORM DATA
-      // ========================================
+
+      /* GET FORM DATA */
+
 
       const {
         title,
@@ -271,18 +258,17 @@ router.post(
 
       }
 
-      // ========================================
-      // CONVERT PDF TO BASE64
-      // ========================================
+      /* CONVERT PDF TO BASE64 */
+
 
       const pdfBase64 =
         req.file.buffer.toString(
           "base64"
         );
 
-      // ========================================
-      // SEND PDF TO GEMINI
-      // ========================================
+
+      /* SEND PDF TO GEMINI */
+
 
       console.log(
         "Sending PDF to Gemini..."
@@ -346,17 +332,13 @@ Keep the summary clear, accurate, and suitable for students.
         "Gemini summary received!"
       );
 
-      // ========================================
       // CREATE UNIQUE PDF FILE NAME
-      // ========================================
 
       const fileName =
         `${Date.now()}-${req.file.originalname}`
           .replace(/\s+/g, "-");
 
-      // ========================================
       // CHECK SUPABASE CONNECTION
-      // ========================================
 
       console.log(
         "SUPABASE URL:",
@@ -370,9 +352,7 @@ Keep the summary clear, accurate, and suitable for students.
           : "NOT LOADED"
       );
 
-      // ========================================
       // UPLOAD PDF TO SUPABASE STORAGE
-      // ========================================
 
       console.log(
         "Uploading PDF to Supabase Storage..."
@@ -420,9 +400,7 @@ Keep the summary clear, accurate, and suitable for students.
         "PDF uploaded to Supabase!"
       );
 
-      // ========================================
       // GET PUBLIC PDF URL
-      // ========================================
 
       const {
         data: publicUrlData
@@ -440,9 +418,7 @@ Keep the summary clear, accurate, and suitable for students.
         pdfUrl
       );
 
-      // ========================================
       // SAVE RESEARCH TO DATABASE
-      // ========================================
 
       console.log(
         "Saving research to Supabase database..."
@@ -510,9 +486,7 @@ Keep the summary clear, accurate, and suitable for students.
 
       }
 
-      // ========================================
       // SUCCESS LOGS
-      // ========================================
 
       console.log(
         "Research saved successfully!"
@@ -550,9 +524,7 @@ Keep the summary clear, accurate, and suitable for students.
         summary?.length
       );
 
-      // ========================================
       // RETURN EVERYTHING TO REACT
-      // ========================================
 
       return res.status(201).json({
 
@@ -592,9 +564,7 @@ Keep the summary clear, accurate, and suitable for students.
 
 );
 
-// ========================================
 // ERROR HANDLER
-// ========================================
 
 router.use(
 
@@ -605,9 +575,7 @@ router.use(
       error
     );
 
-    // ========================================
     // MULTER ERRORS
-    // ========================================
 
     if (
       error instanceof multer.MulterError
@@ -631,9 +599,7 @@ router.use(
 
     }
 
-    // ========================================
     // INVALID FILE TYPE
-    // ========================================
 
     if (
       error.message ===
@@ -651,9 +617,7 @@ router.use(
 
     }
 
-    // ========================================
     // GENERAL ERROR
-    // ========================================
 
     return res.status(500).json({
 

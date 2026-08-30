@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 
 import "./index.css";
+import "./styles/reset.css";
 
 import Landing from "./landing/landing";
 import Login from "./login/login";
@@ -10,7 +11,6 @@ import Program from "./library/program";
 
 import Profile from "./profile/profile";
 
-import ProtectedRoute from "./protectedroute.jsx";
 import GoogleProtectedRoute from "./googleprotectedroute.jsx";
 
 import Admin from "./admin/admin.jsx";
@@ -22,34 +22,16 @@ function App() {
   useEffect(() => {
 
     const handleKeyDown = (e) => {
-
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        e.key.toLowerCase() === "p"
-      ) {
-
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
         e.preventDefault();
-
-        alert(
-          "Printing is disabled on this website."
-        );
-
+        alert("Printing is disabled on this website.");
       }
-
     };
 
-    window.addEventListener(
-      "keydown",
-      handleKeyDown
-    );
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-
-      window.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
-
+      window.removeEventListener("keydown", handleKeyDown);
     };
 
   }, []);
@@ -88,7 +70,7 @@ function App() {
           path="/library"
           element={
             <GoogleProtectedRoute>
-            <Library />
+              <Library />
             </GoogleProtectedRoute>
           }
         />
@@ -97,7 +79,7 @@ function App() {
           path="/library/:program"
           element={
             <GoogleProtectedRoute>
-            <Program />
+              <Program />
             </GoogleProtectedRoute>
           }
         />

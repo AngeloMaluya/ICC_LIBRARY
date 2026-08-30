@@ -1,19 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./admin-upload.css";
+import { logout } from "../utils/auth.js";
 
-const admin = () => {
-  
+const Admin = () => {
+
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("libraryUser");
-    localStorage.removeItem("googleEmail");
-    localStorage.removeItem("googleName");
-    localStorage.removeItem("googlePicture");
-
-    navigate("/");
-  };
+  const handleLogout = () => logout(navigate);
 
   const [form, setForm] = useState({
     title: "",
@@ -75,44 +69,29 @@ const admin = () => {
       formData.append("year", form.year);
       formData.append("program", form.program);
 
-     const response = await fetch(
-  `${API_URL}/api/research/summarize`,
-  {
-    method: "POST",
-    body: formData,
-  }
-);
+      const response = await fetch(`${API_URL}/api/research/summarize`, {
+        method: "POST",
+        body: formData,
+      });
 
-console.log("STATUS:", response.status);
-console.log("OK:", response.ok);
+      const responseText = await response.text();
 
-const responseText = await response.text();
+      let data;
 
-console.log("RAW RESPONSE:", responseText);
-
-let data;
-
-try {
-  data = JSON.parse(responseText);
-} catch (error) {
-  console.error("Response was not JSON:", responseText);
-
-  throw new Error(
-    `Backend returned invalid/empty response. Status: ${response.status}`
-  );
-}
-
-console.log("DATA:", data);
-
-      if (!response.ok) {
+      try {
+        data = JSON.parse(responseText);
+      } catch (error) {
+        console.error("Response was not JSON:", responseText);
         throw new Error(
-          data.message || "Failed to upload research."
+          `Backend returned invalid/empty response. Status: ${response.status}`
         );
       }
 
-      setMessage(
-        "Research uploaded successfully and AI summary generated!"
-      );
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to upload research.");
+      }
+
+      setMessage("Research uploaded successfully and AI summary generated!");
 
       setForm({
         title: "",
@@ -229,7 +208,7 @@ console.log("DATA:", data);
                 Bachelor of Science in Tourism Management
               </option>
 
-               <option value="BSCriM">
+              <option value="BSCriM">
                 Bachelor of Science in Criminology
               </option>
 
@@ -269,24 +248,22 @@ console.log("DATA:", data);
 
           </button>
 
-          
-
           {/* MESSAGE */}
           {message && (
             <p className="message">
               {message}
             </p>
           )}
-          
 
         </form>
-          <button
-        type="button"
-        className="logout-btn"
-        onClick={handleLogout}
-      >
-        Log Out
-      </button>
+
+        <button
+          type="button"
+          className="logout-btn"
+          onClick={handleLogout}
+        >
+          Log Out
+        </button>
 
       </div>
 
@@ -294,4 +271,4 @@ console.log("DATA:", data);
   );
 };
 
-export default admin;
+export default Admin;

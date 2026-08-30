@@ -1,171 +1,169 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
+/* ========================================
+   PROFILE / CREATE ACCOUNT PAGE
+   (global reset removed - see styles/reset.css.
+   Background moved from a global `body` rule
+   onto .register-page itself, so it can't leak
+   onto other pages. See notes.md.)
+======================================== */
+
+.register-page {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  background: #f5f5f5;
 }
 
-body{
-    background:#f5f5f5;
-}
+.register-card {
 
-.register-page{
-    width:100%;
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:30px;
-}
+  width: 950px;
+  background: white;
 
-.register-card{
+  border: 2px solid #222;
+  border-radius: 20px;
 
-    width:950px;
-    background:white;
+  display: flex;
+  padding: 40px;
 
-    border:2px solid #222;
-    border-radius:20px;
-
-    display:flex;
-    padding:40px;
-
-    box-shadow:0 5px 12px rgba(0,0,0,.2);
-
-}
-
-.left-side{
-
-    flex:1;
-
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-
-    padding-right:40px;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, .2);
 
 }
 
-.left-side h1{
+.left-side {
 
-    color:#0b4b8f;
-    font-size:48px;
-    margin-bottom:20px;
+  flex: 1;
 
-}
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
-.left-side img{
-
-    width:280px;
-    margin-bottom:20px;
+  padding-right: 40px;
 
 }
 
-.left-side h2{
+.left-side h1 {
 
-    color:#f0b400;
-    font-size:34px;
-    margin-bottom:10px;
-
-}
-
-.left-side p{
-
-    text-align:center;
-    color:#555;
-    line-height:1.6;
+  color: #0b4b8f;
+  font-size: 48px;
+  margin-bottom: 20px;
 
 }
 
-.right-side{
+.left-side img {
 
-    flex:1;
-
-    display:flex;
-    flex-direction:column;
+  width: 280px;
+  margin-bottom: 20px;
 
 }
 
-.right-side label{
+.left-side h2 {
 
-    margin-top:10px;
-    margin-bottom:5px;
-
-    font-weight:bold;
-
-}
-
-.right-side input{
-
-    height:48px;
-
-    border-radius:12px;
-
-    border:1px solid #999;
-
-    padding:0 15px;
-
-    font-size:16px;
-
-    margin-bottom:8px;
+  color: #f0b400;
+  font-size: 34px;
+  margin-bottom: 10px;
 
 }
 
-.right-side input:focus{
+.left-side p {
 
-    outline:none;
-
-    border:2px solid #0b4b8f;
-
-}
-
-.right-side button{
-
-    margin-top:20px;
-
-    height:50px;
-
-    border:none;
-
-    border-radius:12px;
-
-    background:#0b4b8f;
-
-    color:white;
-
-    font-size:18px;
-
-    cursor:pointer;
-
-    transition:.3s;
+  text-align: center;
+  color: #555;
+  line-height: 1.6;
 
 }
 
-.right-side button:hover{
+.right-side {
 
-    background:#08386b;
+  flex: 1;
 
-}
-
-@media(max-width:900px){
-
-.register-card{
-
-    flex-direction:column;
+  display: flex;
+  flex-direction: column;
 
 }
 
-.left-side{
+.right-side label {
 
-    padding-right:0;
-    margin-bottom:40px;
+  margin-top: 10px;
+  margin-bottom: 5px;
+
+  font-weight: bold;
+
+}
+
+.right-side input {
+
+  height: 48px;
+
+  border-radius: 12px;
+
+  border: 1px solid #999;
+
+  padding: 0 15px;
+
+  font-size: 16px;
+
+  margin-bottom: 8px;
 
 }
 
-.left-side img{
+.right-side input:focus {
 
-    width:220px;
+  outline: none;
+
+  border: 2px solid #0b4b8f;
 
 }
+
+.right-side button {
+
+  margin-top: 20px;
+
+  height: 50px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background: #0b4b8f;
+
+  color: white;
+
+  font-size: 18px;
+
+  cursor: pointer;
+
+  transition: .3s;
+
+}
+
+.right-side button:hover {
+
+  background: #08386b;
+
+}
+
+@media(max-width:900px) {
+
+  .register-card {
+
+    flex-direction: column;
+
+  }
+
+  .left-side {
+
+    padding-right: 0;
+    margin-bottom: 40px;
+
+  }
+
+  .left-side img {
+
+    width: 220px;
+
+  }
 
 }

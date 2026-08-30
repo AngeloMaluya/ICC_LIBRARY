@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./profile.css";
 import Image from "../assets/icon.png";
+import { clearGoogleTempUser } from "../utils/auth.js";
 
 export const Profile = () => {
 
@@ -13,8 +14,7 @@ export const Profile = () => {
     document.title = "Create Account";
   }, []);
 
-  const googleEmail =
-    localStorage.getItem("googleEmail") || "";
+  const googleEmail = localStorage.getItem("googleEmail") || "";
 
   const [form, setForm] = useState({
     firstName: "",
@@ -34,65 +34,45 @@ export const Profile = () => {
     });
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const response = await fetch(
-      `${API_URL}/api/register`,
-      {
+    try {
+      const response = await fetch(`${API_URL}/api/register`, {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message);
+        return;
       }
-    );
 
-    const data = await response.json();
+      alert("Account Created!");
 
-    if (!response.ok) {
-      alert(data.message);
-      return;
+      // Save the newly created user
+      localStorage.setItem("libraryUser", JSON.stringify(data.user));
+
+      // Remove temporary Google information
+      clearGoogleTempUser();
+
+      // Go to library
+      navigate("/library");
+
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert("Unable to connect to the server.");
+    } finally {
+      setLoading(false);
     }
-
-    alert("Account Created!");
-
-    // Save the newly created user
-    localStorage.setItem(
-      "libraryUser",
-      JSON.stringify(data.user)
-    );
-
-    // Remove temporary Google information
-    localStorage.removeItem("googleEmail");
-    localStorage.removeItem("googleName");
-    localStorage.removeItem("googlePicture");
-
-    // Go to library
-    navigate("/library");
-
-  } catch (error) {
-
-    console.error(
-      "Registration error:",
-      error
-    );
-
-    alert(
-      "Unable to connect to the server."
-    );
-
-  } finally {
-
-    setLoading(false);
-
-  }
-};
+  };
 
   return (
     <div className="register-page">
@@ -161,16 +141,16 @@ const handleSubmit = async (e) => {
           <label>Year</label>
 
           <input
-          type="number"
-          name="year"
-          min="1"
-          max="4"
-          step="1"
-          placeholder="Enter year"
-          value={form.year}
-          onChange={handleChange}
-          required
-        />
+            type="number"
+            name="year"
+            min="1"
+            max="4"
+            step="1"
+            placeholder="Enter year"
+            value={form.year}
+            onChange={handleChange}
+            required
+          />
 
           <label>Email</label>
 
@@ -201,9 +181,7 @@ const handleSubmit = async (e) => {
             type="submit"
             disabled={loading}
           >
-            {loading
-              ? "Creating Account..."
-              : "Create Account"}
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
 
         </form>

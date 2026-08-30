@@ -1,20 +1,19 @@
-
 import { useEffect } from "react";
 import "./landing.css";
-import Header from"../components/heading/heading.jsx"  
+import Header from "../components/heading/heading.jsx";
 
 export const Landing = () => {
 
-   useEffect(() => {
+  useEffect(() => {
     document.title = "ICC LIBRARY";
   }, []);
 
   return (
-  
+
     <div className="home">
 
       <Header/>
-    
+
       <section className="hero">
 
         <h1>
@@ -32,7 +31,7 @@ export const Landing = () => {
         <h2>WELCOME!</h2>
 
       </section>
-   
+
       <section
         className="services"
         id="services"
@@ -88,7 +87,7 @@ export const Landing = () => {
         </p>
 
       </section>
-    
+
       <section
         className="contact"
         id="contact"
