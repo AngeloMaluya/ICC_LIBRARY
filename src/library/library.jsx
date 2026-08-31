@@ -34,17 +34,11 @@ export const Library = () => {
     closePdfPopup,
   } = useResearchPopups(API_URL);
 
-  // ========================================
-  // PAGE TITLE
-  // ========================================
-
   useEffect(() => {
     document.title = "ICC Library";
   }, []);
 
-  // ========================================
   // LOAD ALL RESEARCH
-  // ========================================
 
   useEffect(() => {
     const fetchResearches = async () => {
@@ -78,9 +72,7 @@ export const Library = () => {
     fetchResearches();
   }, [API_URL]);
 
-  // ========================================
   // SEARCH
-  // ========================================
 
   const filteredResearches = researches.filter((research) => {
     const search = searchTerm.toLowerCase();
@@ -94,9 +86,7 @@ export const Library = () => {
     );
   });
 
-  // ========================================
   // RENDER
-  // ========================================
 
   return (
     <div className="library-layout">

@@ -35,9 +35,7 @@ export const Program = () => {
     closePdfPopup,
   } = useResearchPopups(API_URL);
 
-  // ========================================
   // PROGRAM NAME
-  // ========================================
 
   const currentProgram = program || "";
 
@@ -46,17 +44,13 @@ export const Program = () => {
       ? "BSCrim"
       : currentProgram.toUpperCase();
 
-  // ========================================
   // PAGE TITLE
-  // ========================================
 
   useEffect(() => {
     document.title = `${displayProgram} - ICC Library`;
   }, [displayProgram]);
 
-  // ========================================
   // LOAD RESEARCH
-  // ========================================
 
   useEffect(() => {
     const fetchResearches = async () => {
@@ -90,10 +84,9 @@ export const Program = () => {
     fetchResearches();
   }, [API_URL, currentProgram]);
 
-  // ========================================
-  // FILTER BY PROGRAM, THEN BY SEARCH TERM
-  // ========================================
 
+  // FILTER BY PROGRAM, THEN BY SEARCH TERM
+  
   const programResearches = researches.filter((research) => {
     if (!currentProgram) return true;
 
@@ -116,9 +109,7 @@ export const Program = () => {
     );
   });
 
-  // ========================================
   // RENDER
-  // ========================================
 
   return (
     <div className="library-layout">
