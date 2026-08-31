@@ -1,7 +1,3 @@
-// Placeholder cover image per academic program.
-// This exact object + function was duplicated word-for-word
-// in library.jsx and program.jsx.
-
 const PROGRAM_IMAGES = {
   BSCS: "/programs_placeholders/BSCS.png",
   BSBA: "/programs_placeholders/BSBA.png",

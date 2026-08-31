@@ -1,11 +1,3 @@
-/* ========================================
-   PROFILE / CREATE ACCOUNT PAGE
-   (global reset removed - see styles/reset.css.
-   Background moved from a global `body` rule
-   onto .register-page itself, so it can't leak
-   onto other pages. See notes.md.)
-======================================== */
-
 .register-page {
   width: 100%;
   min-height: 100vh;
