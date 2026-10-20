@@ -5,15 +5,28 @@ body,
     padding: 0;
     width: 100%;
     min-height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
-body {
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+#body {
     background: #ffffff;
-     font-family: "Urbanist", sans-serif;
+    font-family: "Urbanist", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+
+    overflow-x: hidden;
 }
+

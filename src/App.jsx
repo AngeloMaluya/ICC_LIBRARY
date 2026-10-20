@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 
 import "./index.css";
-import "./styles/reset.css";
 
 import Landing from "./landing/landing";
 import Login from "./login/login";
