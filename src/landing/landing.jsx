@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import "./landing.css";
 import Header from "../components/heading/heading.jsx";
 import landingImage from "../assets/img_repo/landing.jpg";
+import Icon from "../assets/icon.png";
 
 export const Landing = () => {
   useEffect(() => {
@@ -13,7 +14,7 @@ export const Landing = () => {
       <Header />
 
       <main className="landing-content">
-        <section className="hero">
+        <section className="header">
           <h1>
            <span>ICC DIGITAL LIBRARY</span>
           </h1>
@@ -24,11 +25,19 @@ export const Landing = () => {
         </section>
 
         <section className="welcome-card">
-          <h2>WELCOME!</h2>
-
-          <img
-          src={landingImage}
+          <img src={landingImage}
         />
+        </section>
+
+        <section className="footer">
+         <img src={Icon} />
+          <h1>
+            <span>The School Digital Library provides a centralized platform for accessing and viewing <br/> 
+            research and thesis works produced by our academic community. <br/>
+            © 2026 Immaculada Concepcion College</span>
+          </h1>
+
+
         </section>
       </main>
     </div>

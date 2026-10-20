@@ -3,12 +3,12 @@
   box-sizing: border-box;
 }
 
-.hero {
+.header {
   text-align: center;
   margin-top: 20px;
 }
 
-.hero h1 {
+.header h1 {
   margin: 0;
   line-height: 1.15;
   font-weight: 800;
@@ -16,16 +16,50 @@
   color: #000000;
 }
 
-.hero h1 span {
+.header h1 span {
   color: #0a4b92;
   font-size: 56px;
 }
 
-.hero p {
+.header p {
   margin: 5px 0 0;
   color: #8a8a8a;
   line-height: 1.4;
 }
+
+.footer{
+  display: flex;
+  background-color: #0a4b92;
+  color: #ffffff;
+  box-sizing: border-box;
+  padding: 11px;
+  margin-top: 7.65%;
+}
+
+.footer h1{
+  margin-top: 10px;
+  margin-left: 15px;
+  letter-spacing: -0.8px;
+  color: #fff9f9;
+}
+
+.footer h1 span{
+  display:block;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 100;
+  line-height: 1.4;
+}
+
+.footer img{
+  margin-top: 5px;
+  margin-left: 25px;
+  width: 3%;      
+  height: 3%;      
+  object-fit: cover;
+  border-radius: 0;
+}
+
 .welcome-card {
   width: fit-content;
   margin: 18px auto 24px;
@@ -39,20 +73,21 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
-.welcome-card h2 {
-  margin: 0 0 6px;
-
-  font-size: 15px;
-  line-height: 1.2;
-  font-weight: 800;
-  color: #000000;
+.welcome-card {
+  width: fit-content;
+  margin: 18px auto 24px;
+  padding: 12px 18px 18px;
+  box-sizing: border-box;
+  background: #d9d9d9;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .welcome-card img {
   display: block;
-
-  width: 500px;
-  height: auto;
+  width: 800px;      
+  height: 450px;      
 
   margin: 0 auto;
   object-fit: cover;
