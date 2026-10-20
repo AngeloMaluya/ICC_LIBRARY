@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
 import Image from "../assets/icon.png";
+import logImage from "../assets/img_repo/login.png";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { saveGoogleTempUser } from "../utils/auth.js";
@@ -124,21 +125,10 @@ export const Login = () => {
         {/* LEFT PANEL */}
         <div className="left-panel">
           <div className="illustration">
-            <div className="window"></div>
-
-            <div className="person">
-              <div className="head"></div>
-              <div className="body"></div>
-              <div className="laptop"></div>
-            </div>
-
-            <div className="desk"></div>
-
-            <div className="books">
-              <div className="book b1"></div>
-              <div className="book b2"></div>
-              <div className="book b3"></div>
-            </div>
+           
+            <img src={logImage} alt="Illustration" />
+            
+            
           </div>
 
           <h2>DISCOVER KNOWLEDGE</h2>

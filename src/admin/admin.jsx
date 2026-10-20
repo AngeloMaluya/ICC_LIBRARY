@@ -1,10 +1,10 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./admin-upload.css";
 import { logout } from "../utils/auth.js";
 
 const Admin = () => {
-
   const navigate = useNavigate();
 
   const handleLogout = () => logout(navigate);
@@ -23,20 +23,29 @@ const Admin = () => {
   const API_URL = import.meta.env.VITE_API_URL;
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    setForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
 
-    if (!file) return;
+    if (!file) {
+      setPdf(null);
+      return;
+    }
 
-    if (file.type !== "application/pdf") {
+    if (
+      file.type !== "application/pdf" &&
+      !file.name.toLowerCase().endsWith(".pdf")
+    ) {
       setMessage("Please select a PDF file.");
       setPdf(null);
+      e.target.value = "";
       return;
     }
 
@@ -47,13 +56,30 @@ const Admin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!API_URL) {
+      setMessage(
+        "Backend URL is missing. Check your VITE_API_URL environment variable."
+      );
+      return;
+    }
+
     if (!pdf) {
       setMessage("Please select a PDF.");
       return;
     }
 
-    if (!form.title || !form.author || !form.year || !form.program) {
+    if (
+      !form.title.trim() ||
+      !form.author.trim() ||
+      !form.year ||
+      !form.program
+    ) {
       setMessage("Please complete all fields.");
+      return;
+    }
+
+    if (Number(form.year) < 2000 || Number(form.year) > 2100) {
+      setMessage("Please enter a valid year between 2000 and 2100.");
       return;
     }
 
@@ -64,34 +90,60 @@ const Admin = () => {
       const formData = new FormData();
 
       formData.append("pdf", pdf);
-      formData.append("title", form.title);
-      formData.append("author", form.author);
+      formData.append("title", form.title.trim());
+      formData.append("author", form.author.trim());
       formData.append("year", form.year);
       formData.append("program", form.program);
 
-      const response = await fetch(`${API_URL}/api/research/summarize`, {
-        method: "POST",
-        body: formData,
-      });
+      console.log("Starting research upload...");
+      console.log("Backend URL:", API_URL);
+      console.log("PDF filename:", pdf.name);
+      console.log("PDF size:", `${(pdf.size / 1024 / 1024).toFixed(2)} MB`);
+
+      const response = await fetch(
+        `${API_URL.replace(/\/+$/, "")}/api/research/summarize`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const responseText = await response.text();
+
+      console.log("Upload HTTP status:", response.status);
+      console.log("Upload response:", responseText);
 
       let data;
 
       try {
         data = JSON.parse(responseText);
-      } catch (error) {
-        console.error("Response was not JSON:", responseText);
+      } catch {
+        if (response.status === 502) {
+          throw new Error(
+            "The backend returned HTTP 502 (Bad Gateway). " +
+              "The server or an upstream service may have failed while processing the PDF. " +
+              "Check the Render logs for the upload request."
+          );
+        }
+
         throw new Error(
-          `Backend returned invalid/empty response. Status: ${response.status}`
+          `The backend returned a non-JSON response (HTTP ${response.status}). ` +
+            `Response: ${responseText.slice(0, 300) || "Empty response"}`
         );
       }
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to upload research.");
+        throw new Error(
+          data.message ||
+            data.error ||
+            `Research upload failed (HTTP ${response.status}).`
+        );
       }
 
-      setMessage("Research uploaded successfully and AI summary generated!");
+      setMessage(
+        data.message ||
+          "Research uploaded successfully and AI summary generated!"
+      );
 
       setForm({
         title: "",
@@ -102,22 +154,30 @@ const Admin = () => {
 
       setPdf(null);
 
-      document.getElementById("pdf").value = "";
-
+      const fileInput = document.getElementById("pdf");
+      if (fileInput) {
+        fileInput.value = "";
+      }
     } catch (error) {
-      console.error(error);
-      setMessage(error.message);
+      console.error("RESEARCH UPLOAD ERROR:", error);
+
+      if (error instanceof TypeError && error.message === "Failed to fetch") {
+        setMessage(
+          "Unable to reach the backend. Check the backend URL, CORS settings, and Render service status."
+        );
+      } else {
+        setMessage(
+          error.message || "An unexpected error occurred during upload."
+        );
+      }
     } finally {
       setLoading(false);
     }
   };
 
-
   return (
     <div className="admin-upload-page">
-
       <div className="upload-container">
-
         <h1>Upload Research</h1>
 
         <p className="subtitle">
@@ -125,43 +185,36 @@ const Admin = () => {
         </p>
 
         <form onSubmit={handleSubmit}>
-
-          {/* TITLE */}
           <div className="form-group">
-
-            <label>Research Title</label>
-
+            <label htmlFor="title">Research Title</label>
             <input
+              id="title"
               type="text"
               name="title"
               value={form.title}
               onChange={handleChange}
               placeholder="Enter research title"
+              required
             />
-
           </div>
 
-          {/* AUTHOR */}
           <div className="form-group">
-
-            <label>Author</label>
-
+            <label htmlFor="author">Author</label>
             <input
+              id="author"
               type="text"
               name="author"
               value={form.author}
               onChange={handleChange}
               placeholder="Enter author name"
+              required
             />
-
           </div>
 
-          {/* YEAR */}
           <div className="form-group">
-
-            <label>Year</label>
-
+            <label htmlFor="year">Year</label>
             <input
+              id="year"
               type="number"
               name="year"
               value={form.year}
@@ -169,104 +222,85 @@ const Admin = () => {
               placeholder="2026"
               min="2000"
               max="2100"
+              required
             />
-
           </div>
 
-          {/* PROGRAM */}
           <div className="form-group">
-
-            <label>Program</label>
-
+            <label htmlFor="program">Program</label>
             <select
+              id="program"
               name="program"
               value={form.program}
               onChange={handleChange}
+              required
             >
-
-              <option value="">
-                Select Program
-              </option>
-
+              <option value="">Select Program</option>
               <option value="BSCS">
                 Bachelor of Science in Computer Science
               </option>
-
               <option value="BSBA">
                 Bachelor of Science in Business Administration
               </option>
-
               <option value="BSED">
                 Bachelor of Secondary Education
               </option>
-
               <option value="BEED">
                 Bachelor of Elementary Education
               </option>
-
               <option value="BSTM">
                 Bachelor of Science in Tourism Management
               </option>
-
               <option value="BSCriM">
                 Bachelor of Science in Criminology
               </option>
-
             </select>
-
           </div>
 
-          {/* PDF */}
           <div className="form-group">
-
-            <label>Research PDF</label>
-
+            <label htmlFor="pdf">Research PDF</label>
             <input
               id="pdf"
               type="file"
               accept=".pdf,application/pdf"
               onChange={handleFileChange}
+              required
             />
 
             {pdf && (
               <p className="file-name">
-                Selected: {pdf.name}
+                Selected: {pdf.name} (
+                {(pdf.size / 1024 / 1024).toFixed(2)} MB)
               </p>
             )}
-
           </div>
 
-          {/* BUTTON */}
-          <button
-            type="submit"
-            disabled={loading}
-          >
-
+          <button type="submit" disabled={loading}>
             {loading
               ? "Uploading & Generating Summary..."
               : "Upload Research"}
-
           </button>
 
-          {/* MESSAGE */}
           {message && (
-            <p className="message">
+            <p
+              className="message"
+              role="status"
+              aria-live="polite"
+            >
               {message}
             </p>
           )}
-
         </form>
 
         <button
           type="button"
           className="logout-btn"
           onClick={handleLogout}
+          disabled={loading}
         >
           Log Out
         </button>
-
       </div>
-
     </div>
   );
 };

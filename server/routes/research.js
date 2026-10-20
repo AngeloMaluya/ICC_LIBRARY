@@ -215,24 +215,39 @@ router.post(
       /* EXTRACT TEXT FROM PDF */
 
 
-      console.log(
-        "Extracting PDF text..."
-      );
+      
+console.log("Extracting PDF text...");
+console.log("PDF buffer size:", req.file.buffer.length);
 
-     const parser = new PDFParse({
-        data: req.file.buffer
-      });
+const parser = new PDFParse({
+  data: req.file.buffer,
+});
 
-      const result = await parser.getText();
+let pdfText = "";
 
-      const pdfText = result.text;
+try {
+  console.log("Starting parser.getText()...");
 
-      await parser.destroy();
+  const result = await parser.getText();
 
-      console.log(
-        "Extracted PDF text length:",
-        pdfText.length
-      );
+  pdfText = result.text || "";
+
+  console.log("PDF extraction completed.");
+  console.log("Extracted PDF text length:", pdfText.length);
+
+  if (!pdfText.trim()) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "No readable text was extracted. The PDF may be scanned or image-based.",
+    });
+  }
+} finally {
+  await parser.destroy();
+}
+
+console.log("Continuing to Gemini summarization...");
+
 
 
       /* GET FORM DATA */
