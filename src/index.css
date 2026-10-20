@@ -16,9 +16,9 @@ body,
     box-sizing: border-box;
 }
 
-#body {
+body {
     background: #ffffff;
-    font-family: "Urbanist", sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
