@@ -105,7 +105,7 @@ export const Login = () => {
         saveGoogleTempUser(user);
 
         // Go to Create Account
-        navigate("/profile");
+        navigate("/create");
         return;
       }
 
@@ -127,7 +127,6 @@ export const Login = () => {
           <div className="illustration">
            
             <img src={logImage} alt="Illustration" />
-            
             
           </div>
 
@@ -167,6 +166,14 @@ export const Login = () => {
               placeholder="Password"
               required
             />
+
+
+            <p>
+              <input
+          type="checkbox"
+            />
+              By checking “I agree,” you confirm that you have read, understood, and agree to follow these Terms and Conditions.
+            </p>
 
             <button
               type="submit"

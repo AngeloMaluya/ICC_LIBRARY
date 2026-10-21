@@ -28,8 +28,10 @@ export const Landing = () => {
           <img src={landingImage}
         />
         </section>
+      </main>
 
-        <section className="footer">
+      
+      <section className="footer">
          <img src={Icon} />
           <h1>
             <span>The School Digital Library provides a centralized platform for accessing and viewing <br/> 
@@ -39,7 +41,7 @@ export const Landing = () => {
 
 
         </section>
-      </main>
+
     </div>
   );
 };

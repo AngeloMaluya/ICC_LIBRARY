@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./profile.css";
+import "./create.css";
 import Image from "../assets/icon.png";
 import { clearGoogleTempUser } from "../utils/auth.js";
 

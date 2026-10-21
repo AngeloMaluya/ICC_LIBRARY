@@ -1,6 +1,24 @@
+.home {
+  width: 100vw;
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+}
+
 .landing-content {
   width: 100%;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
   box-sizing: border-box;
+
+  background-image: url("../assets/img_repo/bg.png");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
 }
 
 .header {
@@ -11,7 +29,7 @@
 .header h1 {
   margin: 0;
   line-height: 1.15;
-  font-weight: 800;
+  font-weight: 400;
   letter-spacing: -0.8px;
   color: #000000;
 }
@@ -19,6 +37,7 @@
 .header h1 span {
   color: #0a4b92;
   font-size: 56px;
+  font-weight: 800;
 }
 
 .header p {
@@ -31,12 +50,10 @@
   display: flex;
   background-color: #0D4B8E;
   box-sizing: border-box;
-  padding: 1.5px;
-  margin-top: 7.25%;
 }
 
 .footer h1{
-  margin-top: 17px;
+  margin-top: 20px;
   margin-left: 15px;
   color: #fff9f9;
 }
@@ -44,7 +61,7 @@
 .footer h1 span{
   display:block;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 100;
   line-height: 1.4;
   letter-spacing: 1px;
@@ -57,19 +74,6 @@
   height: 2.5%;      
   object-fit: cover;
   border-radius: 0;
-}
-
-.welcome-card {
-  width: fit-content;
-  margin: 18px auto 24px;
-  padding: 12px 20px 20px;
-
-  box-sizing: border-box;
-  background: #d9d9d9;
-  border-radius: 8px;
-
-  text-align: center;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .welcome-card {

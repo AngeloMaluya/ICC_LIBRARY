@@ -4,7 +4,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f3f3f3;
+  background-image: url("../assets/img_repo/bg.png");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
 }
 
 .login-container {
@@ -32,6 +35,7 @@
   justify-content: center;
   align-items: center;
   padding: 30px;
+  margin-top: 75px;
 }
 
 .illustration {
@@ -55,7 +59,7 @@
 
 .left-panel p {
   text-align: center;
-  margin-top: 10px;
+  margin-top: -10px;
   color: #666;
   font-size: 14px;
 }
@@ -83,8 +87,6 @@
 
   justify-content: center;
   align-items: center;
-
-  margin-bottom: 5px;
 }
 
 .login-logo img {
@@ -108,6 +110,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
+  margin-top: -10px;
 }
 
 .login-form label {
@@ -139,6 +142,7 @@
   border-radius: 10px;
   cursor: pointer;
   font-size: 16px;
+  margin-top: -10px;
 }
 
 .login-form .signin:hover {
@@ -148,7 +152,7 @@
 .divider {
   display: flex;
   align-items: center;
-  margin: 20px 0;
+  margin: 15px 0;
 }
 
 .divider span {
@@ -190,3 +194,16 @@
   display: flex;
   justify-content: center;
 }
+
+.right-panel p {
+  display: flex;
+  margin-top: -10px;
+  color: #666;
+  font-size: 10px;
+}
+
+.right-panel p input[type="checkbox"] {
+  height: 15px;
+  width: 15px;
+  margin-top: 5px;
+} 

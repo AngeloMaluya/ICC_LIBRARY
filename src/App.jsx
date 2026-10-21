@@ -8,7 +8,8 @@ import Login from "./login/login";
 import Library from "./library/library";
 import Program from "./library/program";
 
-import Profile from "./profile/profile";
+import Create from "./create/create";
+import Profile from "./components/profile/profile.jsx";
 
 import GoogleProtectedRoute from "./googleprotectedroute.jsx";
 
@@ -57,10 +58,10 @@ function App() {
         />
 
         <Route
-          path="/profile"
+          path="/Create"
           element={
             <GoogleProtectedRoute>
-              <Profile />
+              <Create />
             </GoogleProtectedRoute>
           }
         />
@@ -76,6 +77,15 @@ function App() {
 
         <Route
           path="/library/:program"
+          element={
+            <GoogleProtectedRoute>
+              <Program />
+            </GoogleProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/components/profile"
           element={
             <GoogleProtectedRoute>
               <Program />
