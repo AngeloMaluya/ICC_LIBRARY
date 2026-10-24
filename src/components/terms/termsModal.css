@@ -29,6 +29,10 @@
   box-sizing: border-box;
 }
 
+.terms-content {
+  text-align: justify;
+}
+
 .terms-content h3 {
   margin: 0 0 14px;
 
