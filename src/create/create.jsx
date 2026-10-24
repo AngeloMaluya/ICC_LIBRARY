@@ -59,10 +59,7 @@ export const Profile = () => {
 
       // Save the newly created user
       localStorage.setItem("libraryUser", JSON.stringify(data.user));
-
-      // Remove temporary Google information
-      clearGoogleTempUser();
-
+      
       // Go to library
       navigate("/library");
 

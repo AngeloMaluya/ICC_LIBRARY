@@ -8,7 +8,6 @@ import { jwtDecode } from "jwt-decode";
 import { saveGoogleTempUser } from "../utils/auth.js";
 import TermsModal from "../components/terms/TermsModal.jsx";
 
-
 export const Login = () => {
   const navigate = useNavigate();
 
