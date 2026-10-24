@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
 import Image from "../assets/icon.png";
@@ -6,6 +6,8 @@ import logImage from "../assets/img_repo/login.png";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { saveGoogleTempUser } from "../utils/auth.js";
+import TermsModal from "../components/terms/TermsModal.jsx";
+
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -16,18 +18,21 @@ export const Login = () => {
     document.title = "Login";
   }, []);
 
+  const [showTerms, setShowTerms] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
   const handleLogIn = async (e) => {
     e.preventDefault();
 
     const email = e.target.email.value;
     const password = e.target.password.value;
-
+    //Test Admin
     if (email === "admin" && password === "admin") {
       const adminUser = {
         id: "admin",
         email: "admin",
         firstName: "Admin",
-        lastName: "User",
+        lastName: "Admin",
         role: "admin",
       };
 
@@ -35,12 +40,12 @@ export const Login = () => {
       navigate("/admin");
       return;
     }
-
+    //Test Account
     if (email === "user" && password === "user") {
       const normalUser = {
         id: "user",
         email: "user",
-        firstName: "Normal",
+        firstName: "User",
         lastName: "User",
         role: "user",
       };
@@ -118,6 +123,28 @@ export const Login = () => {
     }
   };
 
+  // Checkbox clicked
+  const handleTermsCheckbox = () => {
+    if (!termsAccepted) {
+      // Open modal instead of checking immediately
+      setShowTerms(true);
+    } else {
+      // Allow user to uncheck after accepting
+      setTermsAccepted(false);
+    }
+  };
+
+  // User clicks I Agree inside modal
+  const handleAgree = () => {
+    setTermsAccepted(true);
+    setShowTerms(false);
+  };
+
+  // User closes/cancels modal
+  const handleCloseTerms = () => {
+    setShowTerms(false);
+  };
+
   return (
     <div className="page">
       <div className="login-container">
@@ -171,8 +198,16 @@ export const Login = () => {
             <p>
               <input
           type="checkbox"
+          checked={termsAccepted}
+          onChange={() => {
+          if (!termsAccepted) {
+            setShowTerms(true);
+          } else {
+            setTermsAccepted(false);
+          }
+        }}
             />
-              By checking “I agree,” you confirm that you have read, understood, and agree to follow these Terms and Conditions.
+              By checking “I agree,” you confirm that you have read, understood, and agree to follow these Terms and Conditions. You also acknowledge that you have read and understood the privacy policy, which explains how your personal information will be collected, used, and protected.
             </p>
 
             <button
@@ -203,6 +238,13 @@ export const Login = () => {
         </div>
 
       </div>
+
+      {showTerms && (
+        <TermsModal
+          onClose={handleCloseTerms}
+          onAgree={handleAgree}
+        />
+      )}
     </div>
   );
 };

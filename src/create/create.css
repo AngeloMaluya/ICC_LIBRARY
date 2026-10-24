@@ -5,7 +5,11 @@
   justify-content: center;
   align-items: center;
   padding: 30px;
-  background: #f5f5f5;
+  
+  background-image: url("../assets/img_repo/bg.png");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
 }
 
 .register-card {
