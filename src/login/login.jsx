@@ -19,9 +19,15 @@ export const Login = () => {
 
   const [showTerms, setShowTerms] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [pendingGoogleUser, setPendingGoogleUser] = useState(null);
 
   const handleLogIn = async (e) => {
     e.preventDefault();
+
+    if (!termsAccepted) {
+    setShowTerms(true);
+    return;
+   }
 
     const email = e.target.email.value;
     const password = e.target.password.value;
@@ -79,48 +85,67 @@ export const Login = () => {
   };
 
   const handleGoogleLogin = async (credentialResponse) => {
-    try {
-      const user = jwtDecode(credentialResponse.credential);
+  try {
+    const user = jwtDecode(credentialResponse.credential);
 
-      const allowedDomain = "immaculada.edu.ph";
+    const allowedDomain = "immaculada.edu.ph";
 
-      // Check school email
-      if (!user.email.endsWith(`@${allowedDomain}`)) {
-        alert("Only school email accounts are allowed.");
-        return;
-      }
-
-      const response = await fetch(
-        `${API_URL}/api/user/${encodeURIComponent(user.email)}`
-      );
-
-      const data = await response.json();
-
-      if (response.ok && data.exists) {
-        localStorage.setItem("libraryUser", JSON.stringify(data.user));
-        saveGoogleTempUser(user);
-
-        // Go directly to library
-        navigate("/library");
-        return;
-      }
-
-      if (response.status === 404 && !data.exists) {
-        saveGoogleTempUser(user);
-
-        // Go to Create Account
-        navigate("/create");
-        return;
-      }
-
-      alert("Unable to check your account. Please try again.");
-    } catch (error) {
-      console.error("Google Login Error:", error);
-      alert(
-        "Unable to connect to the server. Make sure your backend is running."
-      );
+    if (!user.email.endsWith(`@${allowedDomain}`)) {
+      alert("Only school email accounts are allowed.");
+      return;
     }
-  };
+
+    if (!termsAccepted) {
+      setPendingGoogleUser(user);
+      setShowTerms(true);
+      return;
+    }
+
+    await processGoogleUser(user);
+
+  } catch (error) {
+    console.error("Google Login Error:", error);
+    alert("Google Login Failed");
+  }
+};
+    const processGoogleUser = async (user) => {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/user/${encodeURIComponent(user.email)}`
+        );
+
+        const data = await response.json();
+
+        if (response.ok && data.exists) {
+          localStorage.setItem(
+            "libraryUser",
+            JSON.stringify(data.user)
+          );
+
+          saveGoogleTempUser(user);
+
+          navigate("/library");
+          return;
+        }
+
+        if (response.status === 404 && !data.exists) {
+          saveGoogleTempUser(user);
+
+          navigate("/create");
+          return;
+        }
+
+        alert("Unable to check your account. Please try again.");
+
+      } catch (error) {
+        console.error("Google Login Error:", error);
+
+        alert(
+          "Unable to connect to the server. Make sure your backend is running."
+        );
+      }
+    };
+
 
   // Checkbox clicked
   const handleTermsCheckbox = () => {
@@ -134,15 +159,24 @@ export const Login = () => {
   };
 
   // User clicks I Agree inside modal
-  const handleAgree = () => {
-    setTermsAccepted(true);
-    setShowTerms(false);
-  };
+  const handleAgree = async () => {
+  setTermsAccepted(true);
+  setShowTerms(false);
+
+  if (pendingGoogleUser) {
+    const user = pendingGoogleUser;
+
+    setPendingGoogleUser(null);
+
+    await processGoogleUser(user);
+  }
+};
 
   // User closes/cancels modal
-  const handleCloseTerms = () => {
-    setShowTerms(false);
-  };
+ const handleCloseTerms = () => {
+  setShowTerms(false);
+  setPendingGoogleUser(null);
+};
 
   return (
     <div className="page">
@@ -196,17 +230,18 @@ export const Login = () => {
 
             <p>
               <input
-          type="checkbox"
-          checked={termsAccepted}
-          onChange={() => {
-          if (!termsAccepted) {
-            setShowTerms(true);
-          } else {
-            setTermsAccepted(false);
-          }
-        }}
+              type="checkbox"
+              checked={termsAccepted}
+              onChange={() => {
+              if (!termsAccepted) {
+                setShowTerms(true);
+              } else {
+                setTermsAccepted(false);
+              }
+            }}
             />
-              By checking “I agree,” you confirm that you have read, understood, and agree to follow these Terms and Conditions. You also acknowledge that you have read and understood the privacy policy, which explains how your personal information will be collected, used, and protected.
+              By checking “I agree,” you confirm that you have read, understood, and agree to follow these Terms and Conditions. 
+              You also acknowledge that you have read and understood the privacy policy.
             </p>
 
           
@@ -225,7 +260,7 @@ export const Login = () => {
           </div>
 
            <div className="google-login">
-            <GoogleLogin
+             <GoogleLogin
               onSuccess={handleGoogleLogin}
               onError={() => {
                 alert("Google Login Failed");
