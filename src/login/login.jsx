@@ -206,7 +206,7 @@ export const Login = () => {
           }
         }}
             />
-              By checking “I agree,” you confirm that you have read, understood, and agree to follow these Terms and Conditions. You also acknowledge that you have read and understood the privacy policy, which explains how your personal information will be collected, used, and protected.
+              By checking “I agree,” you confirm that you have read, understood, and agree to follow these Terms and Conditions. You also acknowledge that you have read and understood the privacy policy.
             </p>
 
           
