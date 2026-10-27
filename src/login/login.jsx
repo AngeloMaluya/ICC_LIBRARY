@@ -257,8 +257,12 @@ export const Login = () => {
               }
             }}
             />
+<<<<<<< HEAD
               By checking “I agree,” you confirm that you have read, understood, and agree to follow these Terms and Conditions. 
               You also acknowledge that you have read and understood the privacy policy.
+=======
+              By checking “I agree,” you confirm that you have read, understood, and agree to follow these Terms and Conditions. You also acknowledge that you have read and understood the privacy policy.
+>>>>>>> 37d37e15c64062369f7569e7b453eaf3c6b4265b
             </p>
 
           
