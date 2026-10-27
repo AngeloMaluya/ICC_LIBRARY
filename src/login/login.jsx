@@ -31,6 +31,7 @@ export const Login = () => {
 
     const email = e.target.email.value;
     const password = e.target.password.value;
+    
     //Test Admin
     if (email === "admin" && password === "admin") {
       const adminUser = {
@@ -110,25 +111,10 @@ export const Login = () => {
 };
     const processGoogleUser = async (user) => {
   try {
-    const url = `${API_URL}/api/user/${encodeURIComponent(user.email)}`;
-
-    console.log("Checking user at:", url);
-
-    const response = await fetch(url);
-
-    const contentType = response.headers.get("content-type");
-
-    console.log("Status:", response.status);
-    console.log("Content-Type:", contentType);
-
-    if (!contentType?.includes("application/json")) {
-      const text = await response.text();
-
-      console.error("Server returned non-JSON:", text);
-
-      alert("The server returned an invalid response.");
-      return;
-    }
+   
+   const response = await fetch(
+          `${API_URL}/api/user/${encodeURIComponent(user.email)}`
+        );
 
     const data = await response.json();
 
@@ -153,7 +139,7 @@ export const Login = () => {
       return;
     }
 
-    alert(data.message || "Unable to check your account.");
+     alert("Unable to check your account. Please try again.");
   } catch (error) {
     console.error("Google Login Error:", error);
 
@@ -257,12 +243,8 @@ export const Login = () => {
               }
             }}
             />
-<<<<<<< HEAD
               By checking “I agree,” you confirm that you have read, understood, and agree to follow these Terms and Conditions. 
               You also acknowledge that you have read and understood the privacy policy.
-=======
-              By checking “I agree,” you confirm that you have read, understood, and agree to follow these Terms and Conditions. You also acknowledge that you have read and understood the privacy policy.
->>>>>>> 37d37e15c64062369f7569e7b453eaf3c6b4265b
             </p>
 
           
