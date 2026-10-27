@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 
 import "./sidebar.css";
+
 import { logout } from "../../utils/auth.js";
 
 const Sidebar = () => {

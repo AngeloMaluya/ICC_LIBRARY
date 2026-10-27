@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import "./admin-upload.css";
 import { logout } from "../utils/auth.js";
 
+import "../components/sidebar/sidebar.css";
+import Sidebar from "../components/sidebar/sidebar.jsx";
+
 const Admin = () => {
   const navigate = useNavigate();
 
@@ -176,7 +179,10 @@ const Admin = () => {
   };
 
   return (
-    <div className="admin-upload-page">
+    <div className="admin-layout">
+      
+      <Sidebar/>
+
       <div className="upload-container">
         <h1>Upload Research</h1>
 

@@ -9,7 +9,7 @@ import Library from "./library/library";
 import Program from "./library/program";
 
 import Create from "./create/create";
-import Profile from "./components/profile/profile.jsx";
+import Profile from "./components/profile/profile";
 
 import GoogleProtectedRoute from "./googleprotectedroute.jsx";
 
@@ -85,10 +85,10 @@ function App() {
         />
 
         <Route
-          path="/components/profile"
+          path="/profile"
           element={
             <GoogleProtectedRoute>
-              <Program />
+              <Profile />
             </GoogleProtectedRoute>
           }
         />

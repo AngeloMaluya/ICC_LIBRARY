@@ -2,10 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./create.css";
 import Image from "../assets/icon.png";
-import { clearGoogleTempUser } from "../utils/auth.js";
 
-export const Profile = () => {
-
+export const Create = () => {
   const navigate = useNavigate();
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -14,7 +12,11 @@ export const Profile = () => {
     document.title = "Create Account";
   }, []);
 
-  const googleEmail = localStorage.getItem("googleEmail") || "";
+  const googleEmail =
+    localStorage.getItem("googleEmail") || "";
+
+  const googlePicture =
+    localStorage.getItem("googlePicture") || "";
 
   const [form, setForm] = useState({
     firstName: "",
@@ -40,13 +42,19 @@ export const Profile = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
+      const response = await fetch(
+        `${API_URL}/api/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...form,
+            profilePicture: googlePicture,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -57,15 +65,21 @@ export const Profile = () => {
 
       alert("Account Created!");
 
-      // Save the newly created user
-      localStorage.setItem("libraryUser", JSON.stringify(data.user));
-      
-      // Go to library
-      navigate("/library");
+      localStorage.setItem(
+        "libraryUser",
+        JSON.stringify(data.user)
+      );
 
+      navigate("/library");
     } catch (error) {
-      console.error("Registration error:", error);
-      alert("Unable to connect to the server.");
+      console.error(
+        "Registration error:",
+        error
+      );
+
+      alert(
+        "Unable to connect to the server."
+      );
     } finally {
       setLoading(false);
     }
@@ -73,12 +87,9 @@ export const Profile = () => {
 
   return (
     <div className="register-page">
-
       <div className="register-card">
 
-        {/* LEFT */}
         <div className="left-side">
-
           <h1>Create Account</h1>
 
           <img
@@ -93,15 +104,12 @@ export const Profile = () => {
             <br />
             and stay connected with your campus library.
           </p>
-
         </div>
 
-        {/* RIGHT */}
         <form
           className="right-side"
           onSubmit={handleSubmit}
         >
-
           <label>First Name</label>
 
           <input
@@ -178,15 +186,15 @@ export const Profile = () => {
             type="submit"
             disabled={loading}
           >
-            {loading ? "Creating Account..." : "Create Account"}
+            {loading
+              ? "Creating Account..."
+              : "Create Account"}
           </button>
-
         </form>
 
       </div>
-
     </div>
   );
 };
 
-export default Profile;
+export default Create;

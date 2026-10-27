@@ -1,7 +1,10 @@
-.admin-upload-page {
+.admin-layout {
+   width: 100%;
   min-height: 100vh;
-  background: #f5f7fa;
-  padding: 50px 20px;
+
+  display: flex;
+
+  background: #ffffff;
 }
 
 .upload-container {
@@ -136,20 +139,4 @@
 
 .logout-btn:hover {
   background: #f0f0f0;
-}
-
-@media (max-width: 600px) {
-
-  .admin-upload-page {
-    padding: 20px 15px;
-  }
-
-  .upload-container {
-    padding: 25px 20px;
-  }
-
-  .upload-container h1 {
-    font-size: 25px;
-  }
-
 }

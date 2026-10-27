@@ -109,42 +109,59 @@ export const Login = () => {
   }
 };
     const processGoogleUser = async (user) => {
-      try {
-        const response = await fetch(
-          `${API_URL}/api/user/${encodeURIComponent(user.email)}`
-        );
+  try {
+    const url = `${API_URL}/api/user/${encodeURIComponent(user.email)}`;
 
-        const data = await response.json();
+    console.log("Checking user at:", url);
 
-        if (response.ok && data.exists) {
-          localStorage.setItem(
-            "libraryUser",
-            JSON.stringify(data.user)
-          );
+    const response = await fetch(url);
 
-          saveGoogleTempUser(user);
+    const contentType = response.headers.get("content-type");
 
-          navigate("/library");
-          return;
-        }
+    console.log("Status:", response.status);
+    console.log("Content-Type:", contentType);
 
-        if (response.status === 404 && !data.exists) {
-          saveGoogleTempUser(user);
+    if (!contentType?.includes("application/json")) {
+      const text = await response.text();
 
-          navigate("/create");
-          return;
-        }
+      console.error("Server returned non-JSON:", text);
 
-        alert("Unable to check your account. Please try again.");
+      alert("The server returned an invalid response.");
+      return;
+    }
 
-      } catch (error) {
-        console.error("Google Login Error:", error);
+    const data = await response.json();
 
-        alert(
-          "Unable to connect to the server. Make sure your backend is running."
-        );
-      }
-    };
+    console.log("User response:", data);
+
+    if (response.ok && data.exists) {
+      localStorage.setItem(
+        "libraryUser",
+        JSON.stringify(data.user)
+      );
+
+      saveGoogleTempUser(user);
+
+      navigate("/library");
+      return;
+    }
+
+    if (response.status === 404 && !data.exists) {
+      saveGoogleTempUser(user);
+
+      navigate("/create");
+      return;
+    }
+
+    alert(data.message || "Unable to check your account.");
+  } catch (error) {
+    console.error("Google Login Error:", error);
+
+    alert(
+      "Unable to connect to the server. Make sure your backend is running."
+    );
+  }
+};
 
 
   // Checkbox clicked
