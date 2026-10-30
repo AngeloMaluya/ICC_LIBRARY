@@ -30,7 +30,7 @@ const Sidebar = () => {
         <button
           type="button"
           className="logo-button"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/library")}
           aria-label="Go to Library"
         >
           <img

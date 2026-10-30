@@ -1,8 +1,3 @@
-// Shared "summary" + "full PDF text" popups.
-// This entire block (~150 lines) was duplicated, near character-for-character,
-// in both library.jsx and program.jsx. Only difference: program.jsx fell back
-// to the current program name instead of "Unknown Program" - that's now the
-// `unknownProgramLabel` prop.
 const ResearchPopups = ({
   showPopup,
   showPdfPopup,
