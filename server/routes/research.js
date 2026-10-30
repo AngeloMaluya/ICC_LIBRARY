@@ -1,151 +1,391 @@
 
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import express from "express";
+import multer from "multer";
+import dotenv from "dotenv";
+import { GoogleGenAI } from "@google/genai";
+import { createClient } from "@supabase/supabase-js";
+import { PDFParse } from "pdf-parse";
 
-import "../components/sidebar/sidebar.css";
-import "./base_lib.css";
+dotenv.config();
 
-import Sidebar from "../components/sidebar/sidebar.jsx";
-import SearchCat from "../components/searchcat/searchcat.jsx";
-import ResearchPopups from "../components/ResearchPopups/ResearchPopups.jsx";
+const router = express.Router();
 
-import { useResearchPopups } from "../hooks/useResearchPopups.js";
-import { getProgramImage } from "../utils/programImages.js";
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SECRET_KEY
+);
 
-export const Program = () => {
-  const navigate = useNavigate();
-  const { program } = useParams();
+// Store uploaded PDFs temporarily in memory
+const upload = multer({
+  storage: multer.memoryStorage(),
 
-  const API_URL = import.meta.env.VITE_API_URL;
+  limits: {
+    fileSize: 50 * 1024 * 1024
+  },
 
-  const [researches, setResearches] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype !== "application/pdf") {
+      return cb(
+        new Error("Only PDF files are allowed.")
+      );
+    }
 
-  const {
-    selectedResearch,
-    selectedPdf,
-    showPopup,
-    showPdfPopup,
-    loadingResearch,
-    loadingPdf,
-    handleViewResearch,
-    handleViewPdfText,
-    closePopup,
-    closePdfPopup,
-  } = useResearchPopups(API_URL);
+    cb(null, true);
+  }
+});
 
-  // PROGRAM NAME
+// Initialize Gemini AI
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY
+});
 
-  const currentProgram = program || "";
+// Get research listings, optionally filtered by program
+router.get("/", async (req, res) => {
+  try {
+    const { program } = req.query;
 
-  const displayProgram =
-    currentProgram.toUpperCase() === "BSCRIM"
-      ? "BSCrim"
-      : currentProgram.toUpperCase();
+    let query = supabase
+      .from("summarized")
+      .select(`
+        id,
+        title,
+        author,
+        year,
+        program,
+        summary,
+        pdf_url,
+        created_at
+      `)
+      .order("created_at", {
+        ascending: false
+      });
 
-  // PAGE TITLE
+    // Filter research by program directly in Supabase
+    if (
+      program &&
+      typeof program === "string" &&
+      program.trim()
+    ) {
+      query = query.ilike("program", program.trim());
+    }
 
-  useEffect(() => {
-    document.title = `${displayProgram} - ICC Library`;
-  }, [displayProgram]);
+    const { data, error } = await query;
 
-  // LOAD RESEARCH FOR THE SELECTED PROGRAM
+    if (error) {
+      console.error("GET RESEARCH ERROR:", error);
 
-  useEffect(() => {
-    const fetchResearches = async () => {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch research.",
+        error: error.message
+      });
+    }
+
+    // Return only the information needed by the Library page
+    return res.json(data);
+
+  } catch (error) {
+    console.error("SERVER ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error."
+    });
+  }
+});
+
+// Get one complete research record, including extracted PDF text
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log("Fetching research ID:", id);
+
+    const { data, error } = await supabase
+      .from("summarized")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error || !data) {
+      console.error("GET SINGLE RESEARCH ERROR:", error);
+
+      return res.status(404).json({
+        success: false,
+        message: "Research not found."
+      });
+    }
+
+    // Return the complete record for research viewing
+    return res.json(data);
+
+  } catch (error) {
+    console.error("SERVER ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error."
+    });
+  }
+});
+
+// Upload PDF, extract text, generate summary, and save research
+router.post(
+  "/summarize",
+  upload.single("pdf"),
+  async (req, res) => {
+    try {
+      // Check whether a PDF was uploaded
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Please upload a PDF file."
+        });
+      }
+
+      console.log("PDF received:", req.file.originalname);
+      console.log("PDF size:", req.file.size, "bytes");
+
+      // Extract text from the uploaded PDF
+      console.log("Extracting PDF text...");
+      console.log("PDF buffer size:", req.file.buffer.length);
+
+      const parser = new PDFParse({
+        data: req.file.buffer
+      });
+
+      let pdfText = "";
+
       try {
-        setLoading(true);
-        setError("");
+        console.log("Starting parser.getText()...");
 
-        const response = await fetch(
-          `${API_URL}/api/research?program=${encodeURIComponent(currentProgram)}`
+        const result = await parser.getText();
+
+        pdfText = result.text || "";
+
+        console.log("PDF extraction completed.");
+        console.log("Extracted PDF text length:", pdfText.length);
+
+        if (!pdfText.trim()) {
+          return res.status(400).json({
+            success: false,
+            message:
+              "No readable text was extracted. The PDF may be scanned or image-based."
+          });
+        }
+      } finally {
+        await parser.destroy();
+      }
+
+      console.log("Continuing to Gemini summarization...");
+
+      // Get research information from the upload form
+      const {
+        title,
+        author,
+        year,
+        program
+      } = req.body;
+
+      if (!title) {
+        return res.status(400).json({
+          success: false,
+          message: "Research title is required."
+        });
+      }
+
+      // Convert the uploaded PDF into Base64
+      const pdfBase64 = req.file.buffer.toString("base64");
+
+      // Send the PDF to Gemini for summarization
+      console.log("Sending PDF to Gemini...");
+
+      const interaction = await ai.interactions.create({
+        model: "gemini-3.1-flash-lite",
+
+        input: [
+          {
+            type: "text",
+
+            text: `
+You are an AI assistant for an academic research library.
+
+Read the uploaded research paper carefully and create a clear academic summary.
+
+Provide the following:
+
+1. topic
+2. problem
+3. objectives
+4. methodology
+5. findings
+6. conclusion
+
+Do not invent information that is not present in the paper.
+
+If a section is not available in the paper, write:
+
+"Not specified in the document."
+
+Keep the summary clear, accurate, and suitable for students.
+            `
+          },
+
+          {
+            type: "document",
+            data: pdfBase64,
+            mime_type: "application/pdf"
+          }
+        ]
+      });
+
+      const summary = interaction.output_text;
+
+      console.log("Gemini summary received!");
+
+      // Create a unique PDF filename
+      const fileName = `${Date.now()}-${req.file.originalname}`
+        .replace(/\s+/g, "-");
+
+      // Check Supabase connection
+      console.log("SUPABASE URL:", process.env.SUPABASE_URL);
+
+      console.log(
+        "SUPABASE SECRET KEY:",
+        process.env.SUPABASE_SECRET_KEY
+          ? "LOADED"
+          : "NOT LOADED"
+      );
+
+      // Upload the original PDF to Supabase Storage
+      console.log("Uploading PDF to Supabase Storage...");
+
+      const {
+        data: storageData,
+        error: storageError
+      } = await supabase.storage
+        .from("research-pdfs")
+        .upload(
+          fileName,
+          req.file.buffer,
+          {
+            contentType: "application/pdf",
+            upsert: false
+          }
         );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch research");
-        }
+      if (storageError) {
+        console.error("SUPABASE STORAGE ERROR:", storageError);
 
-        const data = await response.json();
-
-        if (Array.isArray(data)) {
-          setResearches(data);
-        } else if (Array.isArray(data.researches)) {
-          setResearches(data.researches);
-        } else {
-          setResearches([]);
-        }
-      } catch (error) {
-        console.error("Error fetching research:", error);
-        setError("Unable to load research from the database.");
-      } finally {
-        setLoading(false);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload PDF to Supabase.",
+          error: storageError.message
+        });
       }
-    };
 
-    fetchResearches();
-  }, [API_URL, currentProgram]);
+      console.log("PDF uploaded to Supabase!");
 
-  // FILTER RESEARCH BY SEARCH TERM
+      // Get the public URL of the uploaded PDF
+      const { data: publicUrlData } = supabase.storage
+        .from("research-pdfs")
+        .getPublicUrl(fileName);
 
-  const filteredResearches = researches.filter((research) => {
-    const search = searchTerm.toLowerCase().trim();
+      const pdfUrl = publicUrlData.publicUrl;
 
-    if (!search) return true;
+      console.log("PDF URL:", pdfUrl);
 
-    return (
-      research.title?.toLowerCase().includes(search) ||
-      research.author?.toLowerCase().includes(search) ||
-      research.year?.toString().includes(search) ||
-      research.program?.toLowerCase().includes(search) ||
-      research.content?.toLowerCase().includes(search)
-    );
-  });
+      // Save research information, summary, and extracted text
+      console.log("Saving research to Supabase database...");
 
-  // RENDER
+      const {
+        data: research,
+        error: databaseError
+      } = await supabase
+        .from("summarized")
+        .insert([
+          {
+            title: title,
+            author: author,
+            year: year ? Number(year) : null,
+            program: program,
+            pdf_url: pdfUrl,
 
-  return (
-    <div className="library-layout">
-      <Sidebar />
+            // Store the Gemini-generated summary
+            summary: summary,
 
-      <main className="library-main">
-        <SearchCat
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          navigate={navigate}
-          loading={loading}
-          error={error}
-          filteredResearches={filteredResearches}
-          handleViewResearch={handleViewResearch}
-          handleViewPdfText={handleViewPdfText}
-          getProgramImage={getProgramImage}
-          activeProgram={currentProgram}
-          heading={{
-            title: displayProgram,
-            subtitle: "Research papers and theses",
-          }}
-          emptyMessage={
-            <>
-              No research found for <strong>{displayProgram}</strong>
-            </>
+            // Keep extracted PDF text for future viewing and searching
+            content: pdfText
           }
-        />
-      </main>
+        ])
+        .select()
+        .single();
 
-      <ResearchPopups
-        showPopup={showPopup}
-        showPdfPopup={showPdfPopup}
-        selectedResearch={selectedResearch}
-        selectedPdf={selectedPdf}
-        loadingResearch={loadingResearch}
-        loadingPdf={loadingPdf}
-        closePopup={closePopup}
-        closePdfPopup={closePdfPopup}
-        unknownProgramLabel={displayProgram}
-      />
-    </div>
-  );
-};
+      if (databaseError) {
+        console.error("SUPABASE DATABASE ERROR:", databaseError);
 
-export default Program;
+        return res.status(500).json({
+          success: false,
+          message:
+            "PDF uploaded, but failed to save research information.",
+          error: databaseError.message
+        });
+      }
+
+      // Display upload success information
+      console.log("Research saved successfully!");
+      console.log("DATABASE RESULT:", research);
+      console.log("PDF URL:", pdfUrl);
+      console.log("PDF TEXT LENGTH:", pdfText.length);
+      console.log("SUMMARY LENGTH:", summary?.length);
+
+      // Return the uploaded research information
+      return res.status(201).json({
+        success: true,
+        message: "Research uploaded and summarized successfully.",
+        research: research
+      });
+
+    } catch (error) {
+      console.error("PDF SUMMARY ERROR:");
+      console.error(error);
+
+      return res.status(500).json({
+        success: false,
+        message:
+          error.message || "Failed to process research PDF."
+      });
+    }
+  }
+);
+
+// Handle upload and Multer errors
+router.use((error, req, res, next) => {
+  console.error("RESEARCH ROUTE ERROR:", error);
+
+  // Handle Multer errors
+  if (error instanceof multer.MulterError) {
+    if (error.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({
+        success: false,
+        message: "PDF is too large. Maximum size is 50 MB."
+      });
+    }
+  }
+
+  // Handle invalid file types
+  if (error.message === "Only PDF files are allowed.") {
+    return res.status(400).json({
+      success: false,
+      message: "Only PDF files are allowed."
+    });
+  }
+
+  // Handle other errors
+  return res.status(500).json({
+    success: false,
+    message: error.message || "Something went wrong."
+  });
+});
+
+export default router;
