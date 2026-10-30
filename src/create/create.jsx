@@ -41,7 +41,6 @@ export const Create = () => {
 
     setLoading(true);
 
-    
     try {
       const response = await fetch(
         `${API_URL}/api/register`,
