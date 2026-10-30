@@ -13,10 +13,10 @@ export const Create = () => {
   }, []);
 
   const googleEmail =
-    localStorage.getItem("googleEmail") || "";
+    sessionStorage.getItem("googleEmail") || "";
 
   const googlePicture =
-    localStorage.getItem("googlePicture") || "";
+    sessionStorage.getItem("googlePicture") || "";
 
   const [form, setForm] = useState({
     firstName: "",
@@ -65,7 +65,7 @@ export const Create = () => {
 
       alert("Account Created!");
 
-      localStorage.setItem(
+      sessionStorage.setItem(
         "libraryUser",
         JSON.stringify(data.user)
       );

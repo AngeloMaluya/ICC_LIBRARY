@@ -47,21 +47,6 @@ export const Login = () => {
       return;
     }
 
-    // Test Account
-     if (email === "user" && password === "user") {
-      const normalUser = {
-        id: "user",
-        email: "user",
-        firstName: "User",
-        lastName: "User",
-        role: "user",
-      };
-
-      localStorage.setItem("libraryUser", JSON.stringify(normalUser));
-      navigate("/library");
-      return;
-    }
-
     try {
       const response = await fetch(`${API_URL}/api/login`, {
         method: "POST",

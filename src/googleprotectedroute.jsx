@@ -1,22 +1,26 @@
+
 import { Navigate } from "react-router-dom";
 
 const GoogleProtectedRoute = ({ children }) => {
-  const googleEmail = localStorage.getItem("googleEmail");
-
+  // Get the logged-in user from the current browser session
   const libraryUser = JSON.parse(
-    localStorage.getItem("libraryUser") || "null"
+    sessionStorage.getItem("libraryUser") || "null"
   );
 
-  // Allow demo user, registered users, and admin
+  // Get the temporary Google email used during profile creation
+  const googleEmail = localStorage.getItem("googleEmail");
+
+  // Allow users with a valid authenticated account
   if (
-    libraryUser?.id === "user" ||
-    libraryUser?.role === "user" ||
-    libraryUser?.role === "admin"
+    libraryUser &&
+    libraryUser.id !== undefined &&
+    libraryUser.id !== null &&
+    libraryUser.email
   ) {
     return children;
   }
 
-  // Allow Google school email accounts
+  // Allow Google school accounts during profile creation
   if (googleEmail?.endsWith("@immaculada.edu.ph")) {
     return children;
   }
