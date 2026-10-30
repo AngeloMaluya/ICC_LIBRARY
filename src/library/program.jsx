@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -50,7 +51,8 @@ export const Program = () => {
     document.title = `${displayProgram} - ICC Library`;
   }, [displayProgram]);
 
-  // LOAD RESEARCH
+  // LOAD RESEARCH FROM THE BACKEND
+  // The backend filters by program and searches the extracted PDF text.
 
   useEffect(() => {
     const fetchResearches = async () => {
@@ -58,7 +60,20 @@ export const Program = () => {
         setLoading(true);
         setError("");
 
-        const response = await fetch(`${API_URL}/api/research`);
+        // Build the API URL with the selected program and search term.
+        const params = new URLSearchParams();
+
+        if (currentProgram) {
+          params.set("program", currentProgram);
+        }
+
+        if (searchTerm.trim()) {
+          params.set("search", searchTerm.trim());
+        }
+
+        const response = await fetch(
+          `${API_URL}/api/research?${params.toString()}`
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch research");
@@ -82,32 +97,7 @@ export const Program = () => {
     };
 
     fetchResearches();
-  }, [API_URL, currentProgram]);
-
-
-  // FILTER BY PROGRAM, THEN BY SEARCH TERM
-  
-  const programResearches = researches.filter((research) => {
-    if (!currentProgram) return true;
-
-    const researchProgram = research.program?.toString().trim().toLowerCase();
-    const selectedProgram = currentProgram.toString().trim().toLowerCase();
-
-    return researchProgram === selectedProgram;
-  });
-
-  const filteredResearches = programResearches.filter((research) => {
-    const search = searchTerm.toLowerCase().trim();
-    if (!search) return true;
-
-    return (
-      research.title?.toLowerCase().includes(search) ||
-      research.author?.toLowerCase().includes(search) ||
-      research.year?.toString().includes(search) ||
-      research.program?.toLowerCase().includes(search) ||
-      research.content?.toLowerCase().includes(search)
-    );
-  });
+  }, [API_URL, currentProgram, searchTerm]);
 
   // RENDER
 
@@ -122,7 +112,7 @@ export const Program = () => {
           navigate={navigate}
           loading={loading}
           error={error}
-          filteredResearches={filteredResearches}
+          filteredResearches={researches}
           handleViewResearch={handleViewResearch}
           handleViewPdfText={handleViewPdfText}
           getProgramImage={getProgramImage}
