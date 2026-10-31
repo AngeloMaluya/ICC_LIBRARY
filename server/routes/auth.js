@@ -19,6 +19,7 @@ router.post("/register", async (req, res) => {
       year,
       email,
       password,
+      profilePicture,
     } = req.body;
 
     console.log("Register request received:", email);
@@ -81,7 +82,7 @@ router.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     console.log("BCRYPT HASH GENERATED:", hashedPassword.startsWith("$2"));
-console.log("HASH LENGTH:", hashedPassword.length);
+    console.log("HASH LENGTH:", hashedPassword.length);
 
     // Insert the new user into the Supabase users table
     const {
@@ -97,9 +98,10 @@ console.log("HASH LENGTH:", hashedPassword.length);
           year: year,
           email: email,
           password: hashedPassword,
+          profile_picture: profilePicture || null,
         },
       ])
-      .select("id, email, f_name, l_name, course, year")
+      .select("id, email, f_name, l_name, course, year, profile_picture")
       .single();
 
     if (insertError) {
@@ -124,6 +126,7 @@ console.log("HASH LENGTH:", hashedPassword.length);
         lastName: newUser.l_name,
         course: newUser.course,
         year: newUser.year,
+        profilePicture: newUser.profile_picture,
       },
     });
   } catch (error) {
@@ -160,7 +163,7 @@ router.post("/login", async (req, res) => {
       error,
     } = await supabase
       .from("users")
-      .select("id, email, f_name, l_name, course, year, password")
+      .select("id, email, f_name, l_name, course, year, password, profile_picture")
       .eq("email", email.trim())
       .maybeSingle();
 
@@ -183,8 +186,8 @@ router.post("/login", async (req, res) => {
 
     // Check whether the stored password is a bcrypt hash
     const isBcryptHash =
-  typeof user.password === "string" &&
-  /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(user.password);
+      typeof user.password === "string" &&
+      /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(user.password);
 
     // Reject accounts whose passwords have not been converted to bcrypt
     if (!isBcryptHash) {
@@ -219,6 +222,7 @@ router.post("/login", async (req, res) => {
         lastName: user.l_name,
         course: user.course,
         year: user.year,
+        profilePicture: user.profile_picture,
       },
     });
   } catch (error) {
@@ -252,7 +256,7 @@ router.get("/user/:email", async (req, res) => {
       error,
     } = await supabase
       .from("users")
-      .select("id, email, f_name, l_name, course, year")
+      .select("id, email, f_name, l_name, course, year, profile_picture")
       .eq("email", email)
       .maybeSingle();
 
@@ -285,6 +289,7 @@ router.get("/user/:email", async (req, res) => {
         lastName: user.l_name,
         course: user.course,
         year: user.year,
+        profilePicture: user.profile_picture,
       },
     });
   } catch (error) {

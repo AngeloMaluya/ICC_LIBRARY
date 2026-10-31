@@ -39,6 +39,8 @@ export const Create = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
     setLoading(true);
 
     try {
@@ -51,7 +53,7 @@ export const Create = () => {
           },
           body: JSON.stringify({
             ...form,
-            profilePicture: googlePicture,
+            profilePicture: googlePicture || null,
           }),
         }
       );
@@ -59,27 +61,32 @@ export const Create = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.message);
+        alert(data.message || "Account creation failed.");
         return;
       }
 
-      alert("Account Created!");
+      const registeredUser = {
+        ...data.user,
+        profilePicture:
+          data.user?.profilePicture || googlePicture || null,
+      };
 
       sessionStorage.setItem(
         "libraryUser",
-        JSON.stringify(data.user)
+        JSON.stringify(registeredUser)
       );
+
+      sessionStorage.removeItem("googleEmail");
+      sessionStorage.removeItem("googlePicture");
+      sessionStorage.removeItem("googleName");
+
+      alert("Account Created!");
 
       navigate("/library");
     } catch (error) {
-      console.error(
-        "Registration error:",
-        error
-      );
+      console.error("Registration error:", error);
 
-      alert(
-        "Unable to connect to the server."
-      );
+      alert("Unable to connect to the server.");
     } finally {
       setLoading(false);
     }

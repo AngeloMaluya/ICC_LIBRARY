@@ -21,7 +21,7 @@ export default function Profile() {
     const fetchProfile = async () => {
       try {
         const storedUser = JSON.parse(
-          localStorage.getItem("libraryUser")
+          sessionStorage.getItem("libraryUser")
         );
 
         if (!storedUser?.email) {
@@ -86,9 +86,18 @@ export default function Profile() {
         <section className="profile-card">
           <div className="profile-card-heading">
             <div className="profile-avatar">
-              {(profile.firstName?.[0] || "") +
-                (profile.lastName?.[0] || "")}
-            </div>
+            {profile.profilePicture ? (
+              <img
+              src={profile.profilePicture}
+              alt="Profile"
+              className="profile-picture"
+              referrerPolicy="no-referrer"
+              onError={() => setImageError(true)}
+            />
+            ) : (
+              (profile.firstName?.[0] || "") + (profile.lastName?.[0] || "")
+            )}
+          </div>
 
             <h2>
               {profile.firstName} {profile.lastName}
@@ -106,11 +115,6 @@ export default function Profile() {
             <ProfileField
               label="Last Name"
               value={profile.lastName}
-            />
-
-            <ProfileField
-              label="User ID"
-              value={profile.id}
             />
 
             <ProfileField
