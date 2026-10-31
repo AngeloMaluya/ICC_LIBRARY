@@ -58,7 +58,7 @@ function App() {
         />
 
         <Route
-          path="/Create"
+          path="/create"
           element={
             <GoogleProtectedRoute>
               <Create />

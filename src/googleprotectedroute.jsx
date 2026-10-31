@@ -1,4 +1,3 @@
-
 import { Navigate } from "react-router-dom";
 
 const GoogleProtectedRoute = ({ children }) => {
@@ -8,7 +7,7 @@ const GoogleProtectedRoute = ({ children }) => {
   );
 
   // Get the temporary Google email used during profile creation
-  const googleEmail = localStorage.getItem("googleEmail");
+  const googleEmail = sessionStorage.getItem("googleEmail");
 
   // Allow users with a valid authenticated account
   if (
