@@ -1,31 +1,20 @@
 import { Navigate } from "react-router-dom";
 
 const GoogleProtectedRoute = ({ children }) => {
-  // Get the logged-in user from the current browser session
-  const libraryUser = JSON.parse(
-    sessionStorage.getItem("libraryUser") || "null"
-  );
+  const authToken = sessionStorage.getItem("authToken");
+  const signupToken = sessionStorage.getItem("googleSignupToken");
 
-  // Get the temporary Google email used during profile creation
-  const googleEmail = sessionStorage.getItem("googleEmail");
-
-  // Allow users with a valid authenticated account
-  if (
-    libraryUser &&
-    libraryUser.id !== undefined &&
-    libraryUser.id !== null &&
-    libraryUser.email
-  ) {
+  // Allow a new Google student to complete registration
+  if (signupToken) {
     return children;
   }
 
-  // Allow Google school accounts during profile creation
-  if (googleEmail?.endsWith("@immaculada.edu.ph")) {
+  // Require a backend-issued token for student pages
+  if (authToken) {
     return children;
   }
 
-  // Redirect unauthorized users
-  return <Navigate to="/" replace />;
+  return <Navigate to="/login" replace />;
 };
 
 export default GoogleProtectedRoute;

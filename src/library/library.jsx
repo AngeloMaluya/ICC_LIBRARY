@@ -52,8 +52,15 @@ export const Library = () => {
           params.set("search", searchTerm.trim());
         }
 
+        const token = sessionStorage.getItem("authToken");
+
         const response = await fetch(
-          `${API_URL}/api/research?${params.toString()}`
+          `${API_URL}/api/research?${params.toString()}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         if (!response.ok) {

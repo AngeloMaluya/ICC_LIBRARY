@@ -1,13 +1,12 @@
+import "dotenv/config";
+
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 
 import researchRoutes from "./routes/research.js";
 import authRoutes from "./routes/auth.js";
-
-dotenv.config();
 
 const supabase = createClient(
   process.env.SUPABASE_URL,

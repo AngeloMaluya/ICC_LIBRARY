@@ -1,5 +1,8 @@
+import { verifyStudentToken } from "../middleware/authMiddleware.js";
 import bcrypt from "bcryptjs";
 import express from "express";
+import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
 import { createClient } from "@supabase/supabase-js";
 
 const router = express.Router();
@@ -9,7 +12,49 @@ const supabase = createClient(
   process.env.SUPABASE_SECRET_KEY
 );
 
-// Registers a new user and securely hashes their password before saving it
+const googleClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID
+);
+
+const SCHOOL_DOMAIN = "immaculada.edu.ph";
+
+const createAccessToken = (user) => {
+  return jwt.sign(
+    {
+      sub: String(user.id),
+      email: user.email,
+      role: "student",
+      type: "access",
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "2h" }
+  );
+};
+
+const createSignupToken = (googleUser) => {
+  return jwt.sign(
+    {
+      email: googleUser.email,
+      name: googleUser.name,
+      picture: googleUser.picture || null,
+      type: "google_signup",
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "10m" }
+  );
+};
+
+const formatUser = (user) => ({
+  id: user.id,
+  email: user.email,
+  firstName: user.f_name,
+  lastName: user.l_name,
+  course: user.course,
+  year: user.year,
+  profilePicture: user.profile_picture,
+});
+
+// Register a new student using a verified Google signup token
 router.post("/register", async (req, res) => {
   try {
     const {
@@ -17,19 +62,20 @@ router.post("/register", async (req, res) => {
       lastName,
       course,
       year,
-      email,
       password,
-      profilePicture,
+      signupToken,
     } = req.body;
 
-    // Validate all required registration fields
     if (
-      !firstName ||
-      !lastName ||
-      !course ||
+      typeof firstName !== "string" ||
+      typeof lastName !== "string" ||
+      typeof course !== "string" ||
+      !firstName.trim() ||
+      !lastName.trim() ||
+      !course.trim() ||
       !year ||
-      !email ||
-      !password
+      typeof password !== "string" ||
+      !signupToken
     ) {
       return res.status(400).json({
         success: false,
@@ -37,9 +83,7 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // Validate password type and length
     if (
-      typeof password !== "string" ||
       password.length < 8 ||
       Buffer.byteLength(password, "utf8") > 72
     ) {
@@ -50,25 +94,42 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // Validate email format
-    if (
-      typeof email !== "string" ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-    ) {
-      return res.status(400).json({
+    // Verify that the signup token was issued by this backend
+    let googleUser;
+
+    try {
+      googleUser = jwt.verify(
+        signupToken,
+        process.env.JWT_SECRET
+      );
+    } catch {
+      return res.status(401).json({
         success: false,
-        message: "Please provide a valid email address.",
+        message: "Google signup session expired. Please sign in again.",
       });
     }
 
-    // Check if the email is already registered
+    if (
+      googleUser.type !== "google_signup" ||
+      !googleUser.email ||
+      !googleUser.email.endsWith(`@${SCHOOL_DOMAIN}`)
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Google signup session.",
+      });
+    }
+
+    const email = googleUser.email.toLowerCase();
+
+    // Check for an existing account
     const {
       data: existingUser,
       error: checkError,
     } = await supabase
       .from("users")
       .select("id")
-      .eq("email", email.trim())
+      .eq("email", email)
       .maybeSingle();
 
     if (checkError) {
@@ -80,7 +141,6 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // Prevent duplicate account registration
     if (existingUser) {
       return res.status(409).json({
         success: false,
@@ -88,10 +148,8 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // Hash the password using bcrypt with 12 salt rounds
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Insert the new user into the Supabase users table
     const {
       data: newUser,
       error: insertError,
@@ -101,14 +159,16 @@ router.post("/register", async (req, res) => {
         {
           f_name: firstName.trim(),
           l_name: lastName.trim(),
-          course: course,
+          course: course.trim(),
           year: year,
-          email: email.trim(),
+          email: email,
           password: hashedPassword,
-          profile_picture: profilePicture || null,
+          profile_picture: googleUser.picture || null,
         },
       ])
-      .select("id, email, f_name, l_name, course, year, profile_picture")
+      .select(
+        "id, email, f_name, l_name, course, year, profile_picture"
+      )
       .single();
 
     if (insertError) {
@@ -120,19 +180,13 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // Return the newly created user's information without exposing the password
+    const accessToken = createAccessToken(newUser);
+
     return res.status(201).json({
       success: true,
       message: "Account created successfully.",
-      user: {
-        id: newUser.id,
-        email: newUser.email,
-        firstName: newUser.f_name,
-        lastName: newUser.l_name,
-        course: newUser.course,
-        year: newUser.year,
-        profilePicture: newUser.profile_picture,
-      },
+      token: accessToken,
+      user: formatUser(newUser),
     });
   } catch (error) {
     console.error("REGISTER ERROR:", error);
@@ -144,12 +198,11 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Authenticates a user by comparing the entered password with the stored bcrypt hash
+// Student email/password login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate the login credentials
     if (
       typeof email !== "string" ||
       typeof password !== "string" ||
@@ -162,7 +215,8 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Find the user account using the provided email
+    const normalizedEmail = email.trim().toLowerCase();
+
     const {
       data: user,
       error,
@@ -171,7 +225,7 @@ router.post("/login", async (req, res) => {
       .select(
         "id, email, f_name, l_name, course, year, password, profile_picture"
       )
-      .eq("email", email.trim())
+      .eq("email", normalizedEmail)
       .maybeSingle();
 
     if (error) {
@@ -183,35 +237,18 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Reject login if the account does not exist
-    if (!user) {
+    if (!user || typeof user.password !== "string") {
       return res.status(401).json({
         success: false,
         message: "Invalid email or password.",
       });
     }
 
-    // Check whether the stored password is a bcrypt hash
-    const isBcryptHash =
-      typeof user.password === "string" &&
-      /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(user.password);
-
-    // Reject accounts whose passwords have not been converted to bcrypt
-    if (!isBcryptHash) {
-      return res.status(401).json({
-        success: false,
-        message:
-          "Invalid email or password. Please reset your password.",
-      });
-    }
-
-    // Compare the entered password with the stored bcrypt hash
     const passwordMatches = await bcrypt.compare(
       password,
       user.password
     );
 
-    // Reject login if the password does not match
     if (!passwordMatches) {
       return res.status(401).json({
         success: false,
@@ -219,19 +256,13 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Return authenticated user information without exposing the password hash
+    const token = createAccessToken(user);
+
     return res.status(200).json({
       success: true,
       message: "Login successful.",
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.f_name,
-        lastName: user.l_name,
-        course: user.course,
-        year: user.year,
-        profilePicture: user.profile_picture,
-      },
+      token,
+      user: formatUser(user),
     });
   } catch (error) {
     console.error("LOGIN ERROR:", error);
@@ -243,31 +274,52 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Checks whether a Google account's email is already registered in the database
-router.get("/user/:email", async (req, res) => {
+// Verify Google credential on the backend
+router.post("/google-login", async (req, res) => {
   try {
-    const { email } = req.params;
+    const { credential } = req.body;
 
-    // Validate the email parameter
-    if (!email) {
+    if (!credential) {
       return res.status(400).json({
         success: false,
-        message: "Email is required.",
+        message: "Google credential is required.",
       });
     }
 
-    // Find the registered user using their Google email
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    if (
+      !payload ||
+      !payload.email ||
+      payload.email_verified !== true ||
+      !payload.email.toLowerCase().endsWith(`@${SCHOOL_DOMAIN}`)
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Only verified ICC school accounts are allowed.",
+      });
+    }
+
+    const email = payload.email.toLowerCase();
+
     const {
       data: user,
       error,
     } = await supabase
       .from("users")
-      .select("id, email, f_name, l_name, course, year, profile_picture")
+      .select(
+        "id, email, f_name, l_name, course, year, profile_picture"
+      )
       .eq("email", email)
       .maybeSingle();
 
     if (error) {
-      console.error("SUPABASE USER CHECK ERROR:", error);
+      console.error("GOOGLE LOGIN DATABASE ERROR:", error);
 
       return res.status(500).json({
         success: false,
@@ -275,31 +327,113 @@ router.get("/user/:email", async (req, res) => {
       });
     }
 
-    // Return a not-found response if the Google account is not registered
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        exists: false,
-        message: "Account not found.",
+    // Existing student account
+    if (user) {
+      const token = createAccessToken(user);
+
+      return res.status(200).json({
+        success: true,
+        exists: true,
+        token,
+        user: formatUser(user),
       });
     }
 
-    // Return the existing user's information without exposing sensitive data
+    // New student account: issue a short-lived signup token
+    const signupToken = createSignupToken({
+      email,
+      name: payload.name || "",
+      picture: payload.picture || null,
+    });
+
     return res.status(200).json({
       success: true,
-      exists: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.f_name,
-        lastName: user.l_name,
-        course: user.course,
-        year: user.year,
-        profilePicture: user.profile_picture,
+      exists: false,
+      signupToken,
+      googleUser: {
+        email,
+        name: payload.name || "",
+        picture: payload.picture || null,
       },
     });
   } catch (error) {
-    console.error("GOOGLE USER CHECK ERROR:", error);
+    console.error("GOOGLE LOGIN ERROR:", error);
+
+    return res.status(401).json({
+      success: false,
+      message: "Google authentication failed. Please try again.",
+    });
+  }
+});
+
+// src/utils/auth.js
+
+const GOOGLE_TEMP_KEYS = [
+  "googleEmail",
+  "googleName",
+  "googlePicture",
+];
+
+export const clearGoogleTempUser = () => {
+  GOOGLE_TEMP_KEYS.forEach((key) => {
+    sessionStorage.removeItem(key);
+  });
+};
+
+export const logout = (navigate, redirectTo = "/") => {
+  sessionStorage.removeItem("authToken");
+  sessionStorage.removeItem("libraryUser");
+  sessionStorage.removeItem("googleSignupToken");
+
+  clearGoogleTempUser();
+
+  navigate(redirectTo);
+};
+
+// Get the logged-in student's profile
+router.get("/user/:email", verifyStudentToken, async (req, res) => {
+  try {
+    const requestedEmail = req.params.email.toLowerCase();
+    const authenticatedEmail = req.user.email.toLowerCase();
+
+    // Prevent students from accessing another student's profile
+    if (requestedEmail !== authenticatedEmail) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to access this profile.",
+      });
+    }
+
+    const { data: user, error } = await supabase
+      .from("users")
+      .select(
+        "id, email, f_name, l_name, course, year, profile_picture"
+      )
+      .eq("email", authenticatedEmail)
+      .maybeSingle();
+
+    if (error) {
+      console.error("PROFILE DATABASE ERROR:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to retrieve profile.",
+      });
+    }
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: formatUser(user),
+    });
+  } catch (error) {
+    console.error("PROFILE FETCH ERROR:", error);
 
     return res.status(500).json({
       success: false,

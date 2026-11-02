@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 
 export const useResearchPopups = (API_URL) => {
@@ -10,13 +11,24 @@ export const useResearchPopups = (API_URL) => {
   const [loadingResearch, setLoadingResearch] = useState(false);
   const [loadingPdf, setLoadingPdf] = useState(false);
 
+  // Get the student's JWT token
+  const getAuthHeaders = () => {
+    const token = sessionStorage.getItem("authToken");
+
+    return {
+      Authorization: `Bearer ${token}`,
+    };
+  };
+
   const handleViewResearch = async (id) => {
     setShowPopup(true);
     setLoadingResearch(true);
     setSelectedResearch(null);
 
     try {
-      const response = await fetch(`${API_URL}/api/research/${id}`);
+      const response = await fetch(`${API_URL}/api/research/${id}`, {
+        headers: getAuthHeaders(),
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to load research (${response.status})`);
@@ -41,7 +53,9 @@ export const useResearchPopups = (API_URL) => {
     setSelectedPdf(null);
 
     try {
-      const response = await fetch(`${API_URL}/api/research/${id}`);
+      const response = await fetch(`${API_URL}/api/research/${id}`, {
+        headers: getAuthHeaders(),
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to load PDF text (${response.status})`);

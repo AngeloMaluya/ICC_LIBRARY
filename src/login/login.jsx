@@ -4,8 +4,6 @@ import "./login.css";
 import Image from "../assets/icon.png";
 import logImage from "../assets/img_repo/login.png";
 import { GoogleLogin } from "@react-oauth/google";
-import { jwtDecode } from "jwt-decode";
-import { saveGoogleTempUser } from "../utils/auth.js";
 import TermsModal from "../components/terms/TermsModal.jsx";
 
 export const Login = () => {
@@ -21,120 +19,146 @@ export const Login = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [pendingGoogleUser, setPendingGoogleUser] = useState(null);
 
-  const handleLogIn = async (e) => {
-    e.preventDefault();
+const handleLogIn = async (e) => {
+  e.preventDefault();
+
+  if (!termsAccepted) {
+    setShowTerms(true);
+    return;
+  }
+
+  const email = e.target.email.value;
+  const password = e.target.password.value;
+
+  // Keep your existing admin login unchanged
+  if (email === "admin" && password === "admin") {
+    const adminUser = {
+      id: "admin",
+      email: "admin",
+      firstName: "Admin",
+      lastName: "Admin",
+      role: "admin",
+    };
+
+    sessionStorage.setItem(
+      "libraryUser",
+      JSON.stringify(adminUser)
+    );
+
+    navigate("/admin");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "Login failed.");
+      return;
+    }
+
+    sessionStorage.setItem("authToken", data.token);
+    sessionStorage.setItem(
+      "libraryUser",
+      JSON.stringify(data.user)
+    );
+
+    navigate("/library");
+  } catch (error) {
+    console.error("Normal Login Error:", error);
+    alert("Unable to connect to the server. Please try again.");
+  }
+};
+
+const handleGoogleLogin = async (credentialResponse) => {
+  try {
+    if (!credentialResponse.credential) {
+      alert("Google authentication failed.");
+      return;
+    }
 
     if (!termsAccepted) {
+      setPendingGoogleUser(credentialResponse.credential);
       setShowTerms(true);
       return;
     }
 
-    const email = e.target.email.value;
-    const password = e.target.password.value;
+    await processGoogleUser(credentialResponse.credential);
+  } catch (error) {
+    console.error("Google Login Error:", error);
+    alert("Google Login Failed");
+  }
+};
 
-    // Test Admin
-    if (email === "admin" && password === "admin") {
-      const adminUser = {
-        id: "admin",
-        email: "admin",
-        firstName: "Admin",
-        lastName: "Admin",
-        role: "admin",
-      };
+const processGoogleUser = async (credential) => {
+  try {
+    const response = await fetch(`${API_URL}/api/google-login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ credential }),
+    });
 
-      sessionStorage.setItem("libraryUser", JSON.stringify(adminUser));
-      navigate("/admin");
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "Google Login Failed.");
       return;
     }
 
-    try {
-      const response = await fetch(`${API_URL}/api/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+    // Existing student account
+    if (data.exists) {
+      sessionStorage.setItem("authToken", data.token);
+      sessionStorage.setItem(
+        "libraryUser",
+        JSON.stringify(data.user)
+      );
 
-      const data = await response.json();
+      sessionStorage.removeItem("googleSignupToken");
+      sessionStorage.removeItem("googleEmail");
+      sessionStorage.removeItem("googlePicture");
+      sessionStorage.removeItem("googleName");
 
-      if (!response.ok) {
-        alert(data.message);
-        return;
-      }
-
-      sessionStorage.setItem("libraryUser", JSON.stringify(data.user));
       navigate("/library");
-    } catch (error) {
-      console.error("Normal Login Error:", error);
-      alert("Unable to connect to the server. Please try again.");
+      return;
     }
-  };
 
-  const handleGoogleLogin = async (credentialResponse) => {
-    try {
-      const user = jwtDecode(credentialResponse.credential);
+    // New student account
+    sessionStorage.setItem(
+      "googleSignupToken",
+      data.signupToken
+    );
 
-      const allowedDomain = "immaculada.edu.ph";
+    sessionStorage.setItem(
+      "googleEmail",
+      data.googleUser.email
+    );
 
-      if (!user.email.endsWith(`@${allowedDomain}`)) {
-        alert("Only school email accounts are allowed.");
-        return;
-      }
+    sessionStorage.setItem(
+      "googlePicture",
+      data.googleUser.picture || ""
+    );
 
-      if (!termsAccepted) {
-        setPendingGoogleUser(user);
-        setShowTerms(true);
-        return;
-      }
+    sessionStorage.setItem(
+      "googleName",
+      data.googleUser.name || ""
+    );
 
-      await processGoogleUser(user);
-
-    } catch (error) {
-      console.error("Google Login Error:", error);
-      alert("Google Login Failed");
-    }
-  };
-
-  const processGoogleUser = async (user) => {
-    try {
-      const response = await fetch(
-        `${API_URL}/api/user/${encodeURIComponent(user.email)}`
-      );
-
-      const data = await response.json();
-
-      console.log("User response:", data);
-
-      if (response.ok && data.exists) {
-        sessionStorage.setItem(
-          "libraryUser",
-          JSON.stringify(data.user)
-        );
-
-        saveGoogleTempUser(user);
-
-        navigate("/library");
-        return;
-      }
-
-      if (response.status === 404 && !data.exists) {
-        saveGoogleTempUser(user);
-
-        navigate("/create");
-        return;
-      }
-
-      alert("Unable to check your account. Please try again.");
-
-    } catch (error) {
-      console.error("Google Login Error:", error);
-
-      alert(
-        "Unable to connect to the server. Make sure your backend is running."
-      );
-    }
-  };
+    navigate("/create");
+  } catch (error) {
+    console.error("Google Login Error:", error);
+    alert("Unable to connect to the server. Please try again.");
+  }
+};
 
   // Checkbox clicked
   const handleTermsCheckbox = () => {

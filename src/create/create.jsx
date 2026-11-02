@@ -50,9 +50,13 @@ export const Create = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            ...form,
-            profilePicture: googlePicture || null,
-          }),
+          firstName: form.firstName,
+          lastName: form.lastName,
+          course: form.course,
+          year: form.year,
+          password: form.password,
+          signupToken: sessionStorage.getItem("googleSignupToken"),
+        }),
         }
       );
 
@@ -69,18 +73,22 @@ export const Create = () => {
           data.user?.profilePicture || googlePicture || null,
       };
 
-      sessionStorage.setItem(
-        "libraryUser",
-        JSON.stringify(registeredUser)
-      );
+    sessionStorage.setItem("authToken", data.token);
 
-      sessionStorage.removeItem("googleEmail");
-      sessionStorage.removeItem("googlePicture");
-      sessionStorage.removeItem("googleName");
+    sessionStorage.setItem(
+      "libraryUser",
+      JSON.stringify(data.user)
+    );
 
-      alert("Account Created!");
+    sessionStorage.removeItem("googleSignupToken");
+    sessionStorage.removeItem("googleEmail");
+    sessionStorage.removeItem("googlePicture");
+    sessionStorage.removeItem("googleName");
 
-      navigate("/library");
+    alert("Account Created!");
+
+    navigate("/library");
+
     } catch (error) {
       console.error("Registration error:", error);
       alert("Unable to connect to the server.");

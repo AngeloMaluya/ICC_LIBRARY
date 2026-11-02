@@ -25,7 +25,10 @@ export default function FullView() {
   const [research, setResearch] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingPdf, setLoadingPdf] = useState(false);
   const [error, setError] = useState("");
+
+  const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
 
   const [numPages, setNumPages] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
@@ -35,23 +38,44 @@ export default function FullView() {
   const [bookmarked, setBookmarked] = useState(false);
 
   const pdfUrl = research?.pdf_url;
+  const token = sessionStorage.getItem("authToken");
 
-  // LOAD RESEARCH
+  const authHeaders = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  // LOAD RESEARCH AND RECOMMENDATIONS
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchResearch = async () => {
       try {
         setLoading(true);
         setError("");
         setResearch(null);
+        setRecommendations([]);
         setPageNumber(1);
         setNumPages(0);
         pageRefs.current = [];
 
-        const response = await fetch(`${API_URL}/api/research/${id}`);
+        if (!token) {
+          throw new Error("Authentication required. Please log in again.");
+        }
+
+        const response = await fetch(
+          `${API_URL}/api/research/${id}`,
+          {
+            headers: authHeaders,
+            signal: controller.signal,
+          }
+        );
+
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || "Unable to load research.");
+          throw new Error(
+            data.message || `Unable to load research (${response.status}).`
+          );
         }
 
         const currentResearch = data.research || data;
@@ -59,7 +83,11 @@ export default function FullView() {
 
         // LOAD RECOMMENDATIONS
         const recommendationResponse = await fetch(
-          `${API_URL}/api/research`
+          `${API_URL}/api/research`,
+          {
+            headers: authHeaders,
+            signal: controller.signal,
+          }
         );
 
         if (recommendationResponse.ok) {
@@ -80,15 +108,81 @@ export default function FullView() {
           }
         }
       } catch (error) {
+        if (error.name === "AbortError") return;
+
         console.error("Full PDF loading error:", error);
         setError(error.message || "Unable to load research.");
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchResearch();
+
+    return () => {
+      controller.abort();
+    };
   }, [API_URL, id]);
+
+  // LOAD PDF USING JWT AUTHENTICATION
+  useEffect(() => {
+    if (!pdfUrl || !token) {
+      setPdfBlobUrl(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    let objectUrl = null;
+
+    const fetchPdf = async () => {
+      try {
+        setLoadingPdf(true);
+        setError("");
+        setPdfBlobUrl(null);
+
+        const response = await fetch(pdfUrl, {
+          headers: authHeaders,
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to load PDF (${response.status}).`
+          );
+        }
+
+        const blob = await response.blob();
+
+        if (!blob.size) {
+          throw new Error("The PDF file is empty.");
+        }
+
+        objectUrl = URL.createObjectURL(blob);
+        setPdfBlobUrl(objectUrl);
+      } catch (error) {
+        if (error.name === "AbortError") return;
+
+        console.error("PDF FETCH ERROR:", error);
+        setError(error.message || "Unable to load PDF.");
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoadingPdf(false);
+        }
+      }
+    };
+
+    fetchPdf();
+
+    return () => {
+      controller.abort();
+
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [pdfUrl, token]);
 
   // CHECK PDF URL
   useEffect(() => {
@@ -231,8 +325,8 @@ export default function FullView() {
 
   // OPEN PDF IN NEW TAB
   const openPdfInNewTab = () => {
-    if (pdfUrl) {
-      window.open(pdfUrl, "_blank", "noopener,noreferrer");
+    if (pdfBlobUrl) {
+      window.open(pdfBlobUrl, "_blank", "noopener,noreferrer");
     }
   };
 
@@ -315,7 +409,7 @@ export default function FullView() {
               type="button"
               title="Open PDF in new tab"
               onClick={openPdfInNewTab}
-              disabled={!pdfUrl}
+              disabled={!pdfBlobUrl}
             >
               ▣
             </button>
@@ -401,12 +495,17 @@ export default function FullView() {
             ref={pdfContainerRef}
             onScroll={handlePdfScroll}
           >
-            {loading ? (
+            {loading || loadingPdf ? (
               <p>Loading PDF...</p>
             ) : error && !research ? (
               <p>{error}</p>
             ) : !pdfUrl ? (
               <p>PDF file is not available.</p>
+            ) : !pdfBlobUrl ? (
+              <div className="pdf-error-message">
+                <h3>Unable to display PDF</h3>
+                <p>{error || "PDF is not available."}</p>
+              </div>
             ) : (
               <div className="pdf-document-wrapper">
                 {searchOpen && (
@@ -451,7 +550,7 @@ export default function FullView() {
                   </div>
                 ) : (
                   <Document
-                    file={pdfUrl}
+                    file={pdfBlobUrl}
                     onLoadSuccess={onDocumentLoadSuccess}
                     onLoadError={onDocumentLoadError}
                     onSourceError={onDocumentSourceError}

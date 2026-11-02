@@ -22,28 +22,54 @@ export default function Profile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        const token = sessionStorage.getItem("authToken");
+
         const storedUser = JSON.parse(
-          sessionStorage.getItem("libraryUser")
+          sessionStorage.getItem("libraryUser") || "null"
         );
 
-        if (!storedUser?.email) {
-          setLoading(false);
+        // Get email from stored user first, then from JWT payload.
+        let email = storedUser?.email;
+
+        if (!email && token) {
+          try {
+            const payload = JSON.parse(
+              atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
+            );
+
+            email = payload.email;
+          } catch (error) {
+            console.error("Unable to read JWT payload:", error);
+          }
+        }
+
+        if (!token) {
+          console.error("No authentication token found.");
+          return;
+        }
+
+        if (!email) {
+          console.error("No user email found.");
           return;
         }
 
         const response = await fetch(
-          `${API_URL}/api/user/${encodeURIComponent(storedUser.email)}`
+          `${API_URL}/api/user/${encodeURIComponent(email)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         const data = await response.json();
 
         if (!response.ok) {
-          console.error("Profile fetch failed:", data);
-          setLoading(false);
+          console.error("Profile fetch failed:", response.status, data);
           return;
         }
 
-        setProfile(data.user);
+        setProfile(data.user || null);
       } catch (error) {
         console.error("Profile Error:", error);
       } finally {
@@ -58,7 +84,6 @@ export default function Profile() {
     return (
       <div className="profile-page">
         <Sidebar />
-
         <main className="profile-main">
           <p>Loading profile...</p>
         </main>
@@ -70,7 +95,6 @@ export default function Profile() {
     return (
       <div className="profile-page">
         <Sidebar />
-
         <main className="profile-main">
           <p>Unable to load profile.</p>
         </main>
@@ -88,9 +112,10 @@ export default function Profile() {
         <section className="profile-card">
           <div className="profile-card-heading">
             <div className="profile-avatar">
-              {profile.profilePicture && !imageError ? (
+              {(profile.profilePicture || profile.profile_picture) &&
+              !imageError ? (
                 <img
-                  src={profile.profilePicture}
+                  src={profile.profilePicture || profile.profile_picture}
                   alt="Profile"
                   className="profile-picture"
                   referrerPolicy="no-referrer"
@@ -110,35 +135,12 @@ export default function Profile() {
           <div className="profile-divider" />
 
           <div className="profile-details">
-            <ProfileField
-              label="First Name"
-              value={profile.firstName}
-            />
-
-            <ProfileField
-              label="Last Name"
-              value={profile.lastName}
-            />
-
-            <ProfileField
-              label="User ID"
-              value={profile.id}
-            />
-
-            <ProfileField
-              label="Course"
-              value={profile.course}
-            />
-
-            <ProfileField
-              label="Year Level"
-              value={profile.year}
-            />
-
-            <ProfileField
-              label="Email Address"
-              value={profile.email}
-            />
+            <ProfileField label="First Name" value={profile.firstName} />
+            <ProfileField label="Last Name" value={profile.lastName} />
+            <ProfileField label="User ID" value={profile.id} />
+            <ProfileField label="Course" value={profile.course} />
+            <ProfileField label="Year Level" value={profile.year} />
+            <ProfileField label="Email Address" value={profile.email} />
           </div>
         </section>
       </main>

@@ -1,5 +1,3 @@
-import FullView from "../fullView/FullView";
-
 const ResearchPopups = ({
   showPopup,
   showPdfPopup,

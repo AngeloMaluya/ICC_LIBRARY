@@ -1,10 +1,10 @@
-
 import express from "express";
 import multer from "multer";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import { PDFParse } from "pdf-parse";
+import { verifyStudentToken } from "../middleware/authMiddleware.js";
 
 dotenv.config();
 
@@ -34,7 +34,7 @@ const ai = new GoogleGenAI({
 });
 
 // Get research listings, optionally filtered by program and search term
-router.get("/", async (req, res) => {
+router.get("/", verifyStudentToken, async (req, res) => {
   try {
     const { program, search } = req.query;
 
@@ -98,7 +98,7 @@ router.get("/", async (req, res) => {
 });
 
 // Get one complete research record, including extracted PDF text
-router.get("/:id", async (req, res) => {
+router.get("/:id", verifyStudentToken, async (req, res) => {
   try {
     const { id } = req.params;
 
