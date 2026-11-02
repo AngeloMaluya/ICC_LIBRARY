@@ -1,21 +1,27 @@
-const GOOGLE_TEMP_KEYS = ["googleEmail", "googleName", "googlePicture"];
-
-// Called after a successful Google sign-in, whether or not the account already exists in the database.
+const GOOGLE_TEMP_KEYS = [
+  "googleEmail",
+  "googleName",
+  "googlePicture",
+];
 
 export const saveGoogleTempUser = (user) => {
   sessionStorage.setItem("googleEmail", user.email);
   sessionStorage.setItem("googleName", user.name);
-  sessionStorage.setItem("googlePicture", user.picture);
+  sessionStorage.setItem("googlePicture", user.picture || "");
 };
 
-// Called once the temporary Google info has been consumed
-
 export const clearGoogleTempUser = () => {
-  GOOGLE_TEMP_KEYS.forEach((key) => sessionStorage.removeItem(key));
+  GOOGLE_TEMP_KEYS.forEach((key) => {
+    sessionStorage.removeItem(key);
+  });
 };
 
 export const logout = (navigate, redirectTo = "/") => {
-  localStorage.removeItem("libraryUser");
+  sessionStorage.removeItem("authToken");
+  sessionStorage.removeItem("libraryUser");
+  sessionStorage.removeItem("googleSignupToken");
+
   clearGoogleTempUser();
+
   navigate(redirectTo);
 };

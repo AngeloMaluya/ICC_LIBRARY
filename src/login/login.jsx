@@ -8,7 +8,6 @@ import TermsModal from "../components/terms/TermsModal.jsx";
 
 export const Login = () => {
   const navigate = useNavigate();
-
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
@@ -19,148 +18,166 @@ export const Login = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [pendingGoogleUser, setPendingGoogleUser] = useState(null);
 
-const handleLogIn = async (e) => {
-  e.preventDefault();
-
-  if (!termsAccepted) {
-    setShowTerms(true);
-    return;
-  }
-
-  const email = e.target.email.value;
-  const password = e.target.password.value;
-
-  // Keep your existing admin login unchanged
-  if (email === "admin" && password === "admin") {
-    const adminUser = {
-      id: "admin",
-      email: "admin",
-      firstName: "Admin",
-      lastName: "Admin",
-      role: "admin",
-    };
-
-    sessionStorage.setItem(
-      "libraryUser",
-      JSON.stringify(adminUser)
-    );
-
-    navigate("/admin");
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_URL}/api/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.message || "Login failed.");
-      return;
-    }
-
-    sessionStorage.setItem("authToken", data.token);
-    sessionStorage.setItem(
-      "libraryUser",
-      JSON.stringify(data.user)
-    );
-
-    navigate("/library");
-  } catch (error) {
-    console.error("Normal Login Error:", error);
-    alert("Unable to connect to the server. Please try again.");
-  }
-};
-
-const handleGoogleLogin = async (credentialResponse) => {
-  try {
-    if (!credentialResponse.credential) {
-      alert("Google authentication failed.");
-      return;
-    }
+  // NORMAL LOGIN
+  const handleLogIn = async (e) => {
+    e.preventDefault();
 
     if (!termsAccepted) {
-      setPendingGoogleUser(credentialResponse.credential);
       setShowTerms(true);
       return;
     }
 
-    await processGoogleUser(credentialResponse.credential);
-  } catch (error) {
-    console.error("Google Login Error:", error);
-    alert("Google Login Failed");
-  }
-};
+    const email = e.target.email.value.trim();
+    const password = e.target.password.value;
 
-const processGoogleUser = async (credential) => {
-  try {
-    const response = await fetch(`${API_URL}/api/google-login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ credential }),
-    });
+    // ADMIN LOGIN
+    if (email === "admin" && password === "admin") {
+      const adminUser = {
+        id: "admin",
+        email: "admin",
+        firstName: "Admin",
+        lastName: "Admin",
+        role: "admin",
+      };
 
-    const data = await response.json();
+      // Clear previous student authentication
+      sessionStorage.removeItem("authToken");
+      sessionStorage.removeItem("googleSignupToken");
 
-    if (!response.ok) {
-      alert(data.message || "Google Login Failed.");
+      sessionStorage.setItem(
+        "libraryUser",
+        JSON.stringify(adminUser)
+      );
+
+      navigate("/admin");
       return;
     }
 
-    // Existing student account
-    if (data.exists) {
+    try {
+      const response = await fetch(`${API_URL}/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || "Login failed.");
+        return;
+      }
+
+      // Save JWT token and user information
       sessionStorage.setItem("authToken", data.token);
       sessionStorage.setItem(
         "libraryUser",
         JSON.stringify(data.user)
       );
 
+      // Clear temporary Google signup information
       sessionStorage.removeItem("googleSignupToken");
       sessionStorage.removeItem("googleEmail");
       sessionStorage.removeItem("googlePicture");
       sessionStorage.removeItem("googleName");
 
       navigate("/library");
-      return;
+    } catch (error) {
+      console.error("Normal Login Error:", error);
+      alert("Unable to connect to the server. Please try again.");
     }
+  };
 
-    // New student account
-    sessionStorage.setItem(
-      "googleSignupToken",
-      data.signupToken
-    );
+  // GOOGLE LOGIN
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      if (!credentialResponse.credential) {
+        alert("Google authentication failed.");
+        return;
+      }
 
-    sessionStorage.setItem(
-      "googleEmail",
-      data.googleUser.email
-    );
+      if (!termsAccepted) {
+        setPendingGoogleUser(credentialResponse.credential);
+        setShowTerms(true);
+        return;
+      }
 
-    sessionStorage.setItem(
-      "googlePicture",
-      data.googleUser.picture || ""
-    );
+      await processGoogleUser(credentialResponse.credential);
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      alert("Google Login Failed.");
+    }
+  };
 
-    sessionStorage.setItem(
-      "googleName",
-      data.googleUser.name || ""
-    );
+  // PROCESS GOOGLE ACCOUNT
+  const processGoogleUser = async (credential) => {
+    try {
+      const response = await fetch(`${API_URL}/api/google-login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ credential }),
+      });
 
-    navigate("/create");
-  } catch (error) {
-    console.error("Google Login Error:", error);
-    alert("Unable to connect to the server. Please try again.");
-  }
-};
+      const data = await response.json();
 
-  // Checkbox clicked
+      if (!response.ok) {
+        alert(data.message || "Google Login Failed.");
+        return;
+      }
+
+      // EXISTING STUDENT ACCOUNT
+      if (data.exists) {
+        sessionStorage.setItem("authToken", data.token);
+        sessionStorage.setItem(
+          "libraryUser",
+          JSON.stringify(data.user)
+        );
+
+        // Clear temporary signup information
+        sessionStorage.removeItem("googleSignupToken");
+        sessionStorage.removeItem("googleEmail");
+        sessionStorage.removeItem("googlePicture");
+        sessionStorage.removeItem("googleName");
+
+        navigate("/library");
+        return;
+      }
+
+      // NEW STUDENT ACCOUNT
+      sessionStorage.removeItem("authToken");
+      sessionStorage.removeItem("libraryUser");
+
+      sessionStorage.setItem(
+        "googleSignupToken",
+        data.signupToken
+      );
+
+      sessionStorage.setItem(
+        "googleEmail",
+        data.googleUser.email
+      );
+
+      sessionStorage.setItem(
+        "googlePicture",
+        data.googleUser.picture || ""
+      );
+
+      sessionStorage.setItem(
+        "googleName",
+        data.googleUser.name || ""
+      );
+
+      navigate("/create");
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      alert("Unable to connect to the server. Please try again.");
+    }
+  };
+
+  // TERMS CHECKBOX
   const handleTermsCheckbox = () => {
     if (!termsAccepted) {
       setShowTerms(true);
@@ -169,21 +186,20 @@ const processGoogleUser = async (credential) => {
     }
   };
 
-  // User clicks I Agree inside modal
+  // USER AGREES TO TERMS
   const handleAgree = async () => {
     setTermsAccepted(true);
     setShowTerms(false);
 
     if (pendingGoogleUser) {
-      const user = pendingGoogleUser;
-
+      const credential = pendingGoogleUser;
       setPendingGoogleUser(null);
 
-      await processGoogleUser(user);
+      await processGoogleUser(credential);
     }
   };
 
-  // User closes/cancels modal
+  // USER CLOSES TERMS MODAL
   const handleCloseTerms = () => {
     setShowTerms(false);
     setPendingGoogleUser(null);
@@ -217,7 +233,6 @@ const processGoogleUser = async (credential) => {
           <h1>Welcome!</h1>
 
           <form onSubmit={handleLogIn} className="login-form">
-
             <label>Email</label>
 
             <input
@@ -240,14 +255,9 @@ const processGoogleUser = async (credential) => {
               <input
                 type="checkbox"
                 checked={termsAccepted}
-                onChange={() => {
-                  if (!termsAccepted) {
-                    setShowTerms(true);
-                  } else {
-                    setTermsAccepted(false);
-                  }
-                }}
+                onChange={handleTermsCheckbox}
               />
+
               By checking “I agree,” you confirm that you have read,
               understood, and agree to follow these Terms and Conditions.
               You also acknowledge that you have read and understood the
@@ -280,7 +290,6 @@ const processGoogleUser = async (credential) => {
             />
           </div>
         </div>
-
       </div>
 
       {showTerms && (

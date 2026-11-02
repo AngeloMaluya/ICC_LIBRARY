@@ -374,22 +374,6 @@ const GOOGLE_TEMP_KEYS = [
   "googlePicture",
 ];
 
-export const clearGoogleTempUser = () => {
-  GOOGLE_TEMP_KEYS.forEach((key) => {
-    sessionStorage.removeItem(key);
-  });
-};
-
-export const logout = (navigate, redirectTo = "/") => {
-  sessionStorage.removeItem("authToken");
-  sessionStorage.removeItem("libraryUser");
-  sessionStorage.removeItem("googleSignupToken");
-
-  clearGoogleTempUser();
-
-  navigate(redirectTo);
-};
-
 // Get the logged-in student's profile
 router.get("/user/:email", verifyStudentToken, async (req, res) => {
   try {
