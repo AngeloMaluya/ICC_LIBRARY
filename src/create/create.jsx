@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./create.css";
@@ -12,11 +13,8 @@ export const Create = () => {
     document.title = "Create Account";
   }, []);
 
-  const googleEmail =
-    sessionStorage.getItem("googleEmail") || "";
-
-  const googlePicture =
-    sessionStorage.getItem("googlePicture") || "";
+  const googleEmail = sessionStorage.getItem("googleEmail") || "";
+  const googlePicture = sessionStorage.getItem("googlePicture") || "";
 
   const [form, setForm] = useState({
     firstName: "",
@@ -85,7 +83,6 @@ export const Create = () => {
       navigate("/library");
     } catch (error) {
       console.error("Registration error:", error);
-
       alert("Unable to connect to the server.");
     } finally {
       setLoading(false);
@@ -95,7 +92,6 @@ export const Create = () => {
   return (
     <div className="register-page">
       <div className="register-card">
-
         <div className="left-side">
           <h1>Create Account</h1>
 
@@ -141,33 +137,33 @@ export const Create = () => {
 
           <label>Course</label>
 
-              <select
-              id="program"
-              name="program"
-              value={form.program}
-              onChange={handleChange}
-              required
-              >
-              <option value="">Select Program</option>
-              <option value="BSCS">
-                Bachelor of Science in Computer Science
-              </option>
-              <option value="BSBA">
-                Bachelor of Science in Business Administration
-              </option>
-              <option value="BSED">
-                Bachelor of Secondary Education
-              </option>
-              <option value="BEED">
-                Bachelor of Elementary Education
-              </option>
-              <option value="BSTM">
-                Bachelor of Science in Tourism Management
-              </option>
-              <option value="BSCriM">
-                Bachelor of Science in Criminology
-              </option>
-            </select>
+          <select
+            id="course"
+            name="course"
+            value={form.course}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select Course</option>
+            <option value="BSCS">
+              Bachelor of Science in Computer Science
+            </option>
+            <option value="BSBA">
+              Bachelor of Science in Business Administration
+            </option>
+            <option value="BSED">
+              Bachelor of Secondary Education
+            </option>
+            <option value="BEED">
+              Bachelor of Elementary Education
+            </option>
+            <option value="BSTM">
+              Bachelor of Science in Tourism Management
+            </option>
+            <option value="BSCrim">
+              Bachelor of Science in Criminology
+            </option>
+          </select>
 
           <label>Year</label>
 
@@ -212,12 +208,9 @@ export const Create = () => {
             type="submit"
             disabled={loading}
           >
-            {loading
-              ? "Creating Account..."
-              : "Create Account"}
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
-
       </div>
     </div>
   );

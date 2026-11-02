@@ -22,7 +22,6 @@ router.post("/register", async (req, res) => {
       profilePicture,
     } = req.body;
 
-
     // Validate all required registration fields
     if (
       !firstName ||
@@ -46,7 +45,19 @@ router.post("/register", async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: "Password must be at least 8 characters and no more than 72 bytes.",
+        message:
+          "Password must be at least 8 characters and no more than 72 bytes.",
+      });
+    }
+
+    // Validate email format
+    if (
+      typeof email !== "string" ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid email address.",
       });
     }
 
@@ -57,7 +68,7 @@ router.post("/register", async (req, res) => {
     } = await supabase
       .from("users")
       .select("id")
-      .eq("email", email)
+      .eq("email", email.trim())
       .maybeSingle();
 
     if (checkError) {
@@ -88,11 +99,11 @@ router.post("/register", async (req, res) => {
       .from("users")
       .insert([
         {
-          f_name: firstName,
-          l_name: lastName,
+          f_name: firstName.trim(),
+          l_name: lastName.trim(),
           course: course,
           year: year,
-          email: email,
+          email: email.trim(),
           password: hashedPassword,
           profile_picture: profilePicture || null,
         },
@@ -157,7 +168,9 @@ router.post("/login", async (req, res) => {
       error,
     } = await supabase
       .from("users")
-      .select("id, email, f_name, l_name, course, year, password, profile_picture")
+      .select(
+        "id, email, f_name, l_name, course, year, password, profile_picture"
+      )
       .eq("email", email.trim())
       .maybeSingle();
 
@@ -187,7 +200,8 @@ router.post("/login", async (req, res) => {
     if (!isBcryptHash) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password. Please reset your password.",
+        message:
+          "Invalid email or password. Please reset your password.",
       });
     }
 
@@ -271,7 +285,7 @@ router.get("/user/:email", async (req, res) => {
     }
 
     // Return the existing user's information without exposing sensitive data
-    return res.json({
+    return res.status(200).json({
       success: true,
       exists: true,
       user: {

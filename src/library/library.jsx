@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -38,15 +39,22 @@ export const Library = () => {
     document.title = "ICC Library";
   }, []);
 
-  // LOAD ALL RESEARCH
-
+  // LOAD AND SEARCH ALL RESEARCH
   useEffect(() => {
     const fetchResearches = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const response = await fetch(`${API_URL}/api/research`);
+        const params = new URLSearchParams();
+
+        if (searchTerm.trim()) {
+          params.set("search", searchTerm.trim());
+        }
+
+        const response = await fetch(
+          `${API_URL}/api/research?${params.toString()}`
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch research");
@@ -70,30 +78,12 @@ export const Library = () => {
     };
 
     fetchResearches();
-  }, [API_URL]);
-
-  // SEARCH
-
-  const filteredResearches = researches.filter((research) => {
-    const search = searchTerm.toLowerCase();
-
-    return (
-      research.title?.toLowerCase().includes(search) ||
-      research.author?.toLowerCase().includes(search) ||
-      research.year?.toString().includes(search) ||
-      research.program?.toLowerCase().includes(search) ||
-      research.content?.toLowerCase().includes(search)
-    );
-  });
-
-  // RENDER
+  }, [API_URL, searchTerm]);
 
   return (
     <div className="library-layout">
-      {/* SIDEBAR */}
       <Sidebar />
 
-      {/* MAIN CONTENT */}
       <main className="library-main">
         <SearchCat
           searchTerm={searchTerm}
@@ -101,7 +91,7 @@ export const Library = () => {
           navigate={navigate}
           loading={loading}
           error={error}
-          filteredResearches={filteredResearches}
+          filteredResearches={researches}
           handleViewResearch={handleViewResearch}
           handleViewPdfText={handleViewPdfText}
           getProgramImage={getProgramImage}

@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/icon.png";
 
@@ -15,18 +16,14 @@ import { logout } from "../../utils/auth.js";
 const Sidebar = () => {
   const navigate = useNavigate();
 
-  const user = localStorage.getItem("libraryUser");
+  const user = sessionStorage.getItem("libraryUser");
   const isLoggedIn = !!user;
 
   const handleLogout = () => logout(navigate);
 
   return (
     <aside className="library-sidebar">
-
-      {/* BRAND */}
-
       <div className="sidebar-brand">
-
         <button
           type="button"
           className="logo-button"
@@ -44,14 +41,9 @@ const Sidebar = () => {
           <strong>ICC</strong>
           <span>LIBRARY</span>
         </div>
-
       </div>
 
-
-      {/* MENU */}
-
       <nav className="sidebar-menu">
-
         <button
           type="button"
           onClick={() => navigate("/profile")}
@@ -87,9 +79,7 @@ const Sidebar = () => {
           <FaSignOutAlt />
           <span>Logout</span>
         </button>
-
       </nav>
-
     </aside>
   );
 };

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import "./profile.css";
 import Sidebar from "../sidebar/sidebar.jsx";
@@ -16,6 +17,7 @@ export default function Profile() {
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -86,18 +88,19 @@ export default function Profile() {
         <section className="profile-card">
           <div className="profile-card-heading">
             <div className="profile-avatar">
-            {profile.profilePicture ? (
-              <img
-              src={profile.profilePicture}
-              alt="Profile"
-              className="profile-picture"
-              referrerPolicy="no-referrer"
-              onError={() => setImageError(true)}
-            />
-            ) : (
-              (profile.firstName?.[0] || "") + (profile.lastName?.[0] || "")
-            )}
-          </div>
+              {profile.profilePicture && !imageError ? (
+                <img
+                  src={profile.profilePicture}
+                  alt="Profile"
+                  className="profile-picture"
+                  referrerPolicy="no-referrer"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                (profile.firstName?.[0] || "") +
+                (profile.lastName?.[0] || "")
+              )}
+            </div>
 
             <h2>
               {profile.firstName} {profile.lastName}
