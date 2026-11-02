@@ -141,14 +141,33 @@ export const Create = () => {
 
           <label>Course</label>
 
-          <input
-            type="text"
-            name="course"
-            placeholder="Enter course"
-            value={form.course}
-            onChange={handleChange}
-            required
-          />
+              <select
+              id="program"
+              name="program"
+              value={form.program}
+              onChange={handleChange}
+              required
+              >
+              <option value="">Select Program</option>
+              <option value="BSCS">
+                Bachelor of Science in Computer Science
+              </option>
+              <option value="BSBA">
+                Bachelor of Science in Business Administration
+              </option>
+              <option value="BSED">
+                Bachelor of Secondary Education
+              </option>
+              <option value="BEED">
+                Bachelor of Elementary Education
+              </option>
+              <option value="BSTM">
+                Bachelor of Science in Tourism Management
+              </option>
+              <option value="BSCriM">
+                Bachelor of Science in Criminology
+              </option>
+            </select>
 
           <label>Year</label>
 

@@ -86,17 +86,18 @@ export default function SearchCat({
                   className="card-image"
                   src={getProgramImage(research.program)}
                   alt={research.program || "Program"}
-                  onClick={() => handleViewPdfText(research.id)}
+                  onClick={() => navigate(`/fullview/${research.id}`)}
                 />
 
                 {/* CARD INFORMATION */}
                 <div className="card-info">
-                  <h3
-                    className="research-title"
-                    onClick={() => handleViewPdfText(research.id)}
-                  >
-                    {research.title}
-                  </h3>
+                 <h3
+                  className="research-title"
+                  onClick={() => navigate(`/fullview/${research.id}`)}
+                  title="Open PDF Viewer"
+                >
+                  {research.title}
+                </h3>
 
                   <p>{research.author || "Unknown Author"}</p>
 

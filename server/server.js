@@ -9,25 +9,6 @@ import authRoutes from "./routes/auth.js";
 
 dotenv.config();
 
-console.log(
-  "SUPABASE_URL:",
-  process.env.SUPABASE_URL
-);
-
-console.log(
-  "SUPABASE_SECRET_KEY:",
-  process.env.SUPABASE_SECRET_KEY
-    ? "LOADED"
-    : "NOT LOADED"
-);
-
-console.log(
-  "GEMINI_API_KEY:",
-  process.env.GEMINI_API_KEY
-    ? "LOADED"
-    : "NOT LOADED"
-);
-
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SECRET_KEY
@@ -84,15 +65,12 @@ app.get("/", (req, res) => {
 
 app.get("/api/test-gemini", async (req, res) => {
   try {
-    console.log("Sending request to Gemini...");
 
     const interaction = await ai.interactions.create({
       model: "gemini-3.1-flash-lite",
       input:
         "Explain what a research paper is in one sentence.",
     });
-
-    console.log("Gemini response received!");
 
     return res.json({
       success: true,
@@ -111,7 +89,6 @@ app.get("/api/test-gemini", async (req, res) => {
 
 app.get("/api/test-db", async (req, res) => {
   try {
-    console.log("Testing Supabase...");
 
     const {
       data,
@@ -158,11 +135,4 @@ app.get("/api/test-db", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(
-    `Server running at http://localhost:${PORT}`
-  );
-
-  console.log(
-    `Register endpoint: http://localhost:${PORT}/api/register`
-  );
 });

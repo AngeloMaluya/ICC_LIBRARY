@@ -22,7 +22,6 @@ router.post("/register", async (req, res) => {
       profilePicture,
     } = req.body;
 
-    console.log("Register request received:", email);
 
     // Validate all required registration fields
     if (
@@ -81,9 +80,6 @@ router.post("/register", async (req, res) => {
     // Hash the password using bcrypt with 12 salt rounds
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    console.log("BCRYPT HASH GENERATED:", hashedPassword.startsWith("$2"));
-    console.log("HASH LENGTH:", hashedPassword.length);
-
     // Insert the new user into the Supabase users table
     const {
       data: newUser,
@@ -112,8 +108,6 @@ router.post("/register", async (req, res) => {
         message: "Failed to create account.",
       });
     }
-
-    console.log("User registered successfully:", newUser.email);
 
     // Return the newly created user's information without exposing the password
     return res.status(201).json({
@@ -247,8 +241,6 @@ router.get("/user/:email", async (req, res) => {
         message: "Email is required.",
       });
     }
-
-    console.log("Checking Google account:", email);
 
     // Find the registered user using their Google email
     const {

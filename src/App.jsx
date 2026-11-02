@@ -7,6 +7,7 @@ import Landing from "./landing/landing";
 import Login from "./login/login";
 import Library from "./library/library";
 import Program from "./library/program";
+import FullView from "./components/fullView/FullView";
 
 import Create from "./create/create";
 import Profile from "./components/profile/profile";
@@ -89,6 +90,15 @@ function App() {
           element={
             <GoogleProtectedRoute>
               <Profile />
+            </GoogleProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/fullview/:id"
+          element={
+            <GoogleProtectedRoute>
+              <FullView />
             </GoogleProtectedRoute>
           }
         />

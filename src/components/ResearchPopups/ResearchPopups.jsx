@@ -1,3 +1,5 @@
+import FullView from "../fullView/FullView";
+
 const ResearchPopups = ({
   showPopup,
   showPdfPopup,
@@ -101,7 +103,7 @@ const ResearchPopups = ({
                 <h3 className="full-text-heading">Full Research Text</h3>
 
                 <div className="pdf-text-content">
-                  {selectedPdf.content ? (
+                 {selectedPdf.content ? (
                     <pre>{selectedPdf.content}</pre>
                   ) : (
                     <p>No extracted PDF text is available.</p>

@@ -118,6 +118,11 @@ export default function Profile() {
             />
 
             <ProfileField
+              label="User ID"
+              value={profile.id}
+            />
+
+            <ProfileField
               label="Course"
               value={profile.course}
             />
