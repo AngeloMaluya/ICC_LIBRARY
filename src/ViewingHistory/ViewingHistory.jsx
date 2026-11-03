@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/sidebar/sidebar.jsx";
-import "./ViewingHistory.css";
+import "./viewingHistory.css";
 
 export default function ViewingHistory() {
   const API_URL = import.meta.env.VITE_API_URL;
