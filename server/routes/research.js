@@ -1,6 +1,8 @@
+
 import express from "express";
 import multer from "multer";
 import dotenv from "dotenv";
+import { randomUUID } from "node:crypto";
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import { PDFParse } from "pdf-parse";
@@ -15,25 +17,61 @@ const supabase = createClient(
   process.env.SUPABASE_SECRET_KEY
 );
 
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 50 * 1024 * 1024,
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype !== "application/pdf") {
-      return cb(new Error("Only PDF files are allowed."));
-    }
-
-    cb(null, true);
-  },
-});
-
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
-// Get research listings, optionally filtered by program and search term
+/* =========================================================
+   MULTER CONFIGURATION
+========================================================= */
+
+const MAX_PDF_SIZE = 50 * 1024 * 1024;
+const MAX_POSTER_SIZE = 5 * 1024 * 1024;
+
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+
+  limits: {
+    fileSize: 50 * 1024 * 1024,
+  },
+
+  fileFilter: (req, file, cb) => {
+    // Research PDF
+    if (file.fieldname === "pdf") {
+      if (file.mimetype !== "application/pdf") {
+        return cb(new Error("Only PDF research files are allowed."));
+      }
+
+      return cb(null, true);
+    }
+
+    // Research Poster
+    if (file.fieldname === "poster") {
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "application/pdf",
+      ];
+
+      if (!allowedTypes.includes(file.mimetype)) {
+        return cb(
+          new Error("Only JPG, PNG, WebP, and PDF posters are allowed.")
+        );
+      }
+
+      return cb(null, true);
+    }
+
+    return cb(new Error("Unexpected file field."));
+  },
+});
+
+/* =========================================================
+   GET ALL RESEARCH
+========================================================= */
+
 router.get("/", verifyStudentToken, async (req, res) => {
   try {
     const { program, search } = req.query;
@@ -48,6 +86,7 @@ router.get("/", verifyStudentToken, async (req, res) => {
         program,
         summary,
         pdf_url,
+        poster_url,
         created_at
       `)
       .order("created_at", {
@@ -59,7 +98,10 @@ router.get("/", verifyStudentToken, async (req, res) => {
       typeof program === "string" &&
       program.trim()
     ) {
-      query = query.ilike("program", program.trim());
+      query = query.ilike(
+        "program",
+        program.trim()
+      );
     }
 
     if (
@@ -67,7 +109,9 @@ router.get("/", verifyStudentToken, async (req, res) => {
       typeof search === "string" &&
       search.trim()
     ) {
-      const term = search.trim().replace(/[%(),]/g, " ");
+      const term = search
+        .trim()
+        .replace(/[%(),]/g, " ");
 
       query = query.or(
         `title.ilike.%${term}%,author.ilike.%${term}%,program.ilike.%${term}%,content.ilike.%${term}%`
@@ -97,7 +141,10 @@ router.get("/", verifyStudentToken, async (req, res) => {
   }
 });
 
-// Get one complete research record, including extracted PDF text
+/* =========================================================
+   GET SINGLE RESEARCH
+========================================================= */
+
 router.get("/:id", verifyStudentToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -111,7 +158,10 @@ router.get("/:id", verifyStudentToken, async (req, res) => {
       .single();
 
     if (error || !data) {
-      console.error("GET SINGLE RESEARCH ERROR:", error);
+      console.error(
+        "GET SINGLE RESEARCH ERROR:",
+        error
+      );
 
       return res.status(404).json({
         success: false,
@@ -130,24 +180,105 @@ router.get("/:id", verifyStudentToken, async (req, res) => {
   }
 });
 
-// Upload PDF, extract text, generate summary, and save research
+/* =========================================================
+   UPLOAD RESEARCH PDF + OPTIONAL POSTER
+========================================================= */
+
 router.post(
   "/summarize",
-  upload.single("pdf"),
+  upload.fields([
+    { name: "pdf", maxCount: 1 },
+    { name: "poster", maxCount: 1 },
+  ]),
   async (req, res) => {
     try {
-      if (!req.file) {
+      const pdfFile = req.files?.pdf?.[0];
+      const posterFile = req.files?.poster?.[0];
+
+      /* =================================================
+         VALIDATE FILES AND RESEARCH INFORMATION
+      ================================================= */
+
+      if (!pdfFile) {
         return res.status(400).json({
           success: false,
           message: "Please upload a PDF file.",
         });
       }
 
-      console.log("PDF received:", req.file.originalname);
-      console.log("PDF size:", req.file.size, "bytes");
+      if (pdfFile.size > MAX_PDF_SIZE) {
+        return res.status(400).json({
+          success: false,
+          message: "PDF must not exceed 50 MB.",
+        });
+      }
+
+      if (
+        posterFile &&
+        posterFile.size > MAX_POSTER_SIZE
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Poster must not exceed 5 MB.",
+        });
+      }
+
+      const {
+        title,
+        author,
+        year,
+        program,
+      } = req.body;
+
+      if (
+        !title?.trim() ||
+        !author?.trim() ||
+        !year ||
+        !program?.trim()
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Please complete all research fields.",
+        });
+      }
+
+      const numericYear = Number(year);
+
+      if (
+        !Number.isInteger(numericYear) ||
+        numericYear < 2000 ||
+        numericYear > 2100
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid research year.",
+        });
+      }
+
+      console.log(
+        "PDF received:",
+        pdfFile.originalname
+      );
+
+      console.log(
+        "PDF size:",
+        pdfFile.size,
+        "bytes"
+      );
+
+      if (posterFile) {
+        console.log(
+          "Poster received:",
+          posterFile.originalname
+        );
+      }
+
+      /* =================================================
+         EXTRACT PDF TEXT
+      ================================================= */
 
       const parser = new PDFParse({
-        data: req.file.buffer,
+        data: pdfFile.buffer,
       });
 
       let pdfText = "";
@@ -168,48 +299,40 @@ router.post(
         await parser.destroy();
       }
 
-      const {
-        title,
-        author,
-        year,
-        program,
-      } = req.body;
+      /* =================================================
+         GENERATE AI SUMMARY USING GEMINI
+      ================================================= */
 
-      if (!title) {
-        return res.status(400).json({
-          success: false,
-          message: "Research title is required.",
-        });
-      }
-
-      const pdfBase64 = req.file.buffer.toString("base64");
+      const pdfBase64 =
+        pdfFile.buffer.toString("base64");
 
       const interaction = await ai.interactions.create({
         model: "gemini-3.1-flash-lite",
+
         input: [
           {
             type: "text",
             text: `
-            You are an AI assistant for an academic research library.
+              You are an AI assistant for an academic research library.
 
-            Read the uploaded research paper carefully and create a clear academic summary.
+              Read the uploaded research paper carefully and create a clear academic summary.
 
-            Provide the following:
+              Provide the following:
 
-            1. topic
-            2. problem
-            3. objectives
-            4. methodology
-            5. findings
-            6. conclusion
+              1. topic
+              2. problem
+              3. objectives
+              4. methodology
+              5. findings
+              6. conclusion
 
-            Do not invent information that is not present in the paper.
+              Do not invent information that is not present in the paper.
 
-            If a section is not available in the paper, write:
+              If a section is not available in the paper, write:
 
-            "Not specified in the document."
+              "Not specified in the document."
 
-            Keep the summary clear, accurate, and suitable for students.
+              Keep the summary clear, accurate, and suitable for students.
             `,
           },
           {
@@ -222,41 +345,119 @@ router.post(
 
       const summary = interaction.output_text;
 
-      const safeFileName = req.file.originalname
+      if (!summary?.trim()) {
+        throw new Error(
+          "Gemini did not return a research summary."
+        );
+      }
+
+      /* =================================================
+         UPLOAD PDF TO SUPABASE STORAGE
+      ================================================= */
+
+      const safeFileName = pdfFile.originalname
         .normalize("NFKD")
         .replace(/[^\w.-]/g, "-")
         .replace(/-+/g, "-");
 
-      const fileName = `${Date.now()}-${safeFileName}`;
+      const pdfFileName =
+        `${Date.now()}-${randomUUID()}-${safeFileName}`;
 
-      const {
-        error: storageError,
-      } = await supabase.storage
-        .from("research-pdfs")
-        .upload(
-          fileName,
-          req.file.buffer,
-          {
-            contentType: "application/pdf",
-            upsert: false,
-          }
-        );
+      const { error: storageError } =
+        await supabase.storage
+          .from("research-pdfs")
+          .upload(
+            pdfFileName,
+            pdfFile.buffer,
+            {
+              contentType: "application/pdf",
+              upsert: false,
+            }
+          );
 
       if (storageError) {
-        console.error("SUPABASE STORAGE ERROR:", storageError);
+        console.error(
+          "SUPABASE PDF STORAGE ERROR:",
+          storageError
+        );
 
         return res.status(500).json({
           success: false,
-          message: "Failed to upload PDF to Supabase.",
+          message:
+            "Failed to upload PDF to Supabase.",
           error: storageError.message,
         });
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from("research-pdfs")
-        .getPublicUrl(fileName);
+      const { data: publicUrlData } =
+        supabase.storage
+          .from("research-pdfs")
+          .getPublicUrl(pdfFileName);
 
       const pdfUrl = publicUrlData.publicUrl;
+
+      /* =================================================
+         UPLOAD OPTIONAL POSTER TO SUPABASE STORAGE
+      ================================================= */
+
+      let posterUrl = null;
+      let posterFileName = null;
+
+      if (posterFile) {
+        const extensionMap = {
+          "image/jpeg": "jpg",
+          "image/png": "png",
+          "image/webp": "webp",
+        };
+
+        const extension =
+          extensionMap[posterFile.mimetype];
+
+        posterFileName =
+          `${Date.now()}-${randomUUID()}.${extension}`;
+
+        const { error: posterError } =
+          await supabase.storage
+            .from("research-posters")
+            .upload(
+              posterFileName,
+              posterFile.buffer,
+              {
+                contentType: posterFile.mimetype,
+                upsert: false,
+              }
+            );
+
+        if (posterError) {
+          console.error(
+            "SUPABASE POSTER STORAGE ERROR:",
+            posterError
+          );
+
+          // Remove the PDF uploaded by this request.
+          await supabase.storage
+            .from("research-pdfs")
+            .remove([pdfFileName]);
+
+          return res.status(500).json({
+            success: false,
+            message:
+              "Failed to upload research poster.",
+            error: posterError.message,
+          });
+        }
+
+        const { data: posterUrlData } =
+          supabase.storage
+            .from("research-posters")
+            .getPublicUrl(posterFileName);
+
+        posterUrl = posterUrlData.publicUrl;
+      }
+
+      /* =================================================
+         SAVE RESEARCH TO SUPABASE DATABASE
+      ================================================= */
 
       const {
         data: research,
@@ -265,11 +466,12 @@ router.post(
         .from("summarized")
         .insert([
           {
-            title,
-            author,
-            year: year ? Number(year) : null,
-            program,
+            title: title.trim(),
+            author: author.trim(),
+            year: numericYear,
+            program: program.trim(),
             pdf_url: pdfUrl,
+            poster_url: posterUrl,
             summary,
             content: pdfText,
           },
@@ -278,58 +480,103 @@ router.post(
         .single();
 
       if (databaseError) {
-        console.error("SUPABASE DATABASE ERROR:", databaseError);
+        console.error(
+          "SUPABASE DATABASE ERROR:",
+          databaseError
+        );
+
+        // Clean up uploaded files if database insert fails.
+        await supabase.storage
+          .from("research-pdfs")
+          .remove([pdfFileName]);
+
+        if (posterFileName) {
+          await supabase.storage
+            .from("research-posters")
+            .remove([posterFileName]);
+        }
 
         return res.status(500).json({
           success: false,
           message:
-            "PDF uploaded, but failed to save research information.",
+            "Failed to save research information.",
           error: databaseError.message,
         });
       }
 
-      console.log("Research saved successfully!");
+      /* =================================================
+         SUCCESS RESPONSE
+      ================================================= */
+
+      console.log(
+        "Research saved successfully!"
+      );
 
       return res.status(201).json({
         success: true,
-        message: "Research uploaded and summarized successfully.",
+        message:
+          "Research uploaded and summarized successfully.",
         research,
       });
+
     } catch (error) {
-      console.error("PDF SUMMARY ERROR:", error);
+      console.error(
+        "PDF SUMMARY ERROR:",
+        error
+      );
 
       return res.status(500).json({
         success: false,
         message:
-          error.message || "Failed to process research PDF.",
+          error.message ||
+          "Failed to process research PDF.",
       });
     }
   }
 );
 
-// Handle upload and Multer errors
+/* =========================================================
+   HANDLE MULTER AND UPLOAD ERRORS
+========================================================= */
+
 router.use((error, req, res, next) => {
-  console.error("RESEARCH ROUTE ERROR:", error);
+  console.error(
+    "RESEARCH ROUTE ERROR:",
+    error
+  );
 
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({
         success: false,
-        message: "PDF is too large. Maximum size is 50 MB.",
+        message:
+          "Uploaded file is too large. PDF maximum is 50 MB; poster maximum is 5 MB.",
       });
     }
-  }
 
-  if (error.message === "Only PDF files are allowed.") {
     return res.status(400).json({
       success: false,
-      message: "Only PDF files are allowed.",
+      message: error.message,
+    });
+  }
+
+  if (
+    error.message === "Only PDF files are allowed." ||
+    error.message ===
+      "Only JPG, PNG, and WebP poster images are allowed." ||
+    error.message === "Unexpected upload field."
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
     });
   }
 
   return res.status(500).json({
     success: false,
-    message: error.message || "Something went wrong.",
+    message:
+      error.message ||
+      "Something went wrong.",
   });
 });
 

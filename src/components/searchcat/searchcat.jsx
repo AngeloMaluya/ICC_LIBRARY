@@ -84,8 +84,15 @@ export default function SearchCat({
                 {/* PLACEHOLDER IMAGE */}
                 <img
                   className="card-image"
-                  src={getProgramImage(research.program)}
-                  alt={research.program || "Program"}
+                   src={
+                    research.poster_url ||
+                    getProgramImage(research.program)
+                  }
+                  alt={`${research.title} poster`}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = getProgramImage(research.program);
+                  }}
                   onClick={() => navigate(`/fullview/${research.id}`)}
                 />
 
