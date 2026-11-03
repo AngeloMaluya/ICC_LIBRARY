@@ -190,26 +190,26 @@ router.post(
           {
             type: "text",
             text: `
-You are an AI assistant for an academic research library.
+            You are an AI assistant for an academic research library.
 
-Read the uploaded research paper carefully and create a clear academic summary.
+            Read the uploaded research paper carefully and create a clear academic summary.
 
-Provide the following:
+            Provide the following:
 
-1. topic
-2. problem
-3. objectives
-4. methodology
-5. findings
-6. conclusion
+            1. topic
+            2. problem
+            3. objectives
+            4. methodology
+            5. findings
+            6. conclusion
 
-Do not invent information that is not present in the paper.
+            Do not invent information that is not present in the paper.
 
-If a section is not available in the paper, write:
+            If a section is not available in the paper, write:
 
-"Not specified in the document."
+            "Not specified in the document."
 
-Keep the summary clear, accurate, and suitable for students.
+            Keep the summary clear, accurate, and suitable for students.
             `,
           },
           {

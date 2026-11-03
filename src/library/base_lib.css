@@ -412,6 +412,8 @@
 
 .summary-section {
   margin-top: 25px;
+  text-align: justify;
+  line-height: 1.6;
 }
 
 .summary-section h3 {

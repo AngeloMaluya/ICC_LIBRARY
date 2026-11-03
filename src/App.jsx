@@ -8,6 +8,7 @@ import Login from "./login/login";
 import Library from "./library/library";
 import Program from "./library/program";
 import FullView from "./components/fullView/FullView";
+import ViewingHistory from "./ViewingHistory/ViewingHistory.jsx";
 
 import Create from "./create/create";
 import Profile from "./components/profile/profile";
@@ -81,6 +82,15 @@ function App() {
           element={
             <GoogleProtectedRoute>
               <Program />
+            </GoogleProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/history"
+          element={
+            <GoogleProtectedRoute>
+              <ViewingHistory />
             </GoogleProtectedRoute>
           }
         />

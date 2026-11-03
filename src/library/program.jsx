@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -51,15 +52,26 @@ export const Program = () => {
   }, [displayProgram]);
 
   // LOAD RESEARCH FROM THE BACKEND
-  // The backend filters by program and searches the extracted PDF text.
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchResearches = async () => {
       try {
         setLoading(true);
         setError("");
 
-        // Build the API URL with the selected program and search term.
+        // GET AUTHENTICATION TOKEN
+
+        const token = sessionStorage.getItem("authToken");
+
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        // BUILD API URL
+
         const params = new URLSearchParams();
 
         if (currentProgram) {
@@ -70,13 +82,43 @@ export const Program = () => {
           params.set("search", searchTerm.trim());
         }
 
+        // FETCH RESEARCH WITH JWT AUTHENTICATION
+
         const response = await fetch(
-          `${API_URL}/api/research?${params.toString()}`
+          `${API_URL}/api/research?${params.toString()}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            signal: controller.signal,
+          }
         );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch research");
+        // HANDLE EXPIRED OR INVALID SESSION
+
+        if (response.status === 401) {
+          sessionStorage.removeItem("authToken");
+          sessionStorage.removeItem("libraryUser");
+
+          navigate("/login");
+          return;
         }
+
+        // HANDLE API ERRORS
+
+        if (!response.ok) {
+          const errorData = await response
+            .json()
+            .catch(() => ({}));
+
+          throw new Error(
+            errorData.message ||
+              `Failed to fetch research (${response.status})`
+          );
+        }
+
+        // READ RESPONSE
 
         const data = await response.json();
 
@@ -88,15 +130,26 @@ export const Program = () => {
           setResearches([]);
         }
       } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
+
         console.error("Error fetching research:", error);
+
         setError("Unable to load research from the database.");
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchResearches();
-  }, [API_URL, currentProgram, searchTerm]);
+
+    return () => {
+      controller.abort();
+    };
+  }, [API_URL, currentProgram, searchTerm, navigate]);
 
   // RENDER
 
@@ -122,7 +175,8 @@ export const Program = () => {
           }}
           emptyMessage={
             <>
-              No research found for <strong>{displayProgram}</strong>
+              No research found for{" "}
+              <strong>{displayProgram}</strong>
             </>
           }
         />

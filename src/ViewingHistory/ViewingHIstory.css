@@ -1,0 +1,292 @@
+.history-page {
+  display: flex;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.history-main {
+  flex: 1;
+  padding: 28px 32px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.history-title {
+  margin: 0;
+  text-align: center;
+
+  color: #0a4174;
+
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.history-divider {
+  width: 100%;
+  height: 1px;
+
+  margin-top: 10px;
+
+  background: #cfcfcf;
+}
+
+/* =========================
+   ACTION BUTTONS
+========================= */
+
+.history-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 10px 0;
+  border-bottom: 1px solid #cfcfcf;
+}
+
+.history-filter-button {
+  width: 38px;
+  height: 32px;
+
+  border: 1px solid #e8c95c;
+  border-radius: 6px;
+
+  background: #ffffff;
+  color: #0a4174;
+
+  font-size: 20px;
+
+  cursor: pointer;
+}
+
+.history-clear-button {
+  min-width: 75px;
+  height: 32px;
+
+  padding: 0 18px;
+
+  border: 1px solid #e8c95c;
+  border-radius: 6px;
+
+  background: #ffffff;
+  color: #0a4174;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.history-clear-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* =========================
+   HISTORY
+========================= */
+
+.history-list {
+  width: 100%;
+}
+
+.history-date-section {
+  margin: 0;
+}
+
+.history-date-label {
+  margin: 0;
+  padding: 7px 2px;
+
+  border-bottom: 1px solid #bcbcbc;
+
+  color: #444444;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.history-item {
+  padding: 8px 2px 10px;
+
+  border-bottom: 1px solid #cfcfcf;
+}
+
+.history-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 20px;
+}
+
+.history-research-title {
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  color: #003cff;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.history-research-title:hover {
+  text-decoration: underline;
+}
+
+.history-time {
+  flex-shrink: 0;
+
+  color: #003cff;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.history-information {
+  margin: 3px 0;
+
+  color: #64a968;
+
+  font-size: 12px;
+}
+
+.history-summary {
+  display: -webkit-box;
+  overflow: hidden;
+
+  margin: 0;
+  max-width: 900px;
+
+  color: #333333;
+
+  font-size: 12px;
+  line-height: 1.35;
+
+  -webkit-box-orient: vertical;
+}
+
+.history-message {
+  padding: 50px 20px;
+
+  color: #777777;
+
+  text-align: center;
+}
+
+/* =========================
+   FILTER MODAL
+========================= */
+
+.history-filter-overlay {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+
+  z-index: 9999;
+}
+
+.history-filter-modal {
+  width: 500px;
+  max-width: 100%;
+
+  padding: 28px 34px 20px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #333333;
+  border-radius: 8px;
+
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.history-filter-modal h2 {
+  margin: 0 0 30px;
+
+  color: #0a4174;
+
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.history-date-inputs {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+
+  gap: 14px;
+}
+
+.history-date-field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.history-date-field label {
+  color: #666666;
+
+  font-size: 11px;
+}
+
+.history-date-field input {
+  width: 150px;
+  height: 34px;
+
+  padding: 0 10px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+
+  background: #f3f3f3;
+
+  color: #333333;
+  font-family: inherit;
+}
+
+.history-date-separator {
+  margin-bottom: 8px;
+
+  color: #777777;
+}
+
+.history-filter-footer {
+  display: flex;
+  justify-content: flex-end;
+
+  margin-top: 40px;
+}
+
+.history-filter-footer button {
+  padding: 6px 18px;
+
+  border: 1px solid #e8c95c;
+  border-radius: 5px;
+
+  background: #ffffff;
+  color: #003cff;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+}

@@ -7,6 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 
 import researchRoutes from "./routes/research.js";
 import authRoutes from "./routes/auth.js";
+import historyRoutes from "./routes/history.js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -50,6 +51,11 @@ app.use(
 app.use(
   "/api",
   authRoutes
+);
+
+app.use(
+  "/api/history",
+  historyRoutes
 );
 
 const ai = new GoogleGenAI({
