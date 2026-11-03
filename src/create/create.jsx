@@ -175,17 +175,27 @@ export const Create = () => {
 
           <label>Year</label>
 
-          <input
-            type="number"
+          <select
+            id="year"
             name="year"
-            min="1"
-            max="4"
-            step="1"
-            placeholder="Enter year"
             value={form.year}
             onChange={handleChange}
             required
-          />
+          >
+            <option value="">Select Year</option>
+            <option value="1">
+              First Year
+            </option>
+            <option value="2">
+              Second Year
+            </option>
+            <option value="3">
+              Third Year
+            </option>
+            <option value="4">
+              Fourth Year
+            </option>
+          </select>
 
           <label>Email</label>
 

@@ -89,28 +89,27 @@
 
 }
 
-.right-side input {
-
+.right-side input,
+.right-side select {
+  width: 100%;
   height: 48px;
 
-  border-radius: 12px;
+  box-sizing: border-box;
 
+  border-radius: 12px;
   border: 1px solid #999;
 
   padding: 0 15px;
-
   font-size: 16px;
 
   margin-bottom: 8px;
 
+  background-color: #ffffff;
 }
-
-.right-side input:focus {
-
+.right-side input:focus,
+.right-side select:focus {
   outline: none;
-
   border: 2px solid #0b4b8f;
-
 }
 
 .right-side button {
