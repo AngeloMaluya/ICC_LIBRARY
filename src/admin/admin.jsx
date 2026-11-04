@@ -5,7 +5,7 @@ import { logout } from "../utils/auth.js";
 import { pdfjs } from "react-pdf";
 
 import "../components/sidebar/sidebar.css";
-import Sidebar from "../components/sidebar/sidebar.jsx";
+import Sidebar from "./component/sidebar/sidebar.jsx";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",

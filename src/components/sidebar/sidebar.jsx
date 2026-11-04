@@ -1,23 +1,45 @@
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../../assets/icon.png";
 
+import { FiLogOut } from "react-icons/fi";
+
 import {
+  FaRegUser,
   FaUser,
   FaRegBookmark,
+  FaBookmark,
   FaHistory,
-  FaSignOutAlt,
 } from "react-icons/fa";
 
 import "./sidebar.css";
-
 import { logout } from "../../utils/auth.js";
+
+const menuItems = [
+  {
+    label: "Profile",
+    icon: <FaRegUser />,
+    activeIcon: <FaUser />,
+    path: "/profile",
+  },
+  {
+    label: "Saved",
+    icon: <FaRegBookmark />,
+    activeIcon: <FaBookmark />,
+    path: "/saved",
+  },
+  {
+    label: "Viewing History",
+    icon: <FaHistory />,
+    path: "/history",
+  },
+];
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const user = sessionStorage.getItem("libraryUser");
-  const isLoggedIn = !!user;
+  const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => logout(navigate);
 
@@ -44,39 +66,39 @@ const Sidebar = () => {
       </div>
 
       <nav className="sidebar-menu">
-        <button
-          type="button"
-          onClick={() => navigate("/profile")}
-          className="sidebar-item"
-        >
-          <FaUser />
-          <span>Profile</span>
-        </button>
+        {menuItems.map((item) => {
+          const active = isActive(item.path);
 
-        <button
-          type="button"
-          onClick={() => navigate("/saved")}
-          className="sidebar-item"
-        >
-          <FaRegBookmark />
-          <span>Saved</span>
-        </button>
+          return (
+            <button
+              key={item.path}
+              type="button"
+              onClick={() => navigate(item.path)}
+              className={`sidebar-item ${active ? "active" : ""}`}
+            >
+              <span className="sidebar-icon">
+                <span className="icon-default">
+                  {active ? item.activeIcon || item.icon : item.icon}
+                </span>
 
-        <button
-          type="button"
-          onClick={() => navigate("/history")}
-          className="sidebar-item"
-        >
-          <FaHistory />
-          <span>Viewing History</span>
-        </button>
+                <span className="icon-hover">
+                  {item.activeIcon || item.icon}
+                </span>
+              </span>
+
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
 
         <button
           type="button"
           onClick={handleLogout}
           className="sidebar-item"
         >
-          <FaSignOutAlt />
+          <span className="sidebar-icon">
+            <FiLogOut />
+          </span>
           <span>Logout</span>
         </button>
       </nav>
