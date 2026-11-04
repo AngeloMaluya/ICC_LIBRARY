@@ -31,6 +31,7 @@ const menuItems = [
   {
     label: "Viewing History",
     icon: <FaHistory />,
+    className: "sidebar-history-icon",
     path: "/history",
   },
 ];
@@ -76,7 +77,7 @@ const Sidebar = () => {
               onClick={() => navigate(item.path)}
               className={`sidebar-item ${active ? "active" : ""}`}
             >
-              <span className="sidebar-icon">
+              <span className={`sidebar-icon ${item.className || ""}`}>
                 <span className="icon-default">
                   {active ? item.activeIcon || item.icon : item.icon}
                 </span>
