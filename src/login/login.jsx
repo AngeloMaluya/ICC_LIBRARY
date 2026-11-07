@@ -49,7 +49,7 @@ export const Login = () => {
         JSON.stringify(adminUser)
       );
 
-      navigate("/admin");
+      navigate("/dashboard");
       return;
     }
 

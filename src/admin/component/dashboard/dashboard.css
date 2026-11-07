@@ -1,0 +1,128 @@
+
+.admin-dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.admin-dashboard-main {
+  flex: 1;
+  min-width: 0;
+  padding: 25px 18px;
+  background: #ffffff;
+}
+
+/* SEARCH */
+
+.admin-search {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 38px;
+  padding: 0 20px;
+  margin: 0 14px 16px;
+  border-radius: 30px;
+  background: #d5d5d5;
+  box-shadow: 0 2px 3px #00000030;
+}
+
+.admin-search input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+}
+
+/* SECTIONS */
+
+.admin-section {
+  padding: 26px 18px 10px;
+  margin-bottom: 10px;
+  border: 1px solid #444;
+  border-radius: 8px;
+  background: #fafafa;
+  box-shadow: 0 3px 3px #00000025;
+}
+
+/* STATISTICS */
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.admin-stat-card {
+  min-height: 92px;
+  padding: 18px 44px;
+  border-radius: 6px;
+  background: #95adc5;
+  box-shadow: 0 2px 3px #00000030;
+}
+
+.admin-stat-card p {
+  margin: 0;
+  font-size: 13px;
+  color: #303c48;
+}
+
+.admin-stat-card h2 {
+  margin: 2px 0;
+  color: #ffffff;
+  font-size: 23px;
+}
+
+.admin-stat-change {
+  display: inline-block;
+  padding: 3px 6px;
+  background: #0d4b80;
+  border-radius: 3px;
+  color: #ffffff;
+  font-size: 9px;
+}
+
+/* PROGRAMS */
+
+.admin-program-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  padding: 10px 0 0;
+}
+
+.admin-program-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 128px;
+  border-radius: 6px;
+  background: #95adc5;
+  box-shadow: 0 2px 3px #00000030;
+}
+
+.admin-program-card h3 {
+  color: #ffffff;
+  font-size: 18px;
+}
+
+/* ACTIVITY */
+
+.admin-activity {
+  min-height: 194px;
+  padding: 45px 20px 20px;
+}
+
+.admin-activity-header {
+  height: 29px;
+  background: #0d4b80;
+  border-radius: 4px;
+  box-shadow: 0 2px 3px #00000030;
+  margin-bottom: 28px;
+}
+
+.admin-activity-line {
+  height: 2px;
+  background: #cccccc;
+  margin: 34px 3px;
+}

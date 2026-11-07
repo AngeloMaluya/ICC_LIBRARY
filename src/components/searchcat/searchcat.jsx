@@ -16,6 +16,7 @@ export default function SearchCat({
   activeProgram,
   heading,
   emptyMessage = "No research found.",
+  isAdmin = false,
 }) {
   return (
     <div className="library-content">
@@ -109,7 +110,8 @@ export default function SearchCat({
                   <p>{research.author || "Unknown Author"}</p>
 
                   <small>{research.year || "Unknown Year"}</small>
-
+                  
+                  {isAdmin && (
                   <button
                     type="button"
                     className="view-research-btn"
@@ -117,6 +119,7 @@ export default function SearchCat({
                   >
                     View Summary
                   </button>
+                  )}
                 </div>
               </div>
             ))}

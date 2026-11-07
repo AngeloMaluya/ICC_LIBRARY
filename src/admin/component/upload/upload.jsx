@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./admin-upload.css";
-import { logout } from "../utils/auth.js";
 import { pdfjs } from "react-pdf";
 
-import "../components/sidebar/sidebar.css";
-import Sidebar from "./component/sidebar/sidebar.jsx";
+import { logout } from "../../../utils/auth.js";
+import Sidebar from "../sidebar/sidebar.jsx";
+
+import "./upload.css";
+import "../sidebar/sidebar.css";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -62,7 +63,7 @@ const convertPdfPosterToPng = async (file) => {
   }
 };
 
-const Admin = () => {
+const Upload = () => {
   
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
@@ -436,7 +437,7 @@ const Admin = () => {
           {/* RESEARCH POSTER */}
           <div className="form-group">
             <label htmlFor="poster">
-              Research Poster (Optional)
+              Research Poster
             </label>
 
             <input
@@ -492,4 +493,4 @@ const Admin = () => {
   );
 };
 
-export default Admin;
+export default Upload;

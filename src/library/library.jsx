@@ -12,7 +12,7 @@ import ResearchPopups from "../components/ResearchPopups/ResearchPopups.jsx";
 import { useResearchPopups } from "../hooks/useResearchPopups.js";
 import { getProgramImage } from "../utils/programImages.js";
 
-export const Library = () => {
+export const Library = ({ isAdmin = false}) => {
   const navigate = useNavigate();
 
   const API_URL = import.meta.env.VITE_API_URL;
@@ -102,6 +102,7 @@ export const Library = () => {
           handleViewResearch={handleViewResearch}
           handleViewPdfText={handleViewPdfText}
           getProgramImage={getProgramImage}
+          isAdmin={isAdmin}
         />
       </main>
 
