@@ -28,16 +28,16 @@ const menuItems = [
     path: "/upload",
   },
   {
+    label: "Reports",
+    icon: <FaHistory />,
+    className: "sidebar-history-icon",
+    path: "/reports",
+  },
+  {
     label: "Programs",
     icon: <FaHistory />,
     className: "sidebar-history-icon",
     path: "/program",
-  },
-  {
-    label: "Saved Reports",
-    icon: <FaHistory />,
-    className: "sidebar-history-icon",
-    path: "/SavedReports",
   },
 ];
 
