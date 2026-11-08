@@ -10,7 +10,7 @@ import {
   FaLayerGroup,
 } from "react-icons/fa";
 
-import "./Saved.css";
+import "./saved.css";
 
 const PROGRAMS = [
   "BSCS",
