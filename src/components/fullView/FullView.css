@@ -303,3 +303,79 @@
   font-size: 12px;
   color: #777777;
 }
+
+
+/* Bookmark notification background overlay */
+.bookmark-overlay {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(5px);
+
+  z-index: 9999;
+}
+
+/* Bookmark notification modal */
+.bookmark-modal {
+  width: 450px;
+  max-width: calc(100% - 32px);
+  padding: 24px;
+
+  background: #f1f1f1;
+  color: rgba(10, 65, 116, 1);
+
+  border: 1px solid #3a3a3a;
+  border-radius: 8px;
+
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+}
+
+/* Notification heading */
+.bookmark-modal h3 {
+  margin: 0 0 12px;
+
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(10, 65, 116, 1);
+}
+
+/* Notification message */
+.bookmark-modal p {
+  margin: 0 0 20px;
+
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(10, 65, 116, 1);
+}
+
+/* Align the confirmation button */
+.bookmark-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Confirmation button */
+.bookmark-modal-actions button {
+  padding: 9px 25px;
+
+  background: #e8c95c;
+  color: #0a4174;
+
+  border: none;
+  border-radius: 5px;
+
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Confirmation button hover effect */
+.bookmark-modal-actions button:hover {
+  background: #d9b94a;
+}
