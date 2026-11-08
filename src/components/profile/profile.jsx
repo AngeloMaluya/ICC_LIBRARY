@@ -106,8 +106,6 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="profile-page">
-
-
         <main className="profile-main">
           <p>Loading profile...</p>
         </main>
@@ -118,8 +116,6 @@ export default function Profile() {
   if (!profile) {
     return (
       <div className="profile-page">
-        <Sidebar />
-
         <main className="profile-main">
           <p>Unable to load profile.</p>
         </main>
@@ -129,8 +125,6 @@ export default function Profile() {
 
   return (
     <div className="profile-page">
-      <Sidebar />
-
       <main className="profile-main">
         <h1 className="profile-page-title">My Profile</h1>
 

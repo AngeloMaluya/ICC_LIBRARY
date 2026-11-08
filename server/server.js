@@ -9,6 +9,8 @@ import researchRoutes from "./routes/research.js";
 import authRoutes from "./routes/auth.js";
 import historyRoutes from "./routes/history.js";
 
+import savedRoutes from "./routes/saved.js";
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SECRET_KEY
@@ -56,6 +58,11 @@ app.use(
 app.use(
   "/api/history",
   historyRoutes
+);
+
+app.use(
+  "/api/saved",
+  savedRoutes
 );
 
 const ai = new GoogleGenAI({

@@ -10,7 +10,8 @@ import Create from "./utils/create/create.jsx";
 
 import Library from "./user/library/library.jsx";
 import Program from "./user/library/program.jsx";
-import ViewingHistory from "./user/library/ViewingHistory/ViewingHistory";
+import ViewingHistory from "./user/ViewingHistory/ViewingHistory";
+import Saved from "./user/saved/saved";
 
 import FullView from "./components/fullView/FullView";
 import Profile from "./components/profile/profile";
@@ -76,6 +77,7 @@ function App() {
           <Route path="/history" element={<ViewingHistory />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/fullview/:id" element={<FullView />} />
+          <Route path="/saved" element={<Saved />} />
         </Route>
       </Routes>
 

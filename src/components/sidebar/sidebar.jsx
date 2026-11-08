@@ -3,6 +3,7 @@ import Logo from "../../assets/icon.png";
 
 import { FiLogOut } from "react-icons/fi";
 import { GoUpload } from "react-icons/go";
+import { GiGraduateCap } from "react-icons/gi";
 
 import {
   FaRegUser,
@@ -59,8 +60,7 @@ const adminMenu = [
   },
   {
     label: "Programs",
-    icon: <FaHistory />,
-    className: "sidebar-history-icon",
+    icon: <GiGraduateCap />,
     path: "/program",
   },
 ];

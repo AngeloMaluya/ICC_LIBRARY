@@ -179,14 +179,44 @@ export default function FullView() {
   }, []);
 
   // Keep existing local bookmark behavior.
-  useEffect(() => {
+ 
+useEffect(() => {
+  const controller = new AbortController();
+
+  async function checkBookmark() {
     try {
-      const saved = JSON.parse(localStorage.getItem("researchBookmarks") || "[]");
-      setBookmarked(Array.isArray(saved) && saved.some((value) => String(value) === String(id)));
-    } catch {
       setBookmarked(false);
+
+      if (!token || !id) return;
+
+      const response = await fetch(`${API_URL}/api/saved/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to check bookmark.");
+      }
+
+      const data = await response.json();
+
+      if (!controller.signal.aborted) {
+        setBookmarked(data.bookmarked);
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("BOOKMARK CHECK ERROR:", error);
+      }
     }
-  }, [id]);
+  }
+
+  checkBookmark();
+
+  return () => controller.abort();
+}, [API_URL, id, token]);
+
 
   const recordViewingHistory = useCallback(async () => {
     if (!token || !id || recordedIdRef.current === String(id)) return;
@@ -246,20 +276,42 @@ export default function FullView() {
     setPageNumber((previous) => (previous === nearest ? previous : nearest));
   };
 
-  const toggleBookmark = () => {
-    let saved = [];
+    
+  const toggleBookmark = async () => {
+    console.log("BOOKMARK BUTTON CLICKED");
+
     try {
-      const parsed = JSON.parse(localStorage.getItem("researchBookmarks") || "[]");
-      if (Array.isArray(parsed)) saved = parsed;
-    } catch {
-      saved = [];
+      const token = sessionStorage.getItem("authToken");
+
+      if (!token) {
+        alert("Please log in again.");
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/api/saved/${id}`, {
+        method: bookmarked ? "DELETE" : "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("BOOKMARK STATUS:", response.status);
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update bookmark.");
+      }
+
+      setBookmarked(data.bookmarked);
+
+      console.log("BOOKMARK SAVED:", data);
+    } catch (error) {
+      console.error("BOOKMARK ERROR:", error);
+      alert(error.message);
     }
-    const updated = bookmarked
-      ? saved.filter((value) => String(value) !== String(id))
-      : [...saved.filter((value) => String(value) !== String(id)), id];
-    localStorage.setItem("researchBookmarks", JSON.stringify(updated));
-    setBookmarked(!bookmarked);
   };
+
 
   const openResearch = (researchId) => navigate(`/fullview/${researchId}`);
   const openPdfInNewTab = () => {
@@ -315,9 +367,13 @@ export default function FullView() {
             <span className="toolbar-page-number">{pageNumber}</span>
             <button type="button" title="Next page" onClick={() => changePage(1)} disabled={!numPages || pageNumber >= numPages}>⌄</button>
             <div className="toolbar-divider" />
-            <button type="button" title={bookmarked ? "Remove bookmark" : "Bookmark research"} onClick={toggleBookmark}>
-              {bookmarked ? "★" : "☆"}
-            </button>
+            <button
+            type="button"
+            title={bookmarked ? "Remove bookmark" : "Bookmark research"}
+            onClick={toggleBookmark}
+          >
+            {bookmarked ? "★" : "☆"}
+          </button>
             <div className="toolbar-divider" />
             <button type="button" title="Zoom out" onClick={() => setScale((value) => Math.max(0.5, Math.round((value - 0.1) * 10) / 10))} disabled={scale <= 0.5}>⊖</button>
             <span className="toolbar-zoom">{Math.round(scale * 100)}%</span>
