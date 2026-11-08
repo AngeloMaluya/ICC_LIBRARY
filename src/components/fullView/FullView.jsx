@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Document, Page, pdfjs } from "react-pdf";
-import Sidebar from "../sidebar/sidebar.jsx";
+
 import "./FullView.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -268,7 +268,7 @@ export default function FullView() {
 
   return (
     <div className="full-view-page">
-      <Sidebar />
+
       <main className="full-view-main">
         <header className="full-view-header">
           <div className="full-view-search">

@@ -2,15 +2,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import "../components/sidebar/sidebar.css";
 import "./base_lib.css";
 
-import Sidebar from "../components/sidebar/sidebar.jsx";
-import SearchCat from "../components/searchcat/searchcat.jsx";
-import ResearchPopups from "../components/ResearchPopups/ResearchPopups.jsx";
+import SearchCat from "../../components/searchcat/searchcat.jsx";
+import ResearchPopups from "../../components/ResearchPopups/ResearchPopups.jsx";
 
-import { useResearchPopups } from "../hooks/useResearchPopups.js";
-import { getProgramImage } from "../utils/programImages.js";
+import { useResearchPopups } from "../../hooks/useResearchPopups.js";
+import { getProgramImage } from "../../utils/programImages.js";
 
 export const Program = () => {
   const navigate = useNavigate();
@@ -155,7 +153,6 @@ export const Program = () => {
 
   return (
     <div className="library-layout">
-      <Sidebar />
 
       <main className="library-main">
         <SearchCat

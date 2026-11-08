@@ -1,0 +1,10 @@
+
+.user-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.user-main {
+  flex: 1;
+  min-width: 0;
+}

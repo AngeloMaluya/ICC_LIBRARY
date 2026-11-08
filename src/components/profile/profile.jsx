@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./profile.css";
-import Sidebar from "../sidebar/sidebar.jsx";
 
 function ProfileField({ label, value }) {
   return (
@@ -107,7 +106,7 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="profile-page">
-        <Sidebar />
+
 
         <main className="profile-main">
           <p>Loading profile...</p>

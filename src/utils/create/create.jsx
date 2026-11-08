@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./create.css";
-import Image from "../assets/icon.png";
+import Image from "../../assets/icon.png";
 
 export const Create = () => {
   const navigate = useNavigate();

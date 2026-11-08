@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
-import Image from "../assets/icon.png";
-import logImage from "../assets/img_repo/login.png";
+import Image from "../../assets/icon.png";
+import logImage from "../../assets/img_repo/login.png";
 import { GoogleLogin } from "@react-oauth/google";
-import TermsModal from "../components/terms/TermsModal.jsx";
+import TermsModal from "../../components/terms/TermsModal.jsx";
 
 export const Login = () => {
   const navigate = useNavigate();
