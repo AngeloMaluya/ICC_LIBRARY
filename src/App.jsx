@@ -17,10 +17,11 @@ import GoogleProtectedRoute from "./googleprotectedroute.jsx";
 
 
 //admin
-import Dashboard from "./admin/dashboard/dashboard";
+import Dashboard from "./admin/component/dashboard/dashboard";
 import Upload from "./admin/component/upload/upload";
 import AdminProgram from "./admin/component/program/program";
 import Reports from "./admin/component/reports/reports";
+import AdminLayout from "./admin/layout/AdminLayout.jsx";
 
 import { Analytics } from "@vercel/analytics/react";
 
@@ -59,25 +60,12 @@ function App() {
           element={<Login />}
         />
 
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
-        />
-
-        <Route
-          path="/Upload"
-          element={<Upload />}
-        />
-
-        <Route
-          path="/program"
-          element={<AdminProgram />}
-        />
-
-        <Route
-          path="/reports"
-          element={<Reports />}
-        />
+        <Route element={<AdminLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/upload" element={<Upload />} />
+          <Route path="/program" element={<AdminProgram />} />
+          <Route path="/reports" element={<Reports />} />
+        </Route>
 
         <Route
           path="/create"

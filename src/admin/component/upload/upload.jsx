@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { pdfjs } from "react-pdf";
 
 import { logout } from "../../../utils/auth.js";
-import Sidebar from "../../../components/sidebar/sidebar";
 
 import "./upload.css";
 
@@ -319,7 +318,6 @@ const Upload = () => {
 
   return (
     <div className="admin-layout">
-      <Sidebar />
 
       <div className="upload-container">
         <h1>Upload Research</h1>

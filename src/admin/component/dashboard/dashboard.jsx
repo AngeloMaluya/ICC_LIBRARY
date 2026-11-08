@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
-import Sidebar from "../../components/sidebar/sidebar";
 
 import "./dashboard.css";
 
@@ -41,7 +40,6 @@ const Dashboard = () => {
 
   return (
     <div className="admin-dashboard-layout">
-      <Sidebar />
 
       <main className="admin-dashboard-main">
         {/* SEARCH BAR */}

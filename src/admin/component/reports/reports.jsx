@@ -8,7 +8,6 @@ import {
   FiPrinter,
 } from "react-icons/fi";
 
-import Sidebar from "../../../components/sidebar/sidebar";
 import "./reports.css";
 
 const REPORT_TYPES = [
@@ -206,7 +205,6 @@ export default function Reports() {
   return (
     <div className="admin-reports-layout">
       <div className="reports-sidebar">
-        <Sidebar />
       </div>
 
       <main className="reports-main">
