@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { pdfjs } from "react-pdf";
 
 import { logout } from "../../../utils/auth.js";
-import Sidebar from "../sidebar/sidebar.jsx";
+import Sidebar from "../../../components/sidebar/sidebar";
 
 import "./upload.css";
-import "../sidebar/sidebar.css";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",

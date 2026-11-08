@@ -141,6 +141,33 @@ router.get("/", verifyStudentToken, async (req, res) => {
   }
 });
 
+//admin test programs
+// Temporary research listing for the admin Programs page
+router.get("/admin-list", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("summarized")
+      .select(
+        "id, title, author, year, program, summary, pdf_url, poster_url, created_at"
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(500).json({
+        message: "Failed to fetch research.",
+      });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    console.error("ADMIN RESEARCH ERROR:", error);
+
+    return res.status(500).json({
+      message: "Server error.",
+    });
+  }
+});
+
 /* =========================================================
    GET SINGLE RESEARCH
 ========================================================= */

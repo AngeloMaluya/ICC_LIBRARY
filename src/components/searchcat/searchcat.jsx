@@ -38,7 +38,13 @@ export default function SearchCat({
           <button
             type="button"
             key={program}
-            onClick={() => navigate(`/library/${program}`)}
+            onClick={() => {
+              if (isAdmin) {
+                setSearchTerm(program);
+              } else {
+                navigate(`/library/${program}`);
+              }
+            }}
             className={
               activeProgram &&
               program.toLowerCase() === activeProgram.toLowerCase()
@@ -111,7 +117,7 @@ export default function SearchCat({
 
                   <small>{research.year || "Unknown Year"}</small>
                   
-                  {isAdmin && (
+                  {!isAdmin && (
                   <button
                     type="button"
                     className="view-research-btn"

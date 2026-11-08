@@ -52,16 +52,17 @@ export const Library = ({ isAdmin = false}) => {
           params.set("search", searchTerm.trim());
         }
 
-        const token = sessionStorage.getItem("authToken");
+          const endpoint = isAdmin
+            ? `${API_URL}/api/research/admin-list`
+            : `${API_URL}/api/research?${params.toString()}`;
 
-        const response = await fetch(
-          `${API_URL}/api/research?${params.toString()}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+          const token = sessionStorage.getItem("authToken");
+
+          const response = await fetch(endpoint, {
+            headers: isAdmin
+              ? {}
+              : { Authorization: `Bearer ${token}` },
+          });
 
         if (!response.ok) {
           throw new Error("Failed to fetch research");
@@ -85,11 +86,11 @@ export const Library = ({ isAdmin = false}) => {
     };
 
     fetchResearches();
-  }, [API_URL, searchTerm]);
+}, [API_URL, searchTerm, isAdmin]);
 
   return (
     <div className="library-layout">
-      <Sidebar />
+      <Sidebar role={isAdmin ? "admin" : "student"} />
 
       <main className="library-main">
         <SearchCat

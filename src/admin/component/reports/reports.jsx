@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from "react";
 import {
   FiChevronLeft,
@@ -9,7 +8,7 @@ import {
   FiPrinter,
 } from "react-icons/fi";
 
-import Sidebar from "../sidebar/sidebar.jsx";
+import Sidebar from "../../../components/sidebar/sidebar";
 import "./reports.css";
 
 const REPORT_TYPES = [

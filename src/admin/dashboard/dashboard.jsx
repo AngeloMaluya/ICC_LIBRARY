@@ -1,7 +1,8 @@
 
 import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
-import Sidebar from "../component/sidebar/sidebar.jsx";
+import Sidebar from "../../components/sidebar/sidebar";
+
 import "./dashboard.css";
 
 const Dashboard = () => {

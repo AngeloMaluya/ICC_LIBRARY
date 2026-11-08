@@ -94,7 +94,7 @@ export default function ViewingHistory() {
   };
 
   const handleResearchClick = (researchId) => {
-    navigate(`/viewing/${researchId}`);
+    navigate(`/FullView/${researchId}`);
   };
 
   const getFilteredHistory = () => {
