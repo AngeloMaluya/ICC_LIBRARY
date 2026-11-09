@@ -17,13 +17,18 @@ const googleClient = new OAuth2Client(
 );
 
 const SCHOOL_DOMAIN = "immaculada.edu.ph";
+const ADMIN_EMAIL = "research.admin01@gmail.com";
 
+const USER_FIELDS =
+  "id, email, f_name, l_name, course, year, profile_picture, role";
+
+// Create JWT access token using the database role
 const createAccessToken = (user) => {
   return jwt.sign(
     {
       sub: String(user.id),
       email: user.email,
-      role: "student",
+      role: user.role === "admin" ? "admin" : "student",
       type: "access",
     },
     process.env.JWT_SECRET,
@@ -31,6 +36,7 @@ const createAccessToken = (user) => {
   );
 };
 
+// Temporary token for new Google student registrations
 const createSignupToken = (googleUser) => {
   return jwt.sign(
     {
@@ -44,6 +50,7 @@ const createSignupToken = (googleUser) => {
   );
 };
 
+// Format user information returned to the frontend
 const formatUser = (user) => ({
   id: user.id,
   email: user.email,
@@ -52,9 +59,13 @@ const formatUser = (user) => ({
   course: user.course,
   year: user.year,
   profilePicture: user.profile_picture,
+  role: user.role === "admin" ? "admin" : "student",
 });
 
-// Register a new student using a verified Google signup token
+// ======================================================
+// REGISTER NEW STUDENT
+// ======================================================
+
 router.post("/register", async (req, res) => {
   try {
     const {
@@ -94,7 +105,6 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    // Verify that the signup token was issued by this backend
     let googleUser;
 
     try {
@@ -105,14 +115,17 @@ router.post("/register", async (req, res) => {
     } catch {
       return res.status(401).json({
         success: false,
-        message: "Google signup session expired. Please sign in again.",
+        message:
+          "Google signup session expired. Please sign in again.",
       });
     }
 
     if (
       googleUser.type !== "google_signup" ||
-      !googleUser.email ||
-      !googleUser.email.endsWith(`@${SCHOOL_DOMAIN}`)
+      typeof googleUser.email !== "string" ||
+      !googleUser.email
+        .toLowerCase()
+        .endsWith(`@${SCHOOL_DOMAIN}`)
     ) {
       return res.status(401).json({
         success: false,
@@ -120,9 +133,8 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    const email = googleUser.email.toLowerCase();
+    const email = googleUser.email.trim().toLowerCase();
 
-    // Check for an existing account
     const {
       data: existingUser,
       error: checkError,
@@ -155,20 +167,17 @@ router.post("/register", async (req, res) => {
       error: insertError,
     } = await supabase
       .from("users")
-      .insert([
-        {
-          f_name: firstName.trim(),
-          l_name: lastName.trim(),
-          course: course.trim(),
-          year: year,
-          email: email,
-          password: hashedPassword,
-          profile_picture: googleUser.picture || null,
-        },
-      ])
-      .select(
-        "id, email, f_name, l_name, course, year, profile_picture"
-      )
+      .insert({
+        f_name: firstName.trim(),
+        l_name: lastName.trim(),
+        course: course.trim(),
+        year,
+        email,
+        password: hashedPassword,
+        profile_picture: googleUser.picture || null,
+        role: "student",
+      })
+      .select(USER_FIELDS)
       .single();
 
     if (insertError) {
@@ -180,12 +189,12 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    const accessToken = createAccessToken(newUser);
+    const token = createAccessToken(newUser);
 
     return res.status(201).json({
       success: true,
       message: "Account created successfully.",
-      token: accessToken,
+      token,
       user: formatUser(newUser),
     });
   } catch (error) {
@@ -198,7 +207,10 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Student email/password login
+// ======================================================
+// EMAIL / PASSWORD LOGIN - ADMIN AND STUDENT
+// ======================================================
+
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -222,9 +234,7 @@ router.post("/login", async (req, res) => {
       error,
     } = await supabase
       .from("users")
-      .select(
-        "id, email, f_name, l_name, course, year, password, profile_picture"
-      )
+      .select(`${USER_FIELDS}, password`)
       .eq("email", normalizedEmail)
       .maybeSingle();
 
@@ -274,12 +284,15 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Verify Google credential on the backend
+// ======================================================
+// GOOGLE LOGIN - ADMIN AND STUDENT
+// ======================================================
+
 router.post("/google-login", async (req, res) => {
   try {
     const { credential } = req.body;
 
-    if (!credential) {
+    if (typeof credential !== "string" || !credential) {
       return res.status(400).json({
         success: false,
         message: "Google credential is required.",
@@ -296,25 +309,35 @@ router.post("/google-login", async (req, res) => {
     if (
       !payload ||
       !payload.email ||
-      payload.email_verified !== true ||
-      !payload.email.toLowerCase().endsWith(`@${SCHOOL_DOMAIN}`)
+      payload.email_verified !== true
     ) {
       return res.status(401).json({
         success: false,
-        message: "Only verified ICC school accounts are allowed.",
+        message: "Google account verification failed.",
       });
     }
 
-    const email = payload.email.toLowerCase();
+    const email = payload.email.trim().toLowerCase();
+
+    const isSchoolEmail =
+      email.endsWith(`@${SCHOOL_DOMAIN}`);
+
+    const isAdminEmail = email === ADMIN_EMAIL;
+
+    if (!isSchoolEmail && !isAdminEmail) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Only verified ICC school accounts are allowed.",
+      });
+    }
 
     const {
       data: user,
       error,
     } = await supabase
       .from("users")
-      .select(
-        "id, email, f_name, l_name, course, year, profile_picture"
-      )
+      .select(USER_FIELDS)
       .eq("email", email)
       .maybeSingle();
 
@@ -327,8 +350,15 @@ router.post("/google-login", async (req, res) => {
       });
     }
 
-    // Existing student account
+    // Registered account: use role stored in Supabase
     if (user) {
+      if (isAdminEmail && user.role !== "admin") {
+        return res.status(403).json({
+          success: false,
+          message: "Administrator account is not configured.",
+        });
+      }
+
       const token = createAccessToken(user);
 
       return res.status(200).json({
@@ -339,7 +369,15 @@ router.post("/google-login", async (req, res) => {
       });
     }
 
-    // New student account: issue a short-lived signup token
+    // Administrator must already exist in the database
+    if (isAdminEmail) {
+      return res.status(403).json({
+        success: false,
+        message: "Administrator account not found.",
+      });
+    }
+
+    // New school account: continue student registration
     const signupToken = createSignupToken({
       email,
       name: payload.name || "",
@@ -361,69 +399,73 @@ router.post("/google-login", async (req, res) => {
 
     return res.status(401).json({
       success: false,
-      message: "Google authentication failed. Please try again.",
+      message:
+        "Google authentication failed. Please try again.",
     });
   }
 });
 
-// src/utils/auth.js
+// ======================================================
+// GET STUDENT PROFILE
+// ======================================================
 
-const GOOGLE_TEMP_KEYS = [
-  "googleEmail",
-  "googleName",
-  "googlePicture",
-];
+router.get(
+  "/user/:email",
+  verifyStudentToken,
+  async (req, res) => {
+    try {
+      const requestedEmail =
+        req.params.email.toLowerCase();
 
-// Get the logged-in student's profile
-router.get("/user/:email", verifyStudentToken, async (req, res) => {
-  try {
-    const requestedEmail = req.params.email.toLowerCase();
-    const authenticatedEmail = req.user.email.toLowerCase();
+      const authenticatedEmail =
+        req.user.email.toLowerCase();
 
-    // Prevent students from accessing another student's profile
-    if (requestedEmail !== authenticatedEmail) {
-      return res.status(403).json({
-        success: false,
-        message: "You are not authorized to access this profile.",
+      if (requestedEmail !== authenticatedEmail) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "You are not authorized to access this profile.",
+        });
+      }
+
+      const {
+        data: user,
+        error,
+      } = await supabase
+        .from("users")
+        .select(USER_FIELDS)
+        .eq("email", authenticatedEmail)
+        .maybeSingle();
+
+      if (error) {
+        console.error("PROFILE DATABASE ERROR:", error);
+
+        return res.status(500).json({
+          success: false,
+          message: "Failed to retrieve profile.",
+        });
+      }
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found.",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        user: formatUser(user),
       });
-    }
-
-    const { data: user, error } = await supabase
-      .from("users")
-      .select(
-        "id, email, f_name, l_name, course, year, profile_picture"
-      )
-      .eq("email", authenticatedEmail)
-      .maybeSingle();
-
-    if (error) {
-      console.error("PROFILE DATABASE ERROR:", error);
+    } catch (error) {
+      console.error("PROFILE FETCH ERROR:", error);
 
       return res.status(500).json({
         success: false,
-        message: "Failed to retrieve profile.",
+        message: "Server error.",
       });
     }
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found.",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      user: formatUser(user),
-    });
-  } catch (error) {
-    console.error("PROFILE FETCH ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Server error.",
-    });
   }
-});
+);
 
 export default router;
