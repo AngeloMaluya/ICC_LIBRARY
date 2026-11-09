@@ -11,6 +11,6 @@
   min-width: 0;
   width: 100%;
   min-height: 100vh;
-  background: #ffffff;
+  background: rgba(237, 245, 253, 0.92);
   overflow-x: hidden;
 }

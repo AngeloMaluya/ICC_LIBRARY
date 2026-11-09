@@ -1,81 +1,224 @@
 
+/* =========================================
+   POPUP OVERLAY
+========================================= */
+
 .research-popup-overlay {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.65);
+
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 99999;
+
   padding: 20px;
+  box-sizing: border-box;
+
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 99999;
 }
+
+/* =========================================
+   POPUP CONTAINER
+========================================= */
 
 .research-popup {
   position: relative;
-  width: 700px;
-  max-width: 95%;
+
+  width: 630px;
+  max-width: 100%;
   max-height: 85vh;
-  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+
   background: #ffffff;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  border: 2px solid #0095ff;
+  border-radius: 13px;
+
+  padding: 24px 28px 18px;
+  box-sizing: border-box;
+
+  overflow: hidden;
+}
+
+/* =========================================
+   POPUP HEADER
+========================================= */
+
+.research-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.research-popup-header h2 {
+  margin: 0;
+
+  font-size: 25px;
+  font-weight: 800;
+  color: #0d477c;
 }
 
 .popup-close {
-  position: absolute;
-  top: 8px;
-  right: 12px;
   width: 35px;
   height: 35px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
   border: none;
   background: transparent;
-  font-size: 30px;
-  line-height: 30px;
+
+  color: #0d477c;
+  font-size: 42px;
+  font-weight: 300;
+  line-height: 1;
+
   cursor: pointer;
-  color: #333;
 }
 
 .popup-close:hover {
-  color: #0b4ea2;
+  color: #0095ff;
 }
 
-.research-details h2 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  padding-right: 35px;
-  color: #0b4ea2;
-  font-size: 22px;
+/* =========================================
+   RESEARCH DETAILS
+========================================= */
+
+.research-details {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 28px;
+}
+
+/* =========================================
+   RESEARCH INFORMATION
+========================================= */
+
+.research-popup-info {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.research-popup-info h2 {
+  margin: 0 0 12px;
+
+  padding: 0;
+
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.3;
+
+  color: #000000;
+  overflow-wrap: anywhere;
 }
 
 .research-author,
 .research-year,
 .research-program {
-  margin: 6px 0;
-  color: #555;
-  font-size: 13px;
+  margin: 2px 0;
+
+  color: #333333;
+  font-size: 11px;
+  line-height: 1.2;
 }
+
+/* =========================================
+   RESEARCH SUMMARY
+========================================= */
 
 .summary-section {
   margin-top: 25px;
-  text-align: justify;
-  line-height: 1.6;
-}
+  margin-bottom: 25px;
 
-.summary-section h3 {
-  margin-bottom: 10px;
-  color: #0b4ea2;
-  font-size: 17px;
+  text-align: justify;
 }
 
 .summary-section p {
-  line-height: 1.7;
+  margin: 0;
+
+  font-size: 12px;
+  line-height: 1.35;
+
+  color: #333333;
   white-space: pre-wrap;
-  color: #333;
-  font-size: 14px;
+  overflow-wrap: anywhere;
 }
+
+/* =========================================
+   POPUP ACTION BUTTONS
+========================================= */
+
+.research-popup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 10px;
+  padding-top: 12px;
+
+  flex-shrink: 0;
+}
+
+.popup-save-btn,
+.popup-read-btn {
+  height: 29px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+  padding: 0 13px;
+
+  border-radius: 20px;
+  font-size: 11px;
+
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.popup-save-btn {
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid #bbbbbb;
+}
+
+.popup-save-btn:hover {
+  background: #f1f1f1;
+}
+
+.popup-read-btn {
+  background: #0d477c;
+  color: #ffffff;
+  border: 1px solid #0d477c;
+}
+
+.popup-read-btn:hover {
+  background: #08365f;
+}
+
+.popup-save-btn span,
+.popup-read-btn span {
+  font-size: 17px;
+}
+
+.popup-save-btn:disabled,
+.popup-read-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   LOADING STATE
+========================================= */
 
 .popup-loading {
   text-align: center;
@@ -83,6 +226,27 @@
 }
 
 .popup-loading h2 {
-  color: #0b4ea2;
+  color: #0d477c;
   font-size: 18px;
 }
+
+/* Saved bookmark appearance */
+.popup-save-btn.saved {
+  background: #e7f1ff;
+  border-color: #0d477c;
+  color: #0d477c;
+  font-weight: 700;
+}
+
+.popup-save-btn.saved:hover {
+  background: #d5e8ff;
+}
+
+/* Bookmark error message */
+.popup-bookmark-error {
+  margin: 8px 0 0;
+  color: #d00000;
+  font-size: 11px;
+  text-align: right;
+}
+

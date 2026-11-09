@@ -151,6 +151,44 @@ export const Program = () => {
   }, [API_URL, currentProgram, searchTerm, navigate]);
 
   // RENDER
+    const handleSaveResearch = async (research) => {
+    const token = sessionStorage.getItem("authToken");
+
+    if (isAdmin) {
+      alert("Bookmarks are only available to students.");
+      return;
+    }
+
+    if (!token) {
+      alert("Please log in again.");
+      return;
+    }
+
+    try {
+      // Send the research ID to the existing bookmark API
+      const response = await fetch(
+        `${API_URL}/api/saved/${research.id}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to save research.");
+      }
+
+      // Notify the user after saving successfully
+      alert("Research successfully saved to your bookmarks!");
+    } catch (error) {
+      console.error("SAVE RESEARCH ERROR:", error);
+      alert(error.message || "Unable to save research.");
+    }
+  };
 
   return (
     <div className="library-layout">
@@ -169,7 +207,6 @@ export const Program = () => {
           activeProgram={currentProgram}
           heading={{
             title: displayProgram,
-            subtitle: "Research papers and thesis",
           }}
           emptyMessage={
             <>
@@ -180,17 +217,16 @@ export const Program = () => {
         />
       </main>
 
-      <ResearchPopups
-        showPopup={showPopup}
-        showPdfPopup={showPdfPopup}
-        selectedResearch={selectedResearch}
-        selectedPdf={selectedPdf}
-        loadingResearch={loadingResearch}
-        loadingPdf={loadingPdf}
-        closePopup={closePopup}
-        closePdfPopup={closePdfPopup}
-        unknownProgramLabel={displayProgram}
-      />
+            <ResearchPopups
+            showPopup={showPopup}
+            selectedResearch={selectedResearch}
+            loadingResearch={loadingResearch}
+            closePopup={closePopup}
+            onReadFullResearch={(research) => {
+              closePopup();
+              navigate(`/fullview/${research.id}`);
+            }}
+          />
     </div>
   );
 };

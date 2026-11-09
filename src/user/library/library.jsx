@@ -1,5 +1,6 @@
+
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import "./base_lib.css";
 
@@ -9,19 +10,31 @@ import ResearchPopups from "../../components/ResearchPopups/ResearchPopups.jsx";
 import { useResearchPopups } from "../../hooks/useResearchPopups.js";
 import { getProgramImage } from "../../utils/programImages.js";
 
-export const Library = ({ isAdmin = false}) => {
+const collegePrograms = [
+  "BSCS", "BSBA", "BSED", "BEED", "BSTM", "BSCrim",
+];
+
+const shsStrands = [
+  "STEM", "ABM", "HUMSS", "GAS", "HE", "ICT",
+];
+
+export const Library = ({ isAdmin = false }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const API_URL = import.meta.env.VITE_API_URL;
+
+  // Read the selected education level from the URL
+  const educationLevel =
+    searchParams.get("level") === "shs" ? "shs" : "college";
 
   const [researches, setResearches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  // Store the keyword after the user stops typing
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
-  // Wait 400ms before performing a search
+  // Delay searching until the user stops typing
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
@@ -30,93 +43,131 @@ export const Library = ({ isAdmin = false}) => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  // Manage research summary popups
   const {
     selectedResearch,
-    selectedPdf,
     showPopup,
-    showPdfPopup,
     loadingResearch,
-    loadingPdf,
     handleViewResearch,
-    handleViewPdfText,
     closePopup,
-    closePdfPopup,
   } = useResearchPopups(API_URL);
 
+  // Set the browser page title
   useEffect(() => {
     document.title = "ICC Library";
   }, []);
 
-  // LOAD AND SEARCH ALL RESEARCH
-useEffect(() => {
-  const controller = new AbortController();
+  // Fetch research from the backend
+  useEffect(() => {
+    const controller = new AbortController();
 
-  const fetchResearches = async () => {
-    try {
-      setLoading(true);
-      setError("");
+    const fetchResearches = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-      const params = new URLSearchParams();
+        const params = new URLSearchParams();
 
-      if (debouncedSearchTerm.trim()) {
-        params.set("search", debouncedSearchTerm.trim());
+        // Include the search keyword
+        if (debouncedSearchTerm.trim()) {
+          params.set("search", debouncedSearchTerm.trim());
+        }
+
+        const endpoint = isAdmin
+          ? `${API_URL}/api/research/admin-list`
+          : `${API_URL}/api/research?${params.toString()}`;
+
+        const token = sessionStorage.getItem("authToken");
+
+        const response = await fetch(endpoint, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          const errorData = await response
+            .json()
+            .catch(() => ({}));
+
+          throw new Error(
+            errorData.message ||
+              `Failed to fetch research (HTTP ${response.status})`
+          );
+        }
+
+        const data = await response.json();
+
+        if (controller.signal.aborted) return;
+
+        // Support both array and object API responses
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data.researches)
+          ? data.researches
+          : [];
+
+        setResearches(list);
+      } catch (error) {
+        if (error.name === "AbortError") return;
+
+        console.error("Error fetching research:", error);
+        setError(error.message || "Unable to load research.");
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
+    };
 
-      const endpoint = isAdmin
-        ? `${API_URL}/api/research/admin-list`
-        : `${API_URL}/api/research?${params.toString()}`;
+    fetchResearches();
 
-      
-      const token = sessionStorage.getItem("authToken");
+    // Cancel outdated requests
+    return () => controller.abort();
+  }, [API_URL, debouncedSearchTerm, isAdmin]);
 
-      const response = await fetch(endpoint, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        signal: controller.signal,
-      });
+  // Filter research by education level
+  const filteredByLevel = researches.filter((research) => {
+    if (isAdmin) return true;
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+    const program = String(research.program || "")
+      .trim()
+      .toLowerCase();
 
-        throw new Error(
-          errorData.message ||
-          `Failed to fetch research (HTTP ${response.status})`
-        );
-      }
+    const allowedPrograms =
+      educationLevel === "college"
+        ? collegePrograms
+        : shsStrands;
 
-      const data = await response.json();
+    return allowedPrograms.some(
+      (item) => item.toLowerCase() === program
+    );
+  });
 
-      if (controller.signal.aborted) return;
+  // Apply the administrator's local search filter
+  const filteredResearches =
+    isAdmin && debouncedSearchTerm.trim()
+      ? filteredByLevel.filter((research) => {
+          const term = debouncedSearchTerm
+            .toLowerCase()
+            .trim();
 
-      if (Array.isArray(data)) {
-        setResearches(data);
-      } else if (Array.isArray(data.researches)) {
-        setResearches(data.researches);
-      } else {
-        setResearches([]);
-      }
-    } catch (error) {
-      if (error.name === "AbortError") return;
-
-      console.error("Error fetching research:", error);
-      setError(error.message || "Unable to load research.");
-    } finally {
-      if (!controller.signal.aborted) {
-        setLoading(false);
-      }
-    }
-  };
-
-  fetchResearches();
-
-  // Cancel the previous request when the keyword changes
-  return () => controller.abort();
-}, [API_URL, debouncedSearchTerm, isAdmin]);
+          return [
+            research.title,
+            research.author,
+            research.program,
+            research.year,
+          ].some((value) =>
+            String(value ?? "")
+              .toLowerCase()
+              .includes(term)
+          );
+        })
+      : filteredByLevel;
 
   return (
     <div className="library-layout">
-
       <main className="library-main">
         <SearchCat
           searchTerm={searchTerm}
@@ -124,40 +175,30 @@ useEffect(() => {
           navigate={navigate}
           loading={loading}
           error={error}
-
-          filteredResearches={
-            isAdmin && debouncedSearchTerm.trim()
-              ? researches.filter((research) => {
-                  const term = debouncedSearchTerm.toLowerCase().trim();
-
-                  return [
-                    research.title,
-                    research.author,
-                    research.program,
-                    research.year,
-                  ].some((value) =>
-                    String(value ?? "").toLowerCase().includes(term)
-                  );
-                })
-              : researches
-          }
-
+          filteredResearches={filteredResearches}
           handleViewResearch={handleViewResearch}
-          handleViewPdfText={handleViewPdfText}
           getProgramImage={getProgramImage}
+          educationLevel={educationLevel}
           isAdmin={isAdmin}
         />
       </main>
 
+      {/* Research summary popup */}
       <ResearchPopups
         showPopup={showPopup}
-        showPdfPopup={showPdfPopup}
         selectedResearch={selectedResearch}
-        selectedPdf={selectedPdf}
         loadingResearch={loadingResearch}
-        loadingPdf={loadingPdf}
         closePopup={closePopup}
-        closePdfPopup={closePdfPopup}
+        isAdmin={isAdmin}
+        onReadFullResearch={(research) => {
+          closePopup();
+
+          navigate(
+            isAdmin
+              ? `/admin/fullview/${research.id}`
+              : `/fullview/${research.id}`
+          );
+        }}
       />
     </div>
   );
