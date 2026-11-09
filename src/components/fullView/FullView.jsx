@@ -11,8 +11,34 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
+// Escape PDF text before inserting safe highlight markup.
+function escapePdfHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;",
+  })[character]);
+}
+
+function highlightPdfText(text, keyword) {
+  if (!keyword) return escapePdfHtml(text);
+  const source = String(text);
+  const lower = source.toLocaleLowerCase();
+  const needle = keyword.toLocaleLowerCase();
+  let result = "";
+  let start = 0;
+  while (start < source.length) {
+    const index = lower.indexOf(needle, start);
+    if (index < 0) break;
+    result += escapePdfHtml(source.slice(start, index));
+    result += `<mark class="pdf-highlight">${escapePdfHtml(source.slice(index, index + needle.length))}</mark>`;
+    start = index + needle.length;
+  }
+  return result + escapePdfHtml(source.slice(start));
+}
+
 // Render PDF pages only when they are near the visible area
-function LazyPdfPage({ number, width, scale, scrollRoot, setPageRef }) {
+function LazyPdfPage({ number, width, scale, scrollRoot, setPageRef, activePdfQuery }) {
+  
   const elementRef = useRef(null);
   const [nearViewport, setNearViewport] = useState(number === 1);
   const [aspectRatio, setAspectRatio] = useState(1.414);
@@ -59,7 +85,8 @@ function LazyPdfPage({ number, width, scale, scrollRoot, setPageRef }) {
           pageNumber={number}
           width={width}
           scale={scale}
-          renderTextLayer={false}
+          renderTextLayer={true}
+          customTextRenderer={({ str }) => highlightPdfText(str, activePdfQuery)}
           renderAnnotationLayer={false}
           onLoadSuccess={(page) => {
             const viewport = page.getViewport({ scale: 1 });
@@ -109,7 +136,25 @@ export default function FullView() {
   const [pdfWidth, setPdfWidth] = useState(0);
   const [scrollRoot, setScrollRoot] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+
+  // Search research records (top search bar)
+  const [librarySearchTerm, setLibrarySearchTerm] = useState("");
+  const [librarySearchResults, setLibrarySearchResults] = useState([]);
+  const [librarySearchLoading, setLibrarySearchLoading] = useState(false);
+
+  // Search text inside the currently opened PDF
+  const [pdfSearchTerm, setPdfSearchTerm] = useState("");
+  const [activePdfQuery, setActivePdfQuery] = useState("");
+
+
+  const pdfDocumentRef = useRef(null);
+  const searchRequestRef = useRef(0);
+  const highlightScrollRequestRef = useRef(0);
+
+  const [searchMatches, setSearchMatches] = useState([]);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+  const [searchingPdf, setSearchingPdf] = useState(false);
+  const [searchCompleted, setSearchCompleted] = useState(false);
 
   // Bookmark and notification states
   const [bookmarked, setBookmarked] = useState(false);
@@ -139,6 +184,15 @@ export default function FullView() {
     setNumPages(0);
     setPageNumber(1);
     pageRefs.current = [];
+    pdfDocumentRef.current = null;
+    searchRequestRef.current += 1;
+    highlightScrollRequestRef.current += 1;
+    setPdfSearchTerm("");
+    setActivePdfQuery("");
+    setSearchMatches([]);
+    setSearchCompleted(false);
+    setSearchingPdf(false);
+    setCurrentMatchIndex(0);
     recordedIdRef.current = null;
 
     if (!token) {
@@ -338,10 +392,20 @@ export default function FullView() {
   }, [API_URL, id, token, isAdmin]);
 
   // Update the PDF viewer when the document finishes loading
-  const onDocumentLoadSuccess = ({ numPages: total }) => {
-    setNumPages(total);
+  const onDocumentLoadSuccess = (pdf) => {
+    pdfDocumentRef.current = pdf;
+
+    setNumPages(pdf.numPages);
     setPageNumber(1);
     setPdfError("");
+
+    // Reset search when opening a PDF
+    searchRequestRef.current += 1;
+    setSearchMatches([]);
+    setCurrentMatchIndex(0);
+    setSearchingPdf(false);
+    setSearchCompleted(false);
+    setActivePdfQuery("");
 
     if (pdfContainerRef.current) {
       pdfContainerRef.current.scrollTop = 0;
@@ -367,6 +431,89 @@ export default function FullView() {
     });
 
     setPageNumber(targetPage);
+  };
+  
+
+  // Scroll to a matching highlight once its lazy-loaded page has rendered.
+  const scrollToPdfMatch = (match, allMatches) => {
+    scrollToPage(match.page);
+    const request = ++highlightScrollRequestRef.current;
+    const samePageIndex = allMatches
+      .slice(0, allMatches.indexOf(match))
+      .filter((item) => item.page === match.page).length;
+    let attempts = 0;
+    const findHighlight = () => {
+      if (request !== highlightScrollRequestRef.current) return;
+      const page = pageRefs.current[match.page - 1];
+      const marks = page?.querySelectorAll(".pdf-highlight");
+      if (marks?.length) {
+        const target = marks[Math.min(samePageIndex, marks.length - 1)];
+        target.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+      } else if (++attempts < 90) {
+        requestAnimationFrame(findHighlight);
+      }
+    };
+    requestAnimationFrame(findHighlight);
+  };
+
+  // Extract text directly from every page of the opened PDF.
+  const searchInsidePdf = async () => {
+    const pdf = pdfDocumentRef.current;
+    const keyword = pdfSearchTerm.trim().toLocaleLowerCase();
+    const requestId = ++searchRequestRef.current;
+    if (!pdf || !keyword) {
+      setActivePdfQuery("");
+      setSearchMatches([]);
+      setCurrentMatchIndex(0);
+      setSearchCompleted(false);
+      return;
+    }
+
+    setSearchingPdf(true);
+    setSearchCompleted(false);
+    setSearchMatches([]);
+    setCurrentMatchIndex(0);
+    setActivePdfQuery("");
+    try {
+      const matches = [];
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+        const page = await pdf.getPage(pageNumber);
+        const content = await page.getTextContent();
+        // Space between items supports multiword search across text chunks.
+        const text = content.items.map((item) => item.str || "").join(" ").toLocaleLowerCase();
+        let from = 0;
+        while (true) {
+          const index = text.indexOf(keyword, from);
+          if (index === -1) break;
+          matches.push({ page: pageNumber, position: index });
+          from = index + Math.max(keyword.length, 1);
+        }
+        if (requestId !== searchRequestRef.current) return;
+      }
+      if (requestId !== searchRequestRef.current) return;
+      setSearchMatches(matches);
+      setCurrentMatchIndex(0);
+      setSearchCompleted(true);
+      setActivePdfQuery(keyword);
+      if (matches.length) {
+        // Wait for the text layer to reflect the active query.
+        requestAnimationFrame(() => scrollToPdfMatch(matches[0], matches));
+      }
+    } catch (err) {
+      if (requestId !== searchRequestRef.current) return;
+      console.error("PDF SEARCH ERROR:", err);
+      setSearchCompleted(false);
+      setActivePdfQuery("");
+    } finally {
+      if (requestId === searchRequestRef.current) setSearchingPdf(false);
+    }
+  };
+
+  const navigateSearchMatch = (direction) => {
+    if (!searchMatches.length) return;
+    const index = (currentMatchIndex + direction + searchMatches.length) % searchMatches.length;
+    setCurrentMatchIndex(index);
+    scrollToPdfMatch(searchMatches[index], searchMatches);
   };
 
   // Move forward or backward through the PDF pages
@@ -489,32 +636,136 @@ const openResearch = (researchId) => {
     }
   };
 
+
+  // Search research records for the top dropdown
+  useEffect(() => {
+    const keyword = librarySearchTerm.trim();
+
+    if (!keyword) {
+      setLibrarySearchResults([]);
+      setLibrarySearchLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const timer = setTimeout(async () => {
+      try {
+        setLibrarySearchLoading(true);
+
+        const params = new URLSearchParams({
+          search: keyword,
+        });
+
+        const endpoint = isAdmin
+          ? `${API_URL}/api/research/admin-list`
+          : `${API_URL}/api/research?${params.toString()}`;
+
+        const response = await fetch(endpoint, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to search research.");
+        }
+
+        const data = await response.json();
+
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data.researches)
+          ? data.researches
+          : [];
+
+        // Match research information, not PDF text
+        const term = keyword.toLowerCase();
+
+        const matches = list.filter((item) =>
+          [
+            item.title,
+            item.author,
+            item.program,
+            item.year,
+          ].some((value) =>
+            String(value ?? "")
+              .toLowerCase()
+              .includes(term)
+          )
+        );
+
+        if (!controller.signal.aborted) {
+          setLibrarySearchResults(matches.slice(0, 8));
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("LIBRARY SEARCH ERROR:", error);
+          setLibrarySearchResults([]);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLibrarySearchLoading(false);
+        }
+      }
+    }, 400);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [librarySearchTerm, API_URL, token, isAdmin]);
+
   return (
     <div className="full-view-page">
       <main className="full-view-main">
-        {/* Research search bar */}
-        <header className="full-view-header">
-          <div className="full-view-search">
-            <span>⌕</span>
+          <header className="full-view-header">
+            <div className="full-view-search-wrapper">
+              <div className="full-view-search">
+                <span>⌕</span>
 
-            <input
-              type="text"
-              placeholder="Search research..."
-              value={searchTerm}
-              onChange={(event) =>
-                setSearchTerm(event.target.value)
-              }
-              onKeyDown={(event) => {
-                if (
-                  event.key === "Enter" &&
-                  searchTerm.trim()
-                ) {
-                  window.find?.(searchTerm);
-                }
-              }}
-            />
-          </div>
-        </header>
+                <input
+                  type="text"
+                  placeholder="Search research..."
+                  value={librarySearchTerm}
+                  onChange={(event) =>
+                    setLibrarySearchTerm(event.target.value)
+                  }
+                />
+              </div>
+
+              {librarySearchTerm.trim() && (
+                <div className="full-view-search-dropdown">
+                  {librarySearchLoading ? (
+                    <p>Searching research...</p>
+                  ) : librarySearchResults.length === 0 ? (
+                    <p>No matching research found.</p>
+                  ) : (
+                    librarySearchResults.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className="full-view-search-result"
+                        onClick={() => {
+                          setLibrarySearchTerm("");
+                          setLibrarySearchResults([]);
+                          openResearch(item.id);
+                        }}
+                      >
+                        <strong>{item.title}</strong>
+                        <small>
+                          {item.author || "Unknown Author"} •{" "}
+                          {item.program || "Unknown Program"}
+                        </small>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </header>
+
 
         <div className="full-view-content">
           {/* Research information panel */}
@@ -651,6 +902,45 @@ const openResearch = (researchId) => {
           </section>
 
           {/* PDF document viewer */}
+          {/* PDF search overlays the viewer; only the document below it scrolls. */}
+          <div className="pdf-viewer-area">
+            {searchOpen && (
+              <div className="pdf-search-panel" role="search" aria-label="Search within PDF">
+                <input
+                  type="text"
+                  placeholder="Find text in PDF..."
+                  aria-label="Find text in PDF"
+                  value={pdfSearchTerm}
+                  onChange={(event) => {
+                    setPdfSearchTerm(event.target.value);
+                    searchRequestRef.current += 1;
+                    highlightScrollRequestRef.current += 1;
+                    setActivePdfQuery("");
+                    setSearchMatches([]);
+                    setCurrentMatchIndex(0);
+                    setSearchingPdf(false);
+                    setSearchCompleted(false);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") searchInsidePdf();
+                  }}
+                />
+                <button type="button" onClick={searchInsidePdf} disabled={searchingPdf || !pdfSearchTerm.trim() || !pdfDocumentRef.current}>
+                  {searchingPdf ? "Searching..." : "Find"}
+                </button>
+                {searchCompleted && (
+                  <span className="pdf-search-count">
+                    {searchMatches.length ? `${currentMatchIndex + 1} of ${searchMatches.length}` : "No matches"}
+                  </span>
+                )}
+                {searchMatches.length > 0 && (
+                  <>
+                    <button type="button" onClick={() => navigateSearchMatch(-1)} title="Previous match">↑</button>
+                    <button type="button" onClick={() => navigateSearchMatch(1)} title="Next match">↓</button>
+                  </>
+                )}
+              </div>
+            )}
           <section
             className="full-view-document"
             ref={pdfContainerRef}
@@ -663,38 +953,7 @@ const openResearch = (researchId) => {
             ) : !pdfUrl ? (
               <p>PDF file is not available.</p>
             ) : (
-              <div className="pdf-document-wrapper">
-                {/* Search inside the PDF */}
-                {searchOpen && (
-                  <div className="pdf-search-panel">
-                    <input
-                      type="text"
-                      placeholder="Find text in PDF..."
-                      value={searchTerm}
-                      onChange={(event) =>
-                        setSearchTerm(event.target.value)
-                      }
-                      onKeyDown={(event) => {
-                        if (
-                          event.key === "Enter" &&
-                          searchTerm.trim()
-                        ) {
-                          window.find?.(searchTerm);
-                        }
-                      }}
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        window.find?.(searchTerm)
-                      }
-                    >
-                      Find
-                    </button>
-                  </div>
-                )}
-
+              <div className="pdf-document-wrapper">                
                 {pdfError ? (
                   <div className="pdf-error-message">
                     <h3>Unable to display PDF</h3>
@@ -745,6 +1004,7 @@ const openResearch = (researchId) => {
                             scale={scale}
                             scrollRoot={scrollRoot}
                             setPageRef={setPageRef}
+                            activePdfQuery={activePdfQuery}
                           />
                         )
                       )}
@@ -753,6 +1013,7 @@ const openResearch = (researchId) => {
               </div>
             )}
           </section>
+          </div>
 
           {/* Recommended research papers */}
           <aside className="full-view-recommendations">

@@ -1,3 +1,4 @@
+/* FULL VIEW PAGE */
 
 .full-view-page {
   width: 100%;
@@ -28,6 +29,14 @@
   background: #ffffff;
   border-bottom: 1px solid #164d7c;
   flex-shrink: 0;
+  position: relative;
+  z-index: 200;
+}
+
+.full-view-search-wrapper {
+  position: relative;
+  width: 100%;
+  z-index: 200;
 }
 
 .full-view-search {
@@ -38,8 +47,10 @@
   gap: 12px;
   padding: 0 15px;
   border-radius: 25px;
-  background: #d6d6d6;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  background: #f1f6fb;
+  border: 1px solid #dbe7f2;
+  box-shadow: 0 2px 8px rgba(22, 77, 124, 0.06);
+  box-sizing: border-box;
 }
 
 .full-view-search span {
@@ -48,10 +59,68 @@
 
 .full-view-search input {
   width: 100%;
+  min-width: 0;
   border: none;
   outline: none;
   background: transparent;
   font-size: 14px;
+}
+
+/* RESEARCH SEARCH DROPDOWN */
+
+.full-view-search-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+
+  max-height: 300px;
+  overflow-y: auto;
+
+  background: #ffffff;
+  border: 1px solid #d7e5f3;
+  border-radius: 10px;
+
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 300;
+}
+
+.full-view-search-dropdown > p {
+  padding: 14px;
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.full-view-search-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+
+  width: 100%;
+  padding: 12px 16px;
+
+  border: none;
+  border-bottom: 1px solid #eef2f7;
+  background: #ffffff;
+
+  text-align: left;
+  cursor: pointer;
+}
+
+.full-view-search-result:hover {
+  background: #eaf4ff;
+}
+
+.full-view-search-result strong {
+  font-size: 13px;
+  color: #0d4f82;
+}
+
+.full-view-search-result small {
+  font-size: 11px;
+  color: #64748b;
 }
 
 /* MAIN CONTENT */
@@ -59,8 +128,14 @@
 .full-view-content {
   flex: 1;
   min-height: 0;
+
   display: grid;
-  grid-template-columns: minmax(200px, 20%) 50px minmax(0, 1fr) minmax(180px, 20%);
+  grid-template-columns:
+    minmax(200px, 20%)
+    50px
+    minmax(0, 1fr)
+    minmax(180px, 20%);
+
   overflow: hidden;
 }
 
@@ -70,8 +145,10 @@
   min-height: 0;
   padding: 12px 16px;
   background: #ffffff;
+
   overflow-y: auto;
   overflow-x: hidden;
+
   border-right: 1px solid #164d7c;
 }
 
@@ -94,8 +171,6 @@
 }
 
 .full-view-description {
-  text-align: justify;
-  line-height: 1.6;
   margin-top: 22px;
 }
 
@@ -103,21 +178,24 @@
   text-align: left;
   line-height: 1.6;
   overflow-wrap: break-word;
-  word-spacing: normal;
   white-space: pre-line;
 }
 
-/* TOOLBAR */
+/* PDF TOOLBAR */
 
 .full-view-toolbar {
   min-height: 0;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+
   padding: 12px 4px;
-  background: #c5d5e2;
+
+  background: #d7e5f1;
   border-right: 1px solid #164d7c;
+
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -126,10 +204,13 @@
   width: 35px;
   min-height: 35px;
   flex-shrink: 0;
+
   border: none;
   border-bottom: 1px solid #8b9eac;
+
   background: transparent;
   color: #164d7c;
+
   font-size: 22px;
   cursor: pointer;
 }
@@ -157,30 +238,47 @@
   flex-shrink: 0;
 }
 
-/* PDF DOCUMENT AREA */
-
-.full-view-document {
+/* Viewer is the positioning parent; only PDF pages scroll. */
+.pdf-viewer-area {
+  position: relative;
   width: 100%;
   height: 100%;
   min-width: 0;
   min-height: 0;
-  display: block;
-  padding: 15px 12px;
-  overflow-y: auto;
-  overflow-x: auto;
-  overscroll-behavior: contain;
-  scroll-behavior: smooth;
+  overflow: hidden;
   background: #b8cbd9;
 }
 
-.pdf-document-wrapper {
+/* PDF DOCUMENT AREA */
+
+.full-view-document {
   position: relative;
+
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  padding: 15px 12px;
+
+  overflow-y: auto;
+  overflow-x: auto;
+
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+
+  box-sizing: border-box;
+}
+
+.pdf-document-wrapper {
   width: max-content;
   min-width: 100%;
   min-height: 100%;
+
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
+
   margin: 0 auto;
 }
 
@@ -189,6 +287,7 @@
   flex-direction: column;
   align-items: center;
   gap: 15px;
+
   width: max-content;
   min-width: 100%;
 }
@@ -196,6 +295,7 @@
 .pdf-document .react-pdf__Page {
   margin: 0 auto;
   flex-shrink: 0;
+
   background: #ffffff;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 }
@@ -205,38 +305,60 @@
   height: auto !important;
 }
 
-.pdf-document .react-pdf__Page__textContent {
-  user-select: text;
-}
-
-/* PDF SEARCH */
-
-.pdf-search-panel {
+/* FLOATING PDF SEARCH */
+.pdf-viewer-area > .pdf-search-panel {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 5;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
   display: flex;
-  gap: 5px;
-  padding: 8px;
-  background: #ffffff;
-  border: 1px solid #cccccc;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100% - 40px);
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #d7e5f3;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(18, 60, 95, 0.18);
+  box-sizing: border-box;
 }
-
 .pdf-search-panel input {
-  width: 150px;
-  padding: 6px;
-  border: 1px solid #cccccc;
+  width: 170px;
+  min-width: 100px;
+  padding: 9px 11px;
+  border: 1px solid #d7e5f3;
+  border-radius: 8px;
+  background: #f8fbff;
   outline: none;
+  font-size: 12px;
 }
-
+.pdf-search-panel input:focus {
+  border-color: #0d4f82;
+  box-shadow: 0 0 0 3px rgba(13, 79, 130, 0.1);
+}
 .pdf-search-panel button {
-  border: none;
-  padding: 6px 10px;
-  color: #ffffff;
-  background: #164d7c;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #0d4f82;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
+}
+.pdf-search-panel button:hover:not(:disabled) { background: #0a3d68; }
+.pdf-search-panel button:disabled { opacity: 0.5; cursor: not-allowed; }
+.pdf-search-count { color: #0d4f82; font-size: 12px; white-space: nowrap; }
+
+/* PDF SEARCH HIGHLIGHT */
+
+.react-pdf__Page__textContent mark.pdf-highlight {
+  background-color: rgba(80, 160, 210, 0.45);
+  color: inherit;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* RECOMMENDATIONS */
@@ -244,7 +366,9 @@
 .full-view-recommendations {
   min-height: 0;
   padding: 12px 8px;
-  background: #eeeeee;
+
+  background: #f7f9fc;
+
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -257,12 +381,16 @@
 
 .recommendation-item {
   width: 100%;
+
   display: flex;
   gap: 6px;
+
   padding: 0;
   margin-bottom: 20px;
+
   border: none;
   background: transparent;
+
   text-align: left;
   cursor: pointer;
 }
@@ -271,13 +399,17 @@
   width: 48px;
   min-width: 48px;
   height: 75px;
+
   display: flex;
   justify-content: center;
   align-items: flex-start;
+
   padding-top: 8px;
+
   background: #ffffff;
   border: 1px solid #cccccc;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+  box-shadow: 0 2px 8px rgba(22, 77, 124, 0.06);
 }
 
 .recommendation-thumbnail span {
@@ -288,6 +420,7 @@
 
 .recommendation-details {
   min-width: 0;
+
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -304,8 +437,15 @@
   color: #777777;
 }
 
+.no-recommendations {
+  font-size: 12px;
+  color: #777777;
+  text-align: center;
+  padding: 20px 8px;
+}
 
-/* Bookmark notification background overlay */
+/* BOOKMARK NOTIFICATION OVERLAY */
+
 .bookmark-overlay {
   position: fixed;
   inset: 0;
@@ -320,7 +460,8 @@
   z-index: 9999;
 }
 
-/* Bookmark notification modal */
+/* BOOKMARK NOTIFICATION MODAL */
+
 .bookmark-modal {
   width: 450px;
   max-width: calc(100% - 32px);
@@ -336,7 +477,6 @@
   box-sizing: border-box;
 }
 
-/* Notification heading */
 .bookmark-modal h3 {
   margin: 0 0 12px;
 
@@ -345,7 +485,6 @@
   color: rgba(10, 65, 116, 1);
 }
 
-/* Notification message */
 .bookmark-modal p {
   margin: 0 0 20px;
 
@@ -354,13 +493,11 @@
   color: rgba(10, 65, 116, 1);
 }
 
-/* Align the confirmation button */
 .bookmark-modal-actions {
   display: flex;
   justify-content: flex-end;
 }
 
-/* Confirmation button */
 .bookmark-modal-actions button {
   padding: 9px 25px;
 
@@ -375,14 +512,6 @@
   cursor: pointer;
 }
 
-/* Confirmation button hover effect */
 .bookmark-modal-actions button:hover {
   background: #d9b94a;
-}
-
-.no-recommendations {
-  font-size: 12px;
-  color: #777;
-  text-align: center;
-  padding: 20px 8px;
 }

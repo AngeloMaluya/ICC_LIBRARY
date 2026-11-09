@@ -146,25 +146,29 @@ export const Library = ({ isAdmin = false }) => {
   });
 
   // Apply the administrator's local search filter
-  const filteredResearches =
-    isAdmin && debouncedSearchTerm.trim()
-      ? filteredByLevel.filter((research) => {
-          const term = debouncedSearchTerm
-            .toLowerCase()
-            .trim();
 
-          return [
-            research.title,
-            research.author,
-            research.program,
-            research.year,
-          ].some((value) =>
-            String(value ?? "")
-              .toLowerCase()
-              .includes(term)
-          );
-        })
-      : filteredByLevel;
+  // Filter research by the entered search keyword
+  const filteredResearches = filteredByLevel.filter((research) => {
+    const term = debouncedSearchTerm.toLowerCase().trim();
+
+    // Display all research in the selected education level
+    // when the search bar is empty.
+    if (!term) return true;
+
+    // Search only relevant research information
+    const searchableFields = [
+      research.title,
+      research.author,
+      research.program,
+      research.year,
+    ];
+
+    return searchableFields.some((value) =>
+      String(value ?? "")
+        .toLowerCase()
+        .includes(term)
+    );
+  });
 
   return (
     <div className="library-layout">
