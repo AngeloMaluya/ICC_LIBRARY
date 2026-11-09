@@ -87,7 +87,7 @@ export const Create = () => {
 
     alert("Account Created!");
 
-    navigate("/library");
+    navigate(data.user.role === "admin" ? "/dashboard" : "/library");
 
     } catch (error) {
       console.error("Registration error:", error);

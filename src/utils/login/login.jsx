@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
@@ -18,7 +19,28 @@ export const Login = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [pendingGoogleUser, setPendingGoogleUser] = useState(null);
 
-  // NORMAL LOGIN
+  // Save authenticated account
+  const saveAuthenticatedUser = (data) => {
+    sessionStorage.setItem("authToken", data.token);
+    sessionStorage.setItem(
+      "libraryUser",
+      JSON.stringify(data.user)
+    );
+
+    // Clear temporary Google signup information
+    sessionStorage.removeItem("googleSignupToken");
+    sessionStorage.removeItem("googleEmail");
+    sessionStorage.removeItem("googlePicture");
+    sessionStorage.removeItem("googleName");
+
+    // Redirect based on the role returned by the backend
+    const destination =
+      data.user.role === "admin" ? "/dashboard" : "/library";
+
+    navigate(destination, { replace: true });
+  };
+
+  // NORMAL EMAIL/PASSWORD LOGIN
   const handleLogIn = async (e) => {
     e.preventDefault();
 
@@ -27,31 +49,8 @@ export const Login = () => {
       return;
     }
 
-    const email = e.target.email.value.trim();
-    const password = e.target.password.value;
-
-    // ADMIN LOGIN
-    if (email === "admin" && password === "admin") {
-      const adminUser = {
-        id: "admin",
-        email: "admin",
-        firstName: "Admin",
-        lastName: "Admin",
-        role: "admin",
-      };
-
-      // Clear previous student authentication
-      sessionStorage.removeItem("authToken");
-      sessionStorage.removeItem("googleSignupToken");
-
-      sessionStorage.setItem(
-        "libraryUser",
-        JSON.stringify(adminUser)
-      );
-
-      navigate("/dashboard");
-      return;
-    }
+    const email = e.currentTarget.elements.email.value.trim();
+    const password = e.currentTarget.elements.password.value;
 
     try {
       const response = await fetch(`${API_URL}/api/login`, {
@@ -69,20 +68,12 @@ export const Login = () => {
         return;
       }
 
-      // Save JWT token and user information
-      sessionStorage.setItem("authToken", data.token);
-      sessionStorage.setItem(
-        "libraryUser",
-        JSON.stringify(data.user)
-      );
+      if (!data.token || !data.user) {
+        alert("Invalid login response from the server.");
+        return;
+      }
 
-      // Clear temporary Google signup information
-      sessionStorage.removeItem("googleSignupToken");
-      sessionStorage.removeItem("googleEmail");
-      sessionStorage.removeItem("googlePicture");
-      sessionStorage.removeItem("googleName");
-
-      navigate("/library");
+      saveAuthenticatedUser(data);
     } catch (error) {
       console.error("Normal Login Error:", error);
       alert("Unable to connect to the server. Please try again.");
@@ -128,25 +119,23 @@ export const Login = () => {
         return;
       }
 
-      // EXISTING STUDENT ACCOUNT
+      // EXISTING REGISTERED ACCOUNT
       if (data.exists) {
-        sessionStorage.setItem("authToken", data.token);
-        sessionStorage.setItem(
-          "libraryUser",
-          JSON.stringify(data.user)
-        );
+        if (!data.token || !data.user) {
+          alert("Invalid Google login response.");
+          return;
+        }
 
-        // Clear temporary signup information
-        sessionStorage.removeItem("googleSignupToken");
-        sessionStorage.removeItem("googleEmail");
-        sessionStorage.removeItem("googlePicture");
-        sessionStorage.removeItem("googleName");
-
-        navigate("/library");
+        saveAuthenticatedUser(data);
         return;
       }
 
       // NEW STUDENT ACCOUNT
+      if (!data.signupToken || !data.googleUser) {
+        alert("Invalid Google registration response.");
+        return;
+      }
+
       sessionStorage.removeItem("authToken");
       sessionStorage.removeItem("libraryUser");
 
@@ -208,7 +197,6 @@ export const Login = () => {
   return (
     <div className="page">
       <div className="login-container">
-
         {/* LEFT PANEL */}
         <div className="left-panel">
           <div className="illustration">
@@ -233,19 +221,21 @@ export const Login = () => {
           <h1>Welcome!</h1>
 
           <form onSubmit={handleLogIn} className="login-form">
-            <label>Email</label>
+            <label htmlFor="email">Email</label>
 
             <input
-              type="text"
+              type="email"
+              id="email"
               name="email"
               placeholder="Email"
               required
             />
 
-            <label>Password</label>
+            <label htmlFor="password">Password</label>
 
             <input
               type="password"
+              id="password"
               name="password"
               placeholder="Password"
               required
@@ -258,10 +248,10 @@ export const Login = () => {
                 onChange={handleTermsCheckbox}
               />
 
-              By checking “I agree,” you confirm that you have read,
-              understood, and agree to follow these Terms and Conditions.
-              You also acknowledge that you have read and understood the
-              privacy policy.
+              By checking “I agree,” you confirm that you have
+              read, understood, and agree to follow these Terms
+              and Conditions. You also acknowledge that you have
+              read and understood the privacy policy.
             </p>
 
             <button

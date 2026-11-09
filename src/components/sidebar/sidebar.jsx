@@ -41,12 +41,6 @@ const studentMenu = [
 // Admin navigation menu
 const adminMenu = [
   {
-    label: "Profile",
-    icon: <FaRegUser />,
-    activeIcon: <FaUser />,
-    path: "/profile",
-  },
-  {
     label: "Uploads",
     icon: <GoUpload />,
     activeIcon: <GoUpload />,
