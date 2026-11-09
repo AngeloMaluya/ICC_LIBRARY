@@ -1,20 +1,16 @@
+
 import { Navigate } from "react-router-dom";
 
 const GoogleProtectedRoute = ({ children }) => {
-  const authToken = sessionStorage.getItem("authToken");
-  const signupToken = sessionStorage.getItem("googleSignupToken");
+  const signupToken = sessionStorage.getItem(
+    "googleSignupToken"
+  );
 
-  // Allow a new Google student to complete registration
-  if (signupToken) {
-    return children;
+  if (!signupToken) {
+    return <Navigate to="/login" replace />;
   }
 
-  // Require a backend-issued token for student pages
-  if (authToken) {
-    return children;
-  }
-
-  return <Navigate to="/login" replace />;
+  return children;
 };
 
 export default GoogleProtectedRoute;

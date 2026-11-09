@@ -16,6 +16,7 @@ import Saved from "./user/saved/saved";
 import FullView from "./components/fullView/FullView";
 import Profile from "./components/profile/profile";
 
+import StudentProtectedRoute from "./StudentProtectedRoute.jsx";
 import AdminProtectedRoute from "./AdminProtectedRoute.jsx";
 import GoogleProtectedRoute from "./googleprotectedroute.jsx";
 import UserLayout from "./user/userlayout/userlayout.jsx";
@@ -68,20 +69,18 @@ function App() {
           }
         />
 
-        <Route
-          element={
-            <GoogleProtectedRoute>
-              <UserLayout />
-            </GoogleProtectedRoute>
-          }
-        >
-          <Route path="/library" element={<Library />} />
-          <Route path="/library/:program" element={<Program />} />
-          <Route path="/history" element={<ViewingHistory />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/fullview/:id" element={<FullView />} />
-          <Route path="/saved" element={<Saved />} />
+        
+        <Route element={<StudentProtectedRoute />}>
+          <Route element={<UserLayout />}>
+            <Route path="/library" element={<Library />} />
+            <Route path="/library/:program" element={<Program />} />
+            <Route path="/history" element={<ViewingHistory />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/fullview/:id" element={<FullView />} />
+            <Route path="/saved" element={<Saved />} />
+          </Route>
         </Route>
+
       </Routes>
 
       <Analytics />

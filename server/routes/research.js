@@ -1,5 +1,5 @@
 import {
-  verifyStudentToken,
+  verifyAuthenticatedToken,
   verifyAdminToken,
 } from "../middleware/authMiddleware.js";
 import express from "express";
@@ -74,7 +74,7 @@ const upload = multer({
    GET ALL RESEARCH
 ========================================================= */
 
-router.get("/", verifyStudentToken, async (req, res) => {
+router.get("/", verifyAuthenticatedToken, async (req, res) => {
   try {
     const { program, search } = req.query;
 
@@ -174,7 +174,7 @@ router.get("/admin-list", verifyAdminToken, async (req, res) => {
    GET SINGLE RESEARCH
 ========================================================= */
 
-router.get("/:id", verifyStudentToken, async (req, res) => {
+router.get("/", verifyAuthenticatedToken, async (req, res) => {
   try {
     const { id } = req.params;
 
