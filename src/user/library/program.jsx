@@ -168,7 +168,7 @@ export const Program = () => {
           activeProgram={currentProgram}
           heading={{
             title: displayProgram,
-            subtitle: "Research papers and theses",
+            subtitle: "Research papers and thesis",
           }}
           emptyMessage={
             <>

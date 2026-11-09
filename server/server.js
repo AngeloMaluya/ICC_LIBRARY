@@ -8,7 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import researchRoutes from "./routes/research.js";
 import authRoutes from "./routes/auth.js";
 import historyRoutes from "./routes/history.js";
-
+import dashboardRoutes from "./routes/dashboard.js";
 import savedRoutes from "./routes/saved.js";
 
 const supabase = createClient(
@@ -145,6 +145,9 @@ app.get("/api/test-db", async (req, res) => {
     });
   }
 });
+// Administrator dashboard statistics
+app.use("/api/dashboard", dashboardRoutes);
+
 
 app.listen(PORT, () => {
 });

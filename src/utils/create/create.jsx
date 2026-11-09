@@ -4,6 +4,14 @@ import { useNavigate } from "react-router-dom";
 import "./create.css";
 import Image from "../../assets/icon.png";
 
+const COLLEGE_PROGRAMS = [
+  "BSCS", "BSBA", "BSED", "BEED", "BSTM", "BSCrim"
+];
+
+const SHS_STRANDS = [
+  "STEM", "ABM", "HUMSS", "GAS", "HE", "ICT"
+];
+
 export const Create = () => {
   const navigate = useNavigate();
 
@@ -19,6 +27,7 @@ export const Create = () => {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
+    educationLevel: "",
     course: "",
     year: "",
     email: googleEmail,
@@ -28,10 +37,22 @@ export const Create = () => {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    if (name === "educationLevel") {
+      setForm((prev) => ({
+        ...prev,
+        educationLevel: value,
+        course: "",
+        year: "",
+      }));
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -77,7 +98,7 @@ export const Create = () => {
 
     sessionStorage.setItem(
       "libraryUser",
-      JSON.stringify(data.user)
+      JSON.stringify(registeredUser)
     );
 
     sessionStorage.removeItem("googleSignupToken");
@@ -142,60 +163,86 @@ export const Create = () => {
             onChange={handleChange}
             required
           />
-
-          <label>Course</label>
+          
+          {/* EDUCATION LEVEL */}
+          <label>Education Level</label>
 
           <select
-            id="course"
-            name="course"
-            value={form.course}
+            name="educationLevel"
+            value={form.educationLevel}
             onChange={handleChange}
             required
           >
-            <option value="">Select Course</option>
-            <option value="BSCS">
-              Bachelor of Science in Computer Science
-            </option>
-            <option value="BSBA">
-              Bachelor of Science in Business Administration
-            </option>
-            <option value="BSED">
-              Bachelor of Secondary Education
-            </option>
-            <option value="BEED">
-              Bachelor of Elementary Education
-            </option>
-            <option value="BSTM">
-              Bachelor of Science in Tourism Management
-            </option>
-            <option value="BSCrim">
-              Bachelor of Science in Criminology
-            </option>
+            <option value="">Select Education Level</option>
+            <option value="college">College</option>
+            <option value="shs">Senior High School</option>
           </select>
 
-          <label>Year</label>
+          {/* COLLEGE PROGRAM OR SHS STRAND */}
+          {form.educationLevel && (
+            <>
+              <label>
+                {form.educationLevel === "shs" ? "Strand" : "Course"}
+              </label>
 
-          <select
-            id="year"
-            name="year"
-            value={form.year}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Year</option>
-            <option value="1">
-              First Year
-            </option>
-            <option value="2">
-              Second Year
-            </option>
-            <option value="3">
-              Third Year
-            </option>
-            <option value="4">
-              Fourth Year
-            </option>
-          </select>
+              <select
+                name="course"
+                value={form.course}
+                onChange={handleChange}
+                required
+              >
+                <option value="">
+                  {form.educationLevel === "shs"
+                    ? "Select Strand"
+                    : "Select Course"}
+                </option>
+
+                {(form.educationLevel === "shs"
+                  ? SHS_STRANDS
+                  : COLLEGE_PROGRAMS
+                ).map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+
+              {/* YEAR LEVEL */}
+              <label>
+                {form.educationLevel === "shs"
+                  ? "Grade Level"
+                  : "Year Level"}
+              </label>
+
+              <select
+                name="year"
+                value={form.year}
+                onChange={handleChange}
+                required
+              >
+                <option value="">
+                  {form.educationLevel === "shs"
+                    ? "Select Grade"
+                    : "Select Year"}
+                </option>
+
+                {form.educationLevel === "shs" ? (
+                  <>
+                    <option value="11">Grade 11</option>
+                    <option value="12">Grade 12</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="1">First Year</option>
+                    <option value="2">Second Year</option>
+                    <option value="3">Third Year</option>
+                    <option value="4">Fourth Year</option>
+                  </>
+                )}
+              </select>
+            </>
+          )}
+
 
           <label>Email</label>
 

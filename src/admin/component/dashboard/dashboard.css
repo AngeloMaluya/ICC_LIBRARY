@@ -126,3 +126,25 @@
   background: #cccccc;
   margin: 34px 3px;
 }
+
+/* Program card information */
+.admin-program-info {
+  text-align: center;
+}
+
+.admin-program-info h3 {
+  margin: 0 0 8px;
+}
+
+.admin-program-info p {
+  margin: 0;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+/* Dashboard error message */
+.admin-dashboard-error {
+  margin: 0 14px 16px;
+  color: #b42318;
+  font-size: 14px;
+}

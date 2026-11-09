@@ -171,17 +171,29 @@ export default function Profile() {
               label="User ID"
               value={profile.id}
             />
-
             <ProfileField
-              label="Course"
+              label="Education Level"
+              value={
+                profile.educationLevel === "shs"
+                  ? "Senior High School"
+                  : profile.educationLevel === "college"
+                  ? "College"
+                  : "—"
+              }
+            />
+            <ProfileField
+              label={profile.educationLevel === "shs" ? "Strand" : "Course"}
               value={profile.course}
             />
 
             <ProfileField
-              label="Year Level"
-              value={profile.year}
+              label={profile.educationLevel === "shs" ? "Grade Level" : "Year Level"}
+              value={
+                profile.educationLevel === "shs"
+                  ? `Grade ${profile.year}`
+                  : profile.year
+              }
             />
-
             <ProfileField
               label="Email Address"
               value={profile.email}

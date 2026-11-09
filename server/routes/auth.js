@@ -20,7 +20,7 @@ const SCHOOL_DOMAIN = "immaculada.edu.ph";
 const ADMIN_EMAIL = "research.admin01@gmail.com";
 
 const USER_FIELDS =
-  "id, email, f_name, l_name, course, year, profile_picture, role";
+  "id, email, f_name, l_name, course, year, profile_picture, role, education_level";
 
 // Create JWT access token using the database role
 const createAccessToken = (user) => {
@@ -56,6 +56,7 @@ const formatUser = (user) => ({
   email: user.email,
   firstName: user.f_name,
   lastName: user.l_name,
+  educationLevel: user.education_level,
   course: user.course,
   year: user.year,
   profilePicture: user.profile_picture,
@@ -67,112 +68,125 @@ const formatUser = (user) => ({
 // ======================================================
 
 router.post("/register", async (req, res) => {
+try {
+  const {
+    firstName,
+    lastName,
+    course,
+    year,
+    educationLevel,
+    password,
+    signupToken,
+  } = req.body;
+
+  // Validate required fields
+  if (
+    typeof firstName !== "string" ||
+    typeof lastName !== "string" ||
+    typeof course !== "string" ||
+    typeof educationLevel !== "string" ||
+    typeof password !== "string" ||
+    !firstName.trim() ||
+    !lastName.trim() ||
+    !course.trim() ||
+    !educationLevel.trim() ||
+    !year ||
+    !password ||
+    !signupToken
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: "All fields are required.",
+    });
+  }
+
+  // Validate education level, course, and year
+  const COLLEGE_PROGRAMS = [
+    "BSCS", "BSBA", "BSED", "BEED", "BSTM", "BSCrim"
+  ];
+
+  const SHS_STRANDS = [
+    "STEM", "ABM", "HUMSS", "GAS", "HE", "ICT"
+  ];
+
+  const validCollege =
+    educationLevel === "college" &&
+    COLLEGE_PROGRAMS.includes(course) &&
+    ["1", "2", "3", "4"].includes(String(year));
+
+  const validSHS =
+    educationLevel === "shs" &&
+    SHS_STRANDS.includes(course) &&
+    ["11", "12"].includes(String(year));
+
+  if (!validCollege && !validSHS) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid education level, course/strand, or year.",
+    });
+  }
+  
+  // Verify Google signup token
+  let googleUser;
+
   try {
-    const {
-      firstName,
-      lastName,
-      course,
-      year,
-      password,
+    googleUser = jwt.verify(
       signupToken,
-    } = req.body;
+      process.env.JWT_SECRET
+    );
+  } catch {
+    return res.status(401).json({
+      success: false,
+      message: "Google signup session expired. Please sign in again.",
+    });
+  }
 
-    if (
-      typeof firstName !== "string" ||
-      typeof lastName !== "string" ||
-      typeof course !== "string" ||
-      !firstName.trim() ||
-      !lastName.trim() ||
-      !course.trim() ||
-      !year ||
-      typeof password !== "string" ||
-      !signupToken
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required.",
-      });
-    }
+  if (
+    googleUser.type !== "google_signup" ||
+    typeof googleUser.email !== "string" ||
+    !googleUser.email.toLowerCase().endsWith(`@${SCHOOL_DOMAIN}`)
+  ) {
+    return res.status(403).json({
+      success: false,
+      message: "Invalid Google signup session.",
+    });
+  }
 
-    if (
-      password.length < 8 ||
-      Buffer.byteLength(password, "utf8") > 72
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Password must be at least 8 characters and no more than 72 bytes.",
-      });
-    }
+  const email = googleUser.email.trim().toLowerCase();
 
-    let googleUser;
-
-    try {
-      googleUser = jwt.verify(
-        signupToken,
-        process.env.JWT_SECRET
-      );
-    } catch {
-      return res.status(401).json({
-        success: false,
-        message:
-          "Google signup session expired. Please sign in again.",
-      });
-    }
-
-    if (
-      googleUser.type !== "google_signup" ||
-      typeof googleUser.email !== "string" ||
-      !googleUser.email
-        .toLowerCase()
-        .endsWith(`@${SCHOOL_DOMAIN}`)
-    ) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid Google signup session.",
-      });
-    }
-
-    const email = googleUser.email.trim().toLowerCase();
-
-    const {
-      data: existingUser,
-      error: checkError,
-    } = await supabase
+  // Check for an existing account
+  const { data: existingUser, error: lookupError } =
+    await supabase
       .from("users")
       .select("id")
       .eq("email", email)
       .maybeSingle();
 
-    if (checkError) {
-      console.error("USER CHECK ERROR:", checkError);
+  if (lookupError) {
+    throw lookupError;
+  }
 
-      return res.status(500).json({
-        success: false,
-        message: "Failed to check existing account.",
-      });
-    }
+  if (existingUser) {
+    return res.status(409).json({
+      success: false,
+      message: "This email is already registered.",
+    });
+  }
 
-    if (existingUser) {
-      return res.status(409).json({
-        success: false,
-        message: "This email is already registered.",
-      });
-    }
+  // Hash password
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    const {
-      data: newUser,
-      error: insertError,
-    } = await supabase
+  // Register student
+  const { data: newUser, error: insertError } =
+    await supabase
       .from("users")
       .insert({
+        email,
         f_name: firstName.trim(),
         l_name: lastName.trim(),
         course: course.trim(),
-        year,
-        email,
+        year: Number(year),
+        education_level: educationLevel,
         password: hashedPassword,
         profile_picture: googleUser.picture || null,
         role: "student",
@@ -180,24 +194,29 @@ router.post("/register", async (req, res) => {
       .select(USER_FIELDS)
       .single();
 
-    if (insertError) {
-      console.error("REGISTER DATABASE ERROR:", insertError);
-
-      return res.status(500).json({
+  if (insertError) {
+    if (insertError.code === "23505") {
+      return res.status(409).json({
         success: false,
-        message: "Failed to create account.",
+        message: "This email is already registered.",
       });
     }
 
-    const token = createAccessToken(newUser);
+    throw insertError;
+  }
 
-    return res.status(201).json({
-      success: true,
-      message: "Account created successfully.",
-      token,
-      user: formatUser(newUser),
-    });
-  } catch (error) {
+  // Generate login token
+  const token = createAccessToken(newUser);
+
+  return res.status(201).json({
+    success: true,
+    message: "Account created successfully.",
+    token,
+    user: formatUser(newUser),
+  });
+
+  // Continue with Google signup token verification...
+    }catch (error) {
     console.error("REGISTER ERROR:", error);
 
     return res.status(500).json({
@@ -350,6 +369,7 @@ router.post("/google-login", async (req, res) => {
       });
     }
 
+
     // Registered account: use role stored in Supabase
     if (user) {
       if (isAdminEmail && user.role !== "admin") {
@@ -359,15 +379,45 @@ router.post("/google-login", async (req, res) => {
         });
       }
 
-      const token = createAccessToken(user);
+      // Use the latest picture provided by Google
+      let currentUser = user;
+
+      if (
+        typeof payload.picture === "string" &&
+        payload.picture.trim() &&
+        payload.picture !== user.profile_picture
+      ) {
+        const { data: updatedUser, error: updateError } =
+          await supabase
+            .from("users")
+            .update({
+              profile_picture: payload.picture,
+            })
+            .eq("id", user.id)
+            .select(USER_FIELDS)
+            .single();
+
+        if (updateError) {
+          console.error(
+            "GOOGLE PROFILE PICTURE UPDATE ERROR:",
+            updateError
+          );
+        } else {
+          currentUser = updatedUser;
+        }
+      }
+
+      // Generate access token using the database role
+      const token = createAccessToken(currentUser);
 
       return res.status(200).json({
         success: true,
         exists: true,
         token,
-        user: formatUser(user),
+        user: formatUser(currentUser),
       });
     }
+
 
     // Administrator must already exist in the database
     if (isAdminEmail) {
