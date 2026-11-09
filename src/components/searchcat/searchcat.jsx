@@ -1,3 +1,4 @@
+
 import { FaSearch } from "react-icons/fa";
 import "./searchcat.css";
 
@@ -18,8 +19,19 @@ export default function SearchCat({
   emptyMessage = "No research found.",
   isAdmin = false,
 }) {
+
+  // Open the PDF viewer using the correct user role
+  const openPdfViewer = (researchId) => {
+    navigate(
+      isAdmin
+        ? `/admin/fullview/${researchId}`
+        : `/fullview/${researchId}`
+    );
+  };
+
   return (
     <div className="library-content">
+
       {/* SEARCH BAR */}
       <div className="search-box">
         <FaSearch className="search-icon" />
@@ -40,8 +52,10 @@ export default function SearchCat({
             key={program}
             onClick={() => {
               if (isAdmin) {
+                // Filter research by program for administrators
                 setSearchTerm(program);
               } else {
+                // Navigate to the selected student program
                 navigate(`/library/${program}`);
               }
             }}
@@ -68,64 +82,84 @@ export default function SearchCat({
       {/* RESEARCH AREA */}
       <div className="recommend-section">
         <div className="card-container">
+
           {/* LOADING */}
           {loading && (
-            <div className="library-message">Loading research...</div>
+            <div className="library-message">
+              Loading research...
+            </div>
           )}
 
           {/* ERROR */}
           {!loading && error && (
-            <div className="library-message error-message">{error}</div>
+            <div className="library-message error-message">
+              {error}
+            </div>
           )}
 
           {/* NO RESULTS */}
           {!loading && !error && filteredResearches.length === 0 && (
-            <div className="library-message">{emptyMessage}</div>
+            <div className="library-message">
+              {emptyMessage}
+            </div>
           )}
 
-          {/* RESEARCH */}
+          {/* RESEARCH CARDS */}
           {!loading &&
             !error &&
             filteredResearches.map((research) => (
               <div className="research-card" key={research.id}>
-                {/* PLACEHOLDER IMAGE */}
+
+                {/* RESEARCH POSTER */}
                 <img
                   className="card-image"
-                   src={
+                  src={
                     research.poster_url ||
                     getProgramImage(research.program)
                   }
                   alt={`${research.title} poster`}
                   onError={(e) => {
                     e.currentTarget.onerror = null;
-                    e.currentTarget.src = getProgramImage(research.program);
+                    e.currentTarget.src = getProgramImage(
+                      research.program
+                    );
                   }}
-                  onClick={() => navigate(`/fullview/${research.id}`)}
+                  onClick={() => openPdfViewer(research.id)}
                 />
 
                 {/* CARD INFORMATION */}
                 <div className="card-info">
-                 <h3
-                  className="research-title"
-                  onClick={() => navigate(`/fullview/${research.id}`)}
-                  title="Open PDF Viewer"
-                >
-                  {research.title}
-                </h3>
 
-                  <p>{research.author || "Unknown Author"}</p>
-
-                  <small>{research.year || "Unknown Year"}</small>
-                  
-                  {!isAdmin && (
-                  <button
-                    type="button"
-                    className="view-research-btn"
-                    onClick={() => handleViewResearch(research.id)}
+                  {/* Open the PDF when the title is clicked */}
+                  <h3
+                    className="research-title"
+                    onClick={() => openPdfViewer(research.id)}
+                    title="Open PDF Viewer"
                   >
-                    View Summary
-                  </button>
+                    {research.title}
+                  </h3>
+
+                  <p>
+                    {research.author || "Unknown Author"}
+                  </p>
+
+                  <small>
+                    {research.year || "Unknown Year"}
+                  </small>
+
+                  {/* Students can view research summaries */}
+                  {!isAdmin && (
+                    <button
+                      type="button"
+                      className="view-research-btn"
+                      onClick={() =>
+                        handleViewResearch(research.id)
+                      }
+                    >
+                      View Summary
+                    </button>
                   )}
+
                 </div>
               </div>
             ))}

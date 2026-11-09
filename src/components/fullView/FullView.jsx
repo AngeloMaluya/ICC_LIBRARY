@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -17,7 +16,6 @@ function LazyPdfPage({ number, width, scale, scrollRoot, setPageRef }) {
   const elementRef = useRef(null);
   const [nearViewport, setNearViewport] = useState(number === 1);
   const [aspectRatio, setAspectRatio] = useState(1.414);
-
   useEffect(() => {
     const element = elementRef.current;
     if (!element || !scrollRoot) return;
@@ -81,6 +79,15 @@ export default function FullView() {
   const { id } = useParams();
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
+
+  // Identify the current role to keep student features separate.
+  let storedUser = null;
+  try {
+    storedUser = JSON.parse(sessionStorage.getItem("libraryUser") || "null");
+  } catch {
+    storedUser = null;
+  }
+  const isAdmin = storedUser?.role === "admin";
 
   const pdfContainerRef = useRef(null);
   const pageRefs = useRef([]);
@@ -257,7 +264,8 @@ export default function FullView() {
       try {
         setBookmarked(false);
 
-        if (!token || !id) return;
+        // Administrators do not use student bookmarks.
+        if (!token || !id || isAdmin) return;
 
         const response = await fetch(
           `${API_URL}/api/saved/${id}`,
@@ -288,13 +296,14 @@ export default function FullView() {
     checkBookmark();
 
     return () => controller.abort();
-  }, [API_URL, id, token]);
+  }, [API_URL, id, token, isAdmin]);
 
   // Record the research in the student's viewing history
   const recordViewingHistory = useCallback(async () => {
     if (
       !token ||
       !id ||
+      isAdmin ||
       recordedIdRef.current === String(id)
     ) {
       return;
@@ -329,7 +338,7 @@ export default function FullView() {
       console.error("Viewing history error:", err);
       recordedIdRef.current = null;
     }
-  }, [API_URL, id, token]);
+  }, [API_URL, id, token, isAdmin]);
 
   // Update the PDF viewer when the document finishes loading
   const onDocumentLoadSuccess = ({ numPages: total }) => {
@@ -407,7 +416,8 @@ export default function FullView() {
 
   // Save or remove the research bookmark in Supabase
   const toggleBookmark = async () => {
-    if (bookmarkUpdating) return;
+    // Block bookmark updates for administrators.
+    if (bookmarkUpdating || isAdmin) return;
 
     try {
       setBookmarkUpdating(true);
@@ -462,9 +472,14 @@ export default function FullView() {
   };
 
   // Open another research paper
-  const openResearch = (researchId) => {
-    navigate(`/fullview/${researchId}`);
-  };
+// Open recommended research using the correct role layout
+const openResearch = (researchId) => {
+  navigate(
+    isAdmin
+      ? `/admin/fullview/${researchId}`
+      : `/fullview/${researchId}`
+  );
+};
 
   // Open the PDF directly in a new browser tab
   const openPdfInNewTab = () => {
@@ -563,7 +578,9 @@ export default function FullView() {
               title="Help"
               onClick={() =>
                 alert(
-                  "Use the toolbar to navigate, bookmark, and zoom the PDF."
+                  isAdmin
+                    ? "Use the toolbar to navigate and zoom the PDF."
+                    : "Use the toolbar to navigate, bookmark, and zoom the PDF."
                 )
               }
             >
@@ -598,21 +615,20 @@ export default function FullView() {
 
             <div className="toolbar-divider" />
 
-            {/* Bookmark the PDF or remove its bookmark */}
-            <button
-              type="button"
-              title={
-                bookmarked
-                  ? "Remove bookmark"
-                  : "Bookmark research"
-              }
-              onClick={toggleBookmark}
-              disabled={bookmarkUpdating}
-            >
-              {bookmarked ? "★" : "☆"}
-            </button>
-
-            <div className="toolbar-divider" />
+            {/* Student-only bookmark control */}
+            {!isAdmin && (
+              <>
+                <button
+                  type="button"
+                  title={bookmarked ? "Remove bookmark" : "Bookmark research"}
+                  onClick={toggleBookmark}
+                  disabled={bookmarkUpdating}
+                >
+                  {bookmarked ? "★" : "☆"}
+                </button>
+                <div className="toolbar-divider" />
+              </>
+            )}
 
             <button
               type="button"

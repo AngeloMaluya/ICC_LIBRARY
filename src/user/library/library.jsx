@@ -76,6 +76,14 @@ useEffect(() => {
         signal: controller.signal,
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+
+        throw new Error(
+          errorData.message ||
+          `Failed to fetch research (HTTP ${response.status})`
+        );
+      }
 
       const data = await response.json();
 
@@ -92,7 +100,7 @@ useEffect(() => {
       if (error.name === "AbortError") return;
 
       console.error("Error fetching research:", error);
-      setError("Unable to load research from the database.");
+      setError(error.message || "Unable to load research.");
     } finally {
       if (!controller.signal.aborted) {
         setLoading(false);

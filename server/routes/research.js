@@ -175,7 +175,6 @@ router.get("/admin-list", verifyAdminToken, async (req, res) => {
 ========================================================= */
 
 router.get("/:id", verifyAuthenticatedToken, async (req, res) => {
-  const { id } = req.params;
   try {
     const { id } = req.params;
 
