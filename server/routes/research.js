@@ -1,4 +1,7 @@
-
+import {
+  verifyStudentToken,
+  verifyAdminToken,
+} from "../middleware/authMiddleware.js";
 import express from "express";
 import multer from "multer";
 import dotenv from "dotenv";
@@ -6,7 +9,6 @@ import { randomUUID } from "node:crypto";
 import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import { PDFParse } from "pdf-parse";
-import { verifyStudentToken } from "../middleware/authMiddleware.js";
 
 dotenv.config();
 
@@ -143,7 +145,7 @@ router.get("/", verifyStudentToken, async (req, res) => {
 
 //admin test programs
 // Temporary research listing for the admin Programs page
-router.get("/admin-list", async (req, res) => {
+router.get("/admin-list", verifyAdminToken, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("summarized")
@@ -213,6 +215,7 @@ router.get("/:id", verifyStudentToken, async (req, res) => {
 
 router.post(
   "/summarize",
+  verifyAdminToken,
   upload.fields([
     { name: "pdf", maxCount: 1 },
     { name: "poster", maxCount: 1 },

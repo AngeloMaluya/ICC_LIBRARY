@@ -231,10 +231,22 @@ const Upload = () => {
 
         setMessage("Uploading research...");
 
+
+      const token = sessionStorage.getItem("authToken");
+
+      if (!token) {
+        throw new Error(
+          "Administrator session not found. Please log in again."
+        );
+      }
+
       const response = await fetch(
         `${API_URL.replace(/\/+$/, "")}/api/research/summarize`,
         {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           body: formData,
         }
       );

@@ -16,6 +16,7 @@ import Saved from "./user/saved/saved";
 import FullView from "./components/fullView/FullView";
 import Profile from "./components/profile/profile";
 
+import AdminProtectedRoute from "./AdminProtectedRoute.jsx";
 import GoogleProtectedRoute from "./googleprotectedroute.jsx";
 import UserLayout from "./user/userlayout/userlayout.jsx";
 
@@ -49,11 +50,13 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
 
-        <Route element={<AdminLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/upload" element={<Upload />} />
-          <Route path="/program" element={<AdminProgram />} />
-          <Route path="/reports" element={<Reports />} />
+        <Route element={<AdminProtectedRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/upload" element={<Upload />} />
+            <Route path="/program" element={<AdminProgram />} />
+            <Route path="/reports" element={<Reports />} />
+          </Route>
         </Route>
 
         <Route
