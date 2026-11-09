@@ -18,6 +18,17 @@ export const Library = ({ isAdmin = false}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  // Store the keyword after the user stops typing
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  // Wait 400ms before performing a search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const {
     selectedResearch,
@@ -37,53 +48,66 @@ export const Library = ({ isAdmin = false}) => {
   }, []);
 
   // LOAD AND SEARCH ALL RESEARCH
-  useEffect(() => {
-    const fetchResearches = async () => {
-      try {
-        setLoading(true);
-        setError("");
+useEffect(() => {
+  const controller = new AbortController();
 
-        const params = new URLSearchParams();
+  const fetchResearches = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-        if (searchTerm.trim()) {
-          params.set("search", searchTerm.trim());
-        }
+      const params = new URLSearchParams();
 
-          const endpoint = isAdmin
-            ? `${API_URL}/api/research/admin-list`
-            : `${API_URL}/api/research?${params.toString()}`;
+      if (debouncedSearchTerm.trim()) {
+        params.set("search", debouncedSearchTerm.trim());
+      }
 
-          const token = sessionStorage.getItem("authToken");
+      const endpoint = isAdmin
+        ? `${API_URL}/api/research/admin-list`
+        : `${API_URL}/api/research?${params.toString()}`;
 
-          const response = await fetch(endpoint, {
-            headers: isAdmin
-              ? {}
-              : { Authorization: `Bearer ${token}` },
-          });
+      const token = sessionStorage.getItem("authToken");
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch research");
-        }
+      // Cancel outdated requests when the search changes
+      const response = await fetch(endpoint, {
+        headers: isAdmin
+          ? {}
+          : { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
+      });
 
-        const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to fetch research");
+      }
 
-        if (Array.isArray(data)) {
-          setResearches(data);
-        } else if (Array.isArray(data.researches)) {
-          setResearches(data.researches);
-        } else {
-          setResearches([]);
-        }
-      } catch (error) {
-        console.error("Error fetching research:", error);
-        setError("Unable to load research from the database.");
-      } finally {
+      const data = await response.json();
+
+      if (controller.signal.aborted) return;
+
+      if (Array.isArray(data)) {
+        setResearches(data);
+      } else if (Array.isArray(data.researches)) {
+        setResearches(data.researches);
+      } else {
+        setResearches([]);
+      }
+    } catch (error) {
+      if (error.name === "AbortError") return;
+
+      console.error("Error fetching research:", error);
+      setError("Unable to load research from the database.");
+    } finally {
+      if (!controller.signal.aborted) {
         setLoading(false);
       }
-    };
+    }
+  };
 
-    fetchResearches();
-}, [API_URL, searchTerm, isAdmin]);
+  fetchResearches();
+
+  // Cancel the previous request when the keyword changes
+  return () => controller.abort();
+}, [API_URL, debouncedSearchTerm, isAdmin]);
 
   return (
     <div className="library-layout">
