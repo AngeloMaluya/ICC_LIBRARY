@@ -1,7 +1,7 @@
 .history-page {
   display: flex;
   min-height: 100vh;
-  background: #ffffff;
+  background: rgba(237, 245, 253, 0.92);
 }
 
 .history-main {

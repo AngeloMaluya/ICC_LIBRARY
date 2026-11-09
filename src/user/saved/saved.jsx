@@ -1,3 +1,4 @@
+import { getProgramImage } from "../../utils/programImages.js";
 
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -74,6 +75,7 @@ export default function Saved() {
 
     return saved.filter((item) => {
       const research = item.summarized;
+ 
       if (!research) return false;
 
       const matchesProgram =
@@ -219,9 +221,20 @@ export default function Saved() {
                 <FaBookmark className="saved-card-bookmark" />
 
                 <div className="saved-card-content">
-                  <div className="saved-pdf-icon">
-                    <FaRegFilePdf />
-                  </div>
+                    <div className="saved-poster">
+                      <img
+                        src={
+                          research.poster_url ||
+                          getProgramImage(research.program)
+                        }
+                        alt={research.title}
+                        loading="lazy"
+                        onError={(event) => {
+                          event.currentTarget.onerror = null;
+                          event.currentTarget.src = getProgramImage(research.program);
+                        }}
+                      />
+                    </div>
 
                   <div className="saved-card-details">
                     <h3 title={research.title}>{research.title}</h3>

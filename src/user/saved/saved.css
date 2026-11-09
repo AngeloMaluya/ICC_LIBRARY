@@ -3,7 +3,7 @@
   padding: 32px;
   min-height: 100vh;
   box-sizing: border-box;
-  background: #f5f8fc;
+  background: rgba(237, 245, 253, 0.92);
   color: #102b55;
   font-family: "Plus Jakarta Sans", sans-serif;
 }
@@ -129,87 +129,81 @@
 }
 
 .saved-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
 }
 
 .saved-card {
-  display: flex;
-  flex-direction: column;
   position: relative;
-  min-width: 0;
-  padding: 22px;
-  border: 1px solid #e0e6ef;
-  border-radius: 15px;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+
+  width: 100%;
+  min-height: 105px;
+  padding: 18px 24px;
+
   background: #ffffff;
-  box-shadow: 0 4px 12px rgba(13, 75, 142, 0.07);
-  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #e0e6ef;
+  border-radius: 12px;
+
+  box-shadow: 0 2px 8px rgba(13, 75, 142, 0.05);
+  box-sizing: border-box;
+
+  transition: box-shadow 0.2s ease;
 }
 
 .saved-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 22px rgba(13, 75, 142, 0.12);
+  transform: none;
+  box-shadow: 0 4px 14px rgba(13, 75, 142, 0.1);
 }
 
 .saved-card-bookmark {
   position: absolute;
-  top: 18px;
-  right: 18px;
-  color: #e8b923;
+  top: 12px;
+  right: 14px;
+  color: #e8c95c;
   font-size: 19px;
 }
 
 .saved-card-content {
   display: flex;
-  gap: 14px;
-  padding-right: 10px;
-  margin-bottom: 25px;
-}
-
-.saved-pdf-icon {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 66px;
-  height: 78px;
-  border-radius: 12px;
-  background: #f0f3f8;
-  color: #d92727;
-  font-size: 34px;
+  flex: 1;
+  min-width: 0;
+  gap: 18px;
+
+  margin: 0;
+  padding: 0;
 }
 
 .saved-card-details {
+  flex: 1;
   min-width: 0;
 }
 
 .saved-card-details h3 {
-  margin: 0 0 9px;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 800;
-  overflow-wrap: anywhere;
+  margin: 0 0 5px;
+  font-size: 15px;
+  line-height: 1.4;
 }
 
 .saved-card-details p {
-  margin: 0 0 12px;
-  color: #66748a;
+  margin: 0 0 8px;
   font-size: 12px;
-  line-height: 1.5;
 }
 
 .saved-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .saved-tags span {
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
+  padding: 4px 10px;
+  font-size: 10px;
 }
 
 .saved-program {
@@ -224,23 +218,26 @@
 
 .saved-card-actions {
   display: flex;
+  align-items: center;
+  flex-shrink: 0;
   gap: 10px;
-  margin-top: auto;
+
+  margin: 0;
+  padding-right: 22px;
 }
 
 .saved-card-actions button {
-  display: flex;
-  flex: 1;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  flex: none;
+
+  width: 120px;
   min-width: 0;
-  padding: 11px 8px;
-  border-radius: 9px;
-  font: inherit;
+  padding: 10px 14px;
+
   font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
+  white-space: nowrap;
 }
 
 .saved-view {
@@ -314,4 +311,20 @@
   background: #0d4b8e;
   color: white;
   cursor: pointer;
+}
+
+.saved-poster {
+  width: 65px;
+  height: 85px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #f0f3f8;
+}
+
+.saved-poster img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }

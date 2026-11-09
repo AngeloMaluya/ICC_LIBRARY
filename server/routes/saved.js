@@ -13,6 +13,7 @@ const supabase = createClient(
 router.use(verifyStudentToken);
 
 // Get all bookmarks for the logged-in student
+// Get all bookmarks for the logged-in student
 router.get("/", async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -27,7 +28,8 @@ router.get("/", async (req, res) => {
           author,
           year,
           program,
-          pdf_url
+          pdf_url,
+          poster_url
         )
       `)
       .eq("user_id", req.user.id)
@@ -41,6 +43,7 @@ router.get("/", async (req, res) => {
     });
   } catch (error) {
     console.error("GET SAVED ERROR:", error);
+
     return res.status(500).json({
       message: "Unable to retrieve saved research.",
     });

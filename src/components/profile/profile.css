@@ -1,10 +1,8 @@
 .profile-page {
   width: 100%;
   min-height: 100vh;
-
+  background: rgba(237, 245, 253, 0.92);
   display: flex;
-
-  background: #ffffff;
 }
 
 .profile-main {
@@ -15,7 +13,7 @@
 
   box-sizing: border-box;
 
-  background: #ffffff;
+  background: rgba(237, 245, 253, 0.92);
 }
 
 .profile-page-title {
