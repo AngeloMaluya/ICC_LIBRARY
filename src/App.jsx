@@ -64,7 +64,6 @@ function App() {
         <Route element={<GoogleProtectedRoute />}>
           <Route path="/create" element={<Create />} />
         </Route>
-
         {/* ADMIN ROUTES */}
         <Route element={<AdminProtectedRoute />}>
           <Route element={<AdminLayout />}>

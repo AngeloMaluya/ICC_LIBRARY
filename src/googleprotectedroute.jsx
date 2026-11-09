@@ -1,16 +1,17 @@
 
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
-const GoogleProtectedRoute = ({ children }) => {
-  const signupToken = sessionStorage.getItem(
-    "googleSignupToken"
-  );
+const GoogleProtectedRoute = () => {
+  // Check for the temporary Google signup token
+  const signupToken = sessionStorage.getItem("googleSignupToken");
 
+  // Redirect users who haven't completed Google verification
   if (!signupToken) {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  // Display the protected Create Account page
+  return <Outlet />;
 };
 
 export default GoogleProtectedRoute;
