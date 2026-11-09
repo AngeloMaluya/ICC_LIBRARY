@@ -66,19 +66,16 @@ useEffect(() => {
         ? `${API_URL}/api/research/admin-list`
         : `${API_URL}/api/research?${params.toString()}`;
 
+      
       const token = sessionStorage.getItem("authToken");
 
-      // Cancel outdated requests when the search changes
       const response = await fetch(endpoint, {
-        headers: isAdmin
-          ? {}
-          : { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         signal: controller.signal,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch research");
-      }
 
       const data = await response.json();
 
@@ -119,7 +116,24 @@ useEffect(() => {
           navigate={navigate}
           loading={loading}
           error={error}
-          filteredResearches={researches}
+
+          filteredResearches={
+            isAdmin && debouncedSearchTerm.trim()
+              ? researches.filter((research) => {
+                  const term = debouncedSearchTerm.toLowerCase().trim();
+
+                  return [
+                    research.title,
+                    research.author,
+                    research.program,
+                    research.year,
+                  ].some((value) =>
+                    String(value ?? "").toLowerCase().includes(term)
+                  );
+                })
+              : researches
+          }
+
           handleViewResearch={handleViewResearch}
           handleViewPdfText={handleViewPdfText}
           getProgramImage={getProgramImage}
