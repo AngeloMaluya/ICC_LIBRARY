@@ -1,3 +1,4 @@
+import "./researchpopup.css";
 const ResearchPopups = ({
   showPopup,
   showPdfPopup,

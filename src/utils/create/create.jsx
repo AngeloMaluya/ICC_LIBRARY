@@ -71,13 +71,14 @@ export const Create = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-          firstName: form.firstName,
-          lastName: form.lastName,
-          course: form.course,
-          year: form.year,
-          password: form.password,
-          signupToken: sessionStorage.getItem("googleSignupToken"),
-        }),
+            firstName: form.firstName,
+            lastName: form.lastName,
+            educationLevel: form.educationLevel,
+            course: form.course,
+            year: form.year,
+            password: form.password,
+            signupToken: sessionStorage.getItem("googleSignupToken"),
+          }),
         }
       );
 

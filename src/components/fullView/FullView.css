@@ -379,3 +379,10 @@
 .bookmark-modal-actions button:hover {
   background: #d9b94a;
 }
+
+.no-recommendations {
+  font-size: 12px;
+  color: #777;
+  text-align: center;
+  padding: 20px 8px;
+}

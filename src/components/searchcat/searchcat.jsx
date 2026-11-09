@@ -111,21 +111,24 @@ export default function SearchCat({
               <div className="research-card" key={research.id}>
 
                 {/* RESEARCH POSTER */}
-                <img
-                  className="card-image"
-                  src={
-                    research.poster_url ||
-                    getProgramImage(research.program)
-                  }
-                  alt={`${research.title} poster`}
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = getProgramImage(
-                      research.program
-                    );
-                  }}
-                  onClick={() => openPdfViewer(research.id)}
-                />
+                <div className="card-image-container">
+                  <img
+                    className="card-image"
+                    src={
+                      research.poster_url ||
+                      getProgramImage(research.program)
+                    }
+                    alt={`${research.title} poster`}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = getProgramImage(
+                        research.program
+                      );
+                    }}
+                    onClick={() => openPdfViewer(research.id)}
+                  />
+                </div>
+
 
                 {/* CARD INFORMATION */}
                 <div className="card-info">

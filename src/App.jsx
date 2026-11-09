@@ -11,7 +11,7 @@ import Create from "./utils/create/create.jsx";
 
 // Student pages
 import Library from "./user/library/library.jsx";
-import Program from "./user/library/program.jsx";
+import Program from "./user/library/program/program.jsx";
 import ViewingHistory from "./user/ViewingHistory/ViewingHistory";
 import Saved from "./user/saved/saved";
 import Profile from "./components/profile/profile";

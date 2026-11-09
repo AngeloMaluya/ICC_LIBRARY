@@ -124,13 +124,12 @@ export default function FullView() {
     pageRefs.current[index] = element;
   }, []);
 
-  // Fetch research details and recommendations
+  // Fetch the active paper first, then load related papers from its program.
   useEffect(() => {
     const controller = new AbortController();
-    const headers = {
-      Authorization: `Bearer ${token}`,
-    };
+    const headers = { Authorization: `Bearer ${token}` };
 
+    // Clear the previous paper when navigating to another research ID.
     setLoading(true);
     setLoadingRecommendations(true);
     setResearch(null);
@@ -139,7 +138,6 @@ export default function FullView() {
     setPdfError("");
     setNumPages(0);
     setPageNumber(1);
-
     pageRefs.current = [];
     recordedIdRef.current = null;
 
@@ -147,87 +145,86 @@ export default function FullView() {
       setError("Authentication required. Please log in again.");
       setLoading(false);
       setLoadingRecommendations(false);
-
       return () => controller.abort();
     }
 
-    // Load the selected research paper
-    async function loadResearch() {
+    const loadResearchAndRecommendations = async () => {
+      let researchLoaded = false;
+
       try {
-        const response = await fetch(
-          `${API_URL}/api/research/${id}`,
-          {
-            headers,
-            signal: controller.signal,
-          }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.message ||
-              `Unable to load research (${response.status}).`
-          );
-        }
-
-        if (!controller.signal.aborted) {
-          setResearch(data.research || data);
-        }
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          console.error("Research loading error:", err);
-          setError(err.message || "Unable to load research.");
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    // Load recommended research papers
-    async function loadRecommendations() {
-      try {
-        const response = await fetch(`${API_URL}/api/research`, {
+        // Load the research currently open in FullView.
+        const response = await fetch(`${API_URL}/api/research/${id}`, {
           headers,
           signal: controller.signal,
         });
 
         if (!response.ok) {
-          throw new Error(
-            `Recommendations request failed (${response.status})`
-          );
+          throw new Error("Unable to load research.");
         }
 
         const data = await response.json();
-        const list =
-          data.research || data.researches || data;
+        const activeResearch = data.research || data;
+        if (controller.signal.aborted) return;
 
-        if (
-          !controller.signal.aborted &&
-          Array.isArray(list)
-        ) {
-          setRecommendations(
-            list.filter(
-              (item) => String(item.id) !== String(id)
-            )
-          );
+        setResearch(activeResearch);
+        researchLoaded = true;
+        setLoading(false);
+
+        // Only request recommendations from the same academic program.
+        const program = activeResearch.program?.trim();
+        if (!program) {
+          setRecommendations([]);
+          return;
         }
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          console.error("Recommendations error:", err);
+
+        const params = new URLSearchParams({ program });
+        const recommendationsResponse = await fetch(
+          `${API_URL}/api/research?${params.toString()}`,
+          { headers, signal: controller.signal }
+        );
+
+        if (!recommendationsResponse.ok) {
+          throw new Error("Unable to load recommendations.");
+        }
+
+        const recommendationsData = await recommendationsResponse.json();
+        const list =
+          recommendationsData.researches ||
+          recommendationsData.research ||
+          recommendationsData;
+
+        // Exclude the open paper and verify the program matches.
+        const relatedResearches = Array.isArray(list)
+          ? list.filter(
+              (item) =>
+                String(item.id) !== String(id) &&
+                String(item.program || "").trim().toLowerCase() ===
+                  program.toLowerCase()
+            )
+          : [];
+
+        if (!controller.signal.aborted) {
+          setRecommendations(relatedResearches);
+        }
+      } catch (error) {
+        if (error.name === "AbortError" || controller.signal.aborted) return;
+
+        console.error("FULLVIEW FETCH ERROR:", error);
+        // A recommendation failure must not hide a successfully loaded PDF.
+        if (!researchLoaded) {
+          setError(error.message || "Unable to load research.");
+        } else {
+          setRecommendations([]);
         }
       } finally {
         if (!controller.signal.aborted) {
+          setLoading(false);
           setLoadingRecommendations(false);
         }
       }
-    }
+    };
 
-    loadResearch();
-    loadRecommendations();
-
+    loadResearchAndRecommendations();
     return () => controller.abort();
   }, [API_URL, id, token]);
 
@@ -573,20 +570,6 @@ const openResearch = (researchId) => {
               ⌕
             </button>
 
-            <button
-              type="button"
-              title="Help"
-              onClick={() =>
-                alert(
-                  isAdmin
-                    ? "Use the toolbar to navigate and zoom the PDF."
-                    : "Use the toolbar to navigate, bookmark, and zoom the PDF."
-                )
-              }
-            >
-              ♧
-            </button>
-
             <div className="toolbar-divider" />
 
             <button
@@ -777,6 +760,11 @@ const openResearch = (researchId) => {
 
             {loadingRecommendations && (
               <p>Loading recommendations...</p>
+            )}
+
+            {/* Show a message when no same-program papers are available. */}
+            {!loadingRecommendations && recommendations.length === 0 && (
+              <p className="no-recommendations">No related research available.</p>
             )}
 
             {!loadingRecommendations &&

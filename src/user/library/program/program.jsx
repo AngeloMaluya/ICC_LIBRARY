@@ -2,13 +2,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import "./base_lib.css";
+import "./program.css";
+import "../base_lib.css";
 
-import SearchCat from "../../components/searchcat/searchcat.jsx";
-import ResearchPopups from "../../components/ResearchPopups/ResearchPopups.jsx";
+import SearchCat from "../../../components/searchcat/searchcat.jsx";
+import ResearchPopups from "../../../components/ResearchPopups/ResearchPopups.jsx";
 
-import { useResearchPopups } from "../../hooks/useResearchPopups.js";
-import { getProgramImage } from "../../utils/programImages.js";
+import { useResearchPopups } from "../../../hooks/useResearchPopups.js";
+import { getProgramImage } from "../../../utils/programImages.js";
 
 export const Program = () => {
   const navigate = useNavigate();

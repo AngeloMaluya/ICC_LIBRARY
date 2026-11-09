@@ -1,0 +1,88 @@
+
+.research-popup-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 20px;
+}
+
+.research-popup {
+  position: relative;
+  width: 700px;
+  max-width: 95%;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.popup-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  width: 35px;
+  height: 35px;
+  border: none;
+  background: transparent;
+  font-size: 30px;
+  line-height: 30px;
+  cursor: pointer;
+  color: #333;
+}
+
+.popup-close:hover {
+  color: #0b4ea2;
+}
+
+.research-details h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-right: 35px;
+  color: #0b4ea2;
+  font-size: 22px;
+}
+
+.research-author,
+.research-year,
+.research-program {
+  margin: 6px 0;
+  color: #555;
+  font-size: 13px;
+}
+
+.summary-section {
+  margin-top: 25px;
+  text-align: justify;
+  line-height: 1.6;
+}
+
+.summary-section h3 {
+  margin-bottom: 10px;
+  color: #0b4ea2;
+  font-size: 17px;
+}
+
+.summary-section p {
+  line-height: 1.7;
+  white-space: pre-wrap;
+  color: #333;
+  font-size: 14px;
+}
+
+.popup-loading {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.popup-loading h2 {
+  color: #0b4ea2;
+  font-size: 18px;
+}
