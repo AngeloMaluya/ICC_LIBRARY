@@ -223,6 +223,12 @@ export const Login = () => {
 
     desktopBusyRef.current = true;
     setDesktopLoginBusy(true);
+    setTimeout(() => {
+      if (desktopBusyRef.current) {
+        cancelDesktopGoogleLogin();
+        alert("Google Login timed out. Please try again.");
+      }
+    }, 3 * 60 * 1000);
 
     try {
       // Generate a random verifier for this login attempt.
@@ -263,6 +269,17 @@ export const Login = () => {
   };
 
   const handleDesktopGoogleLogin = () => {
+    const cancelDesktopGoogleLogin = () => {
+      if (isDesktopApp) {
+        window.chrome.webview.postMessage({
+          type: "CANCEL_GOOGLE_LOGIN",
+        });
+      }
+
+      desktopVerifierRef.current = null;
+      desktopBusyRef.current = false;
+      setDesktopLoginBusy(false);
+    };
     if (desktopBusyRef.current) {
       return;
     }
@@ -275,7 +292,7 @@ export const Login = () => {
 
     startDesktopGoogleLogin();
   };
-
+  
   // =====================================================
   // RECEIVE LOGIN RESULT FROM WPF WEBVIEW2
   // =====================================================
@@ -540,6 +557,7 @@ export const Login = () => {
           {/* GOOGLE LOGIN */}
           <div className="google-login">
             {isDesktopApp ? (
+            <div className="desktop-google-actions">
               <button
                 type="button"
                 className="desktop-google-login"
@@ -550,17 +568,26 @@ export const Login = () => {
                   ? "Signing in..."
                   : "Sign in with Google"}
               </button>
-            ) : (
-              <GoogleLogin
-                onSuccess={handleGoogleLogin}
-                onError={() => {
-                  alert("Google Login Failed");
-                }}
-                theme="outline"
-                size="large"
-                width="300"
-              />
-            )}
+
+              {desktopLoginBusy && (
+                <button
+                  type="button"
+                  className="desktop-cancel-login"
+                  onClick={cancelDesktopGoogleLogin}
+                >
+                  Cancel Login
+                </button>
+              )}
+            </div>
+          ) : (
+            <GoogleLogin
+              onSuccess={handleGoogleLogin}
+              onError={() => alert("Google Login Failed")}
+              theme="outline"
+              size="large"
+              width="300"
+            />
+          )}
           </div>
         </div>
       </div>
