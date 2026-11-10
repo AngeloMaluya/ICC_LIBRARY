@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
 import Image from "../../assets/icon.png";
@@ -7,61 +7,94 @@ import logImage from "../../assets/img_repo/login.png";
 import { GoogleLogin } from "@react-oauth/google";
 import TermsModal from "../../components/terms/TermsModal.jsx";
 
+// Convert bytes into Base64URL format.
+const base64Url = (bytes) =>
+  btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
 export const Login = () => {
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
+
+  const isDesktopApp =
+    typeof window.chrome?.webview?.postMessage === "function";
+
+  const [showTerms, setShowTerms] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [pendingGoogleUser, setPendingGoogleUser] = useState(null);
+  const [pendingDesktopLogin, setPendingDesktopLogin] = useState(false);
+  const [desktopLoginBusy, setDesktopLoginBusy] = useState(false);
+
+  // Keep the verifier outside React rendering state.
+  const desktopVerifierRef = useRef(null);
+  const desktopBusyRef = useRef(false);
 
   useEffect(() => {
     document.title = "Login";
   }, []);
 
-  const [showTerms, setShowTerms] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [pendingGoogleUser, setPendingGoogleUser] = useState(null);
+  // =====================================================
+  // SAVE AUTHENTICATED ACCOUNT
+  // =====================================================
 
-  //desktop log in
-      const isDesktopApp =
-      typeof window.chrome?.webview?.postMessage === "function";
-
-    const [pendingDesktopLogin, setPendingDesktopLogin] =
-      useState(false);
-
-    const startDesktopGoogleLogin = () => {
-      window.chrome.webview.postMessage("GOOGLE_LOGIN");
-    };
-
-    const handleDesktopGoogleLogin = () => {
-      if (!termsAccepted) {
-        setPendingDesktopLogin(true);
-        setShowTerms(true);
-        return;
-      }
-
-      startDesktopGoogleLogin();
-    };
-
-  // Save authenticated account
   const saveAuthenticatedUser = (data) => {
     sessionStorage.setItem("authToken", data.token);
+
     sessionStorage.setItem(
       "libraryUser",
       JSON.stringify(data.user)
     );
 
-    // Clear temporary Google signup information
     sessionStorage.removeItem("googleSignupToken");
     sessionStorage.removeItem("googleEmail");
     sessionStorage.removeItem("googlePicture");
     sessionStorage.removeItem("googleName");
 
-    // Redirect based on the role returned by the backend
     const destination =
-      data.user.role === "admin" ? "/dashboard" : "/library";
+      data.user.role === "admin"
+        ? "/dashboard"
+        : "/library";
 
     navigate(destination, { replace: true });
   };
 
-  // NORMAL EMAIL/PASSWORD LOGIN
+  // =====================================================
+  // SAVE NEW GOOGLE STUDENT REGISTRATION
+  // =====================================================
+
+  const saveGoogleSignup = (data) => {
+    sessionStorage.removeItem("authToken");
+    sessionStorage.removeItem("libraryUser");
+
+    sessionStorage.setItem(
+      "googleSignupToken",
+      data.signupToken
+    );
+
+    sessionStorage.setItem(
+      "googleEmail",
+      data.googleUser.email
+    );
+
+    sessionStorage.setItem(
+      "googlePicture",
+      data.googleUser.picture || ""
+    );
+
+    sessionStorage.setItem(
+      "googleName",
+      data.googleUser.name || ""
+    );
+
+    navigate("/create", { replace: true });
+  };
+
+  // =====================================================
+  // NORMAL EMAIL / PASSWORD LOGIN
+  // =====================================================
+
   const handleLogIn = async (e) => {
     e.preventDefault();
 
@@ -70,17 +103,23 @@ export const Login = () => {
       return;
     }
 
-    const email = e.currentTarget.elements.email.value.trim();
-    const password = e.currentTarget.elements.password.value;
+    const email =
+      e.currentTarget.elements.email.value.trim();
+
+    const password =
+      e.currentTarget.elements.password.value;
 
     try {
-      const response = await fetch(`${API_URL}/api/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        `${API_URL}/api/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await response.json();
 
@@ -97,41 +136,28 @@ export const Login = () => {
       saveAuthenticatedUser(data);
     } catch (error) {
       console.error("Normal Login Error:", error);
-      alert("Unable to connect to the server. Please try again.");
+      alert(
+        "Unable to connect to the server. Please try again."
+      );
     }
   };
 
-  // GOOGLE LOGIN
-  const handleGoogleLogin = async (credentialResponse) => {
-    try {
-      if (!credentialResponse.credential) {
-        alert("Google authentication failed.");
-        return;
-      }
+  // =====================================================
+  // EXISTING WEBSITE GOOGLE LOGIN
+  // =====================================================
 
-      if (!termsAccepted) {
-        setPendingGoogleUser(credentialResponse.credential);
-        setShowTerms(true);
-        return;
-      }
-
-      await processGoogleUser(credentialResponse.credential);
-    } catch (error) {
-      console.error("Google Login Error:", error);
-      alert("Google Login Failed.");
-    }
-  };
-
-  // PROCESS GOOGLE ACCOUNT
   const processGoogleUser = async (credential) => {
     try {
-      const response = await fetch(`${API_URL}/api/google-login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ credential }),
-      });
+      const response = await fetch(
+        `${API_URL}/api/google-login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ credential }),
+        }
+      );
 
       const data = await response.json();
 
@@ -140,7 +166,6 @@ export const Login = () => {
         return;
       }
 
-      // EXISTING REGISTERED ACCOUNT
       if (data.exists) {
         if (!data.token || !data.user) {
           alert("Invalid Google login response.");
@@ -151,43 +176,253 @@ export const Login = () => {
         return;
       }
 
-      // NEW STUDENT ACCOUNT
       if (!data.signupToken || !data.googleUser) {
         alert("Invalid Google registration response.");
         return;
       }
 
-      sessionStorage.removeItem("authToken");
-      sessionStorage.removeItem("libraryUser");
-
-      sessionStorage.setItem(
-        "googleSignupToken",
-        data.signupToken
-      );
-
-      sessionStorage.setItem(
-        "googleEmail",
-        data.googleUser.email
-      );
-
-      sessionStorage.setItem(
-        "googlePicture",
-        data.googleUser.picture || ""
-      );
-
-      sessionStorage.setItem(
-        "googleName",
-        data.googleUser.name || ""
-      );
-
-      navigate("/create");
+      saveGoogleSignup(data);
     } catch (error) {
       console.error("Google Login Error:", error);
-      alert("Unable to connect to the server. Please try again.");
+      alert(
+        "Unable to connect to the server. Please try again."
+      );
     }
   };
 
-  // TERMS CHECKBOX
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      const credential = credentialResponse.credential;
+
+      if (!credential) {
+        alert("Google authentication failed.");
+        return;
+      }
+
+      if (!termsAccepted) {
+        setPendingGoogleUser(credential);
+        setShowTerms(true);
+        return;
+      }
+
+      await processGoogleUser(credential);
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      alert("Google Login Failed.");
+    }
+  };
+
+  // =====================================================
+  // DESKTOP GOOGLE LOGIN
+  // =====================================================
+
+  const startDesktopGoogleLogin = async () => {
+    if (!isDesktopApp || desktopBusyRef.current) {
+      return;
+    }
+
+    desktopBusyRef.current = true;
+    setDesktopLoginBusy(true);
+
+    try {
+      // Generate a random verifier for this login attempt.
+      const randomBytes = new Uint8Array(64);
+      window.crypto.getRandomValues(randomBytes);
+
+      const verifier = base64Url(randomBytes);
+
+      // Hash the verifier to create the challenge.
+      const hash = await window.crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(verifier)
+      );
+
+      const challenge = base64Url(
+        new Uint8Array(hash)
+      );
+
+      desktopVerifierRef.current = verifier;
+
+      // Send the login request to WPF.
+      window.chrome.webview.postMessage({
+        type: "GOOGLE_LOGIN",
+        challenge,
+      });
+    } catch (error) {
+      console.error(
+        "Desktop Google Login Error:",
+        error
+      );
+
+      desktopVerifierRef.current = null;
+      desktopBusyRef.current = false;
+      setDesktopLoginBusy(false);
+
+      alert("Unable to start desktop Google Login.");
+    }
+  };
+
+  const handleDesktopGoogleLogin = () => {
+    if (desktopBusyRef.current) {
+      return;
+    }
+
+    if (!termsAccepted) {
+      setPendingDesktopLogin(true);
+      setShowTerms(true);
+      return;
+    }
+
+    startDesktopGoogleLogin();
+  };
+
+  // =====================================================
+  // RECEIVE LOGIN RESULT FROM WPF WEBVIEW2
+  // =====================================================
+
+  useEffect(() => {
+    if (!isDesktopApp) {
+      return;
+    }
+
+    let mounted = true;
+
+    const handleDesktopMessage = async (event) => {
+      const message = event.data;
+
+      if (
+        !message ||
+        typeof message !== "object" ||
+        !desktopBusyRef.current
+      ) {
+        return;
+      }
+
+      // Handle an error from the Windows application.
+      if (message.type === "DESKTOP_LOGIN_ERROR") {
+        desktopVerifierRef.current = null;
+        desktopBusyRef.current = false;
+
+        if (mounted) {
+          setDesktopLoginBusy(false);
+          alert(
+            message.message || "Desktop Google Login failed."
+          );
+        }
+
+        return;
+      }
+
+      if (
+        message.type !== "DESKTOP_LOGIN_SUCCESS" ||
+        typeof message.code !== "string"
+      ) {
+        return;
+      }
+
+      const verifier = desktopVerifierRef.current;
+
+      if (!verifier) {
+        return;
+      }
+
+      // Prevent duplicate redemption.
+      desktopVerifierRef.current = null;
+
+      try {
+        const response = await fetch(
+          `${API_URL}/api/auth/desktop/exchange`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              code: message.code,
+              verifier,
+            }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message || "Desktop login failed."
+          );
+        }
+
+        if (!mounted) {
+          return;
+        }
+
+        // Existing student or administrator.
+        if (data.exists === true) {
+          if (!data.token || !data.user) {
+            throw new Error(
+              "Invalid desktop login response."
+            );
+          }
+
+          saveAuthenticatedUser(data);
+          return;
+        }
+
+        // New student registration.
+        if (data.exists === false) {
+          if (!data.signupToken || !data.googleUser) {
+            throw new Error(
+              "Invalid desktop registration response."
+            );
+          }
+
+          saveGoogleSignup(data);
+          return;
+        }
+
+        throw new Error(
+          "Unknown desktop authentication response."
+        );
+      } catch (error) {
+        console.error(
+          "Desktop Login Exchange Error:",
+          error
+        );
+
+        if (mounted) {
+          alert(
+            error.message ||
+              "Unable to complete desktop login."
+          );
+        }
+      } finally {
+        desktopBusyRef.current = false;
+
+        if (mounted) {
+          setDesktopLoginBusy(false);
+        }
+      }
+    };
+
+    window.chrome.webview.addEventListener(
+      "message",
+      handleDesktopMessage
+    );
+
+    return () => {
+      mounted = false;
+
+      window.chrome.webview.removeEventListener(
+        "message",
+        handleDesktopMessage
+      );
+    };
+  }, [isDesktopApp, API_URL, navigate]);
+
+  // =====================================================
+  // TERMS AND CONDITIONS
+  // =====================================================
+
   const handleTermsCheckbox = () => {
     if (!termsAccepted) {
       setShowTerms(true);
@@ -196,31 +431,34 @@ export const Login = () => {
     }
   };
 
-  // USER AGREES TO TERMS
-const handleAgree = async () => {
-  setTermsAccepted(true);
-  setShowTerms(false);
+  const handleAgree = async () => {
+    setTermsAccepted(true);
+    setShowTerms(false);
 
-  if (pendingDesktopLogin) {
-    setPendingDesktopLogin(false);
-    startDesktopGoogleLogin();
-    return;
-  }
+    if (pendingDesktopLogin) {
+      setPendingDesktopLogin(false);
 
-  if (pendingGoogleUser) {
-    const credential = pendingGoogleUser;
+      await startDesktopGoogleLogin();
+      return;
+    }
+
+    if (pendingGoogleUser) {
+      const credential = pendingGoogleUser;
+      setPendingGoogleUser(null);
+
+      await processGoogleUser(credential);
+    }
+  };
+
+  const handleCloseTerms = () => {
+    setShowTerms(false);
     setPendingGoogleUser(null);
+    setPendingDesktopLogin(false);
+  };
 
-    await processGoogleUser(credential);
-  }
-};
-
-  // USER CLOSES TERMS MODAL
-const handleCloseTerms = () => {
-  setShowTerms(false);
-  setPendingGoogleUser(null);
-  setPendingDesktopLogin(false);
-};
+  // =====================================================
+  // RENDER LOGIN PAGE
+  // =====================================================
 
   return (
     <div className="page">
@@ -248,7 +486,10 @@ const handleCloseTerms = () => {
 
           <h1>Welcome!</h1>
 
-          <form onSubmit={handleLogIn} className="login-form">
+          <form
+            onSubmit={handleLogIn}
+            className="login-form"
+          >
             <label htmlFor="email">Email</label>
 
             <input
@@ -296,30 +537,35 @@ const handleCloseTerms = () => {
             <span></span>
           </div>
 
-      <div className="google-login">
-        {isDesktopApp ? (
-          <button
-            type="button"
-            className="desktop-google-login"
-            onClick={handleDesktopGoogleLogin}
-          >
-            <span>Sign in with Google</span>
-          </button>
-        ) : (
-          <GoogleLogin
-            onSuccess={handleGoogleLogin}
-            onError={() => {
-              alert("Google Login Failed");
-            }}
-            theme="outline"
-            size="large"
-            width="300"
-          />
-        )}
-      </div>
+          {/* GOOGLE LOGIN */}
+          <div className="google-login">
+            {isDesktopApp ? (
+              <button
+                type="button"
+                className="desktop-google-login"
+                onClick={handleDesktopGoogleLogin}
+                disabled={desktopLoginBusy}
+              >
+                {desktopLoginBusy
+                  ? "Signing in..."
+                  : "Sign in with Google"}
+              </button>
+            ) : (
+              <GoogleLogin
+                onSuccess={handleGoogleLogin}
+                onError={() => {
+                  alert("Google Login Failed");
+                }}
+                theme="outline"
+                size="large"
+                width="300"
+              />
+            )}
+          </div>
         </div>
       </div>
 
+      {/* TERMS AND CONDITIONS */}
       {showTerms && (
         <TermsModal
           onClose={handleCloseTerms}
