@@ -19,6 +19,27 @@ export const Login = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [pendingGoogleUser, setPendingGoogleUser] = useState(null);
 
+  //desktop log in
+      const isDesktopApp =
+      typeof window.chrome?.webview?.postMessage === "function";
+
+    const [pendingDesktopLogin, setPendingDesktopLogin] =
+      useState(false);
+
+    const startDesktopGoogleLogin = () => {
+      window.chrome.webview.postMessage("GOOGLE_LOGIN");
+    };
+
+    const handleDesktopGoogleLogin = () => {
+      if (!termsAccepted) {
+        setPendingDesktopLogin(true);
+        setShowTerms(true);
+        return;
+      }
+
+      startDesktopGoogleLogin();
+    };
+
   // Save authenticated account
   const saveAuthenticatedUser = (data) => {
     sessionStorage.setItem("authToken", data.token);
@@ -176,23 +197,30 @@ export const Login = () => {
   };
 
   // USER AGREES TO TERMS
-  const handleAgree = async () => {
-    setTermsAccepted(true);
-    setShowTerms(false);
+const handleAgree = async () => {
+  setTermsAccepted(true);
+  setShowTerms(false);
 
-    if (pendingGoogleUser) {
-      const credential = pendingGoogleUser;
-      setPendingGoogleUser(null);
+  if (pendingDesktopLogin) {
+    setPendingDesktopLogin(false);
+    startDesktopGoogleLogin();
+    return;
+  }
 
-      await processGoogleUser(credential);
-    }
-  };
+  if (pendingGoogleUser) {
+    const credential = pendingGoogleUser;
+    setPendingGoogleUser(null);
+
+    await processGoogleUser(credential);
+  }
+};
 
   // USER CLOSES TERMS MODAL
-  const handleCloseTerms = () => {
-    setShowTerms(false);
-    setPendingGoogleUser(null);
-  };
+const handleCloseTerms = () => {
+  setShowTerms(false);
+  setPendingGoogleUser(null);
+  setPendingDesktopLogin(false);
+};
 
   return (
     <div className="page">
@@ -268,17 +296,27 @@ export const Login = () => {
             <span></span>
           </div>
 
-          <div className="google-login">
-            <GoogleLogin
-              onSuccess={handleGoogleLogin}
-              onError={() => {
-                alert("Google Login Failed");
-              }}
-              theme="outline"
-              size="large"
-              width="300"
-            />
-          </div>
+      <div className="google-login">
+        {isDesktopApp ? (
+          <button
+            type="button"
+            className="desktop-google-login"
+            onClick={handleDesktopGoogleLogin}
+          >
+            <span>Sign in with Google</span>
+          </button>
+        ) : (
+          <GoogleLogin
+            onSuccess={handleGoogleLogin}
+            onError={() => {
+              alert("Google Login Failed");
+            }}
+            theme="outline"
+            size="large"
+            width="300"
+          />
+        )}
+      </div>
         </div>
       </div>
 
