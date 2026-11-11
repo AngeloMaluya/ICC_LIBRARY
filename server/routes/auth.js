@@ -215,11 +215,12 @@ try {
   // Generate login token
   const token = createAccessToken(newUser);
 
-  return res.status(200).json({
-    success: true,
-    debugVersion: "section-test-v2",
-    user: formatUser(user),
-  });
+    return res.status(201).json({
+      success: true,
+      message: "Account created successfully.",
+      token,
+      user: formatUser(newUser),
+    });
 
   // Continue with Google signup token verification...
     }catch (error) {
