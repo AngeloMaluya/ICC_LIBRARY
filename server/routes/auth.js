@@ -47,6 +47,7 @@ const createSignupToken = (googleUser) => {
     },
     process.env.JWT_SECRET,
     { expiresIn: "10m" }
+    
   );
 };
 
@@ -80,6 +81,7 @@ try {
     section,
     signupToken,
   } = req.body;
+    console.log("REGISTER SECTION RECEIVED:", section);
 
   // Validate required fields
   if (
