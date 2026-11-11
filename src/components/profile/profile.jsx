@@ -2,6 +2,24 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./profile.css";
 
+const programFullNames = {
+  // College
+  BSCS: "Bachelor of Science in Computer Science",
+  BSBA: "Bachelor of Science in Business Administration",
+  BSED: "Bachelor of Secondary Education",
+  BEED: "Bachelor of Elementary Education",
+  BSTM: "Bachelor of Science in Tourism Management",
+  BSCrim: "Bachelor of Science in Criminology",
+
+  // Senior High School
+  STEM: "Science, Technology, Engineering, and Mathematics",
+  ABM: "Accountancy, Business, and Management",
+  HUMSS: "Humanities and Social Sciences",
+  GAS: "General Academic Strand",
+  HE: "Home Economics",
+  ICT: "Information and Communications Technology",
+};
+
 function ProfileField({ label, value }) {
   return (
     <div className="profile-field">
@@ -12,6 +30,9 @@ function ProfileField({ label, value }) {
 }
 
 export default function Profile() {
+  
+  const [recentResearch, setRecentResearch] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
 
@@ -103,6 +124,50 @@ export default function Profile() {
     fetchProfile();
   }, [API_URL, navigate]);
 
+useEffect(() => {
+  const fetchRecentResearch = async () => {
+    try {
+      setHistoryLoading(true);
+
+      const token = sessionStorage.getItem("authToken");
+
+      if (!token) return;
+
+      const response = await fetch(`${API_URL}/api/history`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to load viewing history.");
+      }
+
+      const data = await response.json();
+
+      console.log("Recent Research History:", data);
+
+      const latestThree = (data.history || [])
+        .filter((item) => item.summarized)
+        .sort(
+          (a, b) =>
+            new Date(b.viewed_at) - new Date(a.viewed_at)
+        )
+        .slice(0, 3);
+
+      setRecentResearch(latestThree);
+
+    } catch (error) {
+      console.error("Recent Research Error:", error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  fetchRecentResearch();
+}, [API_URL]);
+
   if (loading) {
     return (
       <div className="profile-page">
@@ -150,20 +215,16 @@ export default function Profile() {
               )}
             </div>
 
-            <h2>
-              {profile.firstName} {profile.lastName} 
-              {profile.id}
-            </h2>
+            <div className="profile-name-container">
+              <h2>{profile.firstName} {profile.lastName}</h2>
+              <p className="profile-student-id">{profile.id}</p>
+            </div>
           </div>
 
           <div className="profile-divider" />
 
           <div className="profile-details">
-            <ProfileField
-              label="Section"
-              value={profile.section}
-            />
-          
+    
             <ProfileField
               label="Education Level"
               value={
@@ -174,9 +235,10 @@ export default function Profile() {
                   : "—"
               }
             />
+
             <ProfileField
               label={profile.educationLevel === "shs" ? "Strand" : "Course"}
-              value={profile.course}
+              value={programFullNames[profile.course] || profile.course}
             />
 
             <ProfileField
@@ -188,10 +250,66 @@ export default function Profile() {
               }
             />
             <ProfileField
+              label="Section"
+              value={profile.section}
+            />
+          
+
+            <ProfileField
               label="Email Address"
               value={profile.email}
             />
           </div>
+
+          <div className="profile-divider" />
+
+          <div className="most-viewed">
+            <h2>Recently Viewed Research</h2>
+            <small>
+              Your most recently viewed research papers and theses.
+            </small>
+
+            <div className="recent-research-list">
+              {historyLoading ? (
+                <p>Loading recently viewed research...</p>
+              ) : recentResearch.length === 0 ? (
+                <p>No recently viewed research yet.</p>
+              ) : (
+                recentResearch.map((item) => (
+                  <div className="recent-research-card" key={item.id}>
+                    <div className="recent-research-cover">
+                      {item.thumbnail_url ? (
+                        <img src={item.thumbnail_url} alt="" />
+                      ) : (
+                        <span>PDF</span>
+                      )}
+                    </div>
+
+                    <div className="recent-research-info">
+                      <strong>{item.title}</strong>
+                      <small>{item.author || "Unknown Author"}</small>
+                    </div>
+
+                    <div className="recent-research-actions">
+                      <small>
+                        {item.viewed_at
+                          ? new Date(item.viewed_at).toLocaleString()
+                          : ""}
+                      </small>
+
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/viewing/${item.research_id}`)}
+                      >
+                        Read Again
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
         </section>
       </main>
     </div>

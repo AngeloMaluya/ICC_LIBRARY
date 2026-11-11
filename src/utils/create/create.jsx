@@ -256,6 +256,16 @@ export const Create = () => {
             </>
           )}
 
+          <label>Section</label>
+          
+          <input
+            type="text"
+            name="section"
+            placeholder="Enter Section"
+            value={form.section}
+            onChange={handleChange}
+            required
+          />
 
           <label>Email</label>
 
@@ -270,17 +280,6 @@ export const Create = () => {
           <small className="email-note">
             This email is linked to your Google account and cannot be changed.
           </small>
-
-          <label>Section</label>
-          
-          <input
-            type="text"
-            name="section"
-            placeholder="Enter Section"
-            value={form.section}
-            onChange={handleChange}
-            required
-          />
 
           <label>Password</label>
 
