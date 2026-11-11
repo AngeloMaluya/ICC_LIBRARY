@@ -210,15 +210,15 @@ try {
 
     throw insertError;
   }
+  console.log("SECTION RETURNED BY SUPABASE:", newUser.section);
 
   // Generate login token
   const token = createAccessToken(newUser);
 
-  return res.status(201).json({
+  return res.status(200).json({
     success: true,
-    message: "Account created successfully.",
-    token,
-    user: formatUser(newUser),
+    debugVersion: "section-test-v2",
+    user: formatUser(user),
   });
 
   // Continue with Google signup token verification...
