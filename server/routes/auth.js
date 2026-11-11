@@ -20,7 +20,7 @@ const SCHOOL_DOMAIN = "immaculada.edu.ph";
 const ADMIN_EMAIL = "research.admin01@gmail.com";
 
 const USER_FIELDS =
-  "id, email, f_name, l_name, course, year, profile_picture, role, education_level";
+  "id, email, f_name, l_name, course, year, profile_picture, role, education_level, section";
 
 // Create JWT access token using the database role
 const createAccessToken = (user) => {
@@ -59,6 +59,7 @@ const formatUser = (user) => ({
   educationLevel: user.education_level,
   course: user.course,
   year: user.year,
+  section: user.section,
   profilePicture: user.profile_picture,
   role: user.role === "admin" ? "admin" : "student",
 });
@@ -76,6 +77,7 @@ try {
     year,
     educationLevel,
     password,
+    section,
     signupToken,
   } = req.body;
 
@@ -92,6 +94,7 @@ try {
     !educationLevel.trim() ||
     !year ||
     !password ||
+    !section ||
     !signupToken
   ) {
     return res.status(400).json({
@@ -188,6 +191,7 @@ try {
         year: Number(year),
         education_level: educationLevel,
         password: hashedPassword,
+        section: section.trim(),
         profile_picture: googleUser.picture || null,
         role: "student",
       })

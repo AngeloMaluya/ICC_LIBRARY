@@ -5,11 +5,21 @@ import "./create.css";
 import Image from "../../assets/icon.png";
 
 const COLLEGE_PROGRAMS = [
-  "BSCS", "BSBA", "BSED", "BEED", "BSTM", "BSCrim"
+  { value: "BSCS", label: "Bachelor of Science in Computer Science" },
+  { value: "BSBA", label: "Bachelor of Science in Business Administration" },
+  { value: "BEED", label: "Bachelor of Elementary Education" },
+  { value: "BSED", label: "Bachelor of Secondary Education" },
+  { value: "BSTM", label: "Bachelor of Science in Tourism Management" },
+  { value: "BSCrim", label: "Bachelor of Science in Criminology" },
 ];
 
 const SHS_STRANDS = [
-  "STEM", "ABM", "HUMSS", "GAS", "HE", "ICT"
+  { value: "STEM", label: "Science, Technology, Engineering, and Mathematics" },
+  { value: "ABM", label: "Accountancy, Business, and Management" },
+  { value: "HUMSS", label: "Humanities and Social Sciences" },
+  { value: "GAS", label: "General Academic Strand" },
+  { value: "HE", label: "Home Economics" },
+  { value: "ICT", label: "Information and Communications Technology" },
 ];
 
 export const Create = () => {
@@ -32,6 +42,7 @@ export const Create = () => {
     year: "",
     email: googleEmail,
     password: "",
+    section: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -77,6 +88,7 @@ export const Create = () => {
             course: form.course,
             year: form.year,
             password: form.password,
+            section: form.section,
             signupToken: sessionStorage.getItem("googleSignupToken"),
           }),
         }
@@ -202,8 +214,8 @@ export const Create = () => {
                   ? SHS_STRANDS
                   : COLLEGE_PROGRAMS
                 ).map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
@@ -258,6 +270,17 @@ export const Create = () => {
           <small className="email-note">
             This email is linked to your Google account and cannot be changed.
           </small>
+
+          <label>Section</label>
+          
+          <input
+            type="text"
+            name="section"
+            placeholder="Enter Section"
+            value={form.section}
+            onChange={handleChange}
+            required
+          />
 
           <label>Password</label>
 

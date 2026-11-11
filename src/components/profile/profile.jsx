@@ -145,12 +145,14 @@ export default function Profile() {
                 />
               ) : (
                 (profile.firstName?.[0] || "") +
-                (profile.lastName?.[0] || "")
+                (profile.lastName?.[0] || "") +
+                (profile.id?.[0] || "") 
               )}
             </div>
 
             <h2>
-              {profile.firstName} {profile.lastName}
+              {profile.firstName} {profile.lastName} 
+              {profile.id}
             </h2>
           </div>
 
@@ -158,19 +160,10 @@ export default function Profile() {
 
           <div className="profile-details">
             <ProfileField
-              label="First Name"
-              value={profile.firstName}
+              label="Section"
+              value={profile.section}
             />
-
-            <ProfileField
-              label="Last Name"
-              value={profile.lastName}
-            />
-
-            <ProfileField
-              label="User ID"
-              value={profile.id}
-            />
+          
             <ProfileField
               label="Education Level"
               value={

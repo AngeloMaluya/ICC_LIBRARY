@@ -22,6 +22,25 @@ const shsStrands = [
   "ICT",
 ];
 
+// Full names of college programs and SHS strands
+const programFullNames = {
+  // College
+  BSCS: "Bachelor of Science in Computer Science",
+  BSBA: "Bachelor of Science in Business Administration",
+  BSED: "Bachelor of Secondary Education",
+  BEED: "Bachelor of Elementary Education",
+  BSTM: "Bachelor of Science in Tourism Management",
+  BSCrim: "Bachelor of Science in Criminology",
+
+  // Senior High School
+  STEM: "Science, Technology, Engineering, and Mathematics",
+  ABM: "Accountancy, Business, and Management",
+  HUMSS: "Humanities and Social Sciences",
+  GAS: "General Academic Strand",
+  HE: "Home Economics",
+  ICT: "Information and Communications Technology",
+};
+
 export default function SearchCat({
   searchTerm,
   setSearchTerm,
@@ -177,9 +196,13 @@ export default function SearchCat({
       </div>
 
       {/* OPTIONAL PAGE HEADING */}
-      {heading && (
+      {(heading || activeProgram) && (
         <div className="program-heading">
-          <h1>{heading.title}</h1>
+          <h1>
+            {activeProgram
+              ? programFullNames[activeProgram] || activeProgram
+              : heading?.title}
+          </h1>
         </div>
       )}
 
