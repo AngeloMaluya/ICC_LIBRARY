@@ -1,5 +1,5 @@
 import "dotenv/config";
-
+import readingProgressRoutes from "./routes/readingprogress.js";
 import express from "express";
 import cors from "cors";
 import { GoogleGenAI } from "@google/genai";
@@ -148,6 +148,7 @@ app.get("/api/test-db", async (req, res) => {
 // Administrator dashboard statistics
 app.use("/api/dashboard", dashboardRoutes);
 
+app.use("/api/reading-progress", readingProgressRoutes);
 
 app.listen(PORT, () => {
 });

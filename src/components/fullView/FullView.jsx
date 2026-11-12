@@ -120,6 +120,14 @@ export default function FullView() {
   const pageRefs = useRef([]);
   const recordedIdRef = useRef(null);
 
+  // Reading progress is saved per authenticated student and research paper.
+  const [readingProgress, setReadingProgress] = useState(null);
+  const [resumeReady, setResumeReady] = useState(false);
+  const resumeReadyRef = useRef(false);
+  const lastSavedPageRef = useRef(null);
+  const latestPageRef = useRef(1);
+
+
   // Research and recommendation states
   const [research, setResearch] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
@@ -169,6 +177,56 @@ export default function FullView() {
     pageRefs.current[index] = element;
   }, []);
 
+  // Load the saved page before allowing progress updates.
+  useEffect(() => {
+    const controller = new AbortController();
+    resumeReadyRef.current = false;
+    setResumeReady(false);
+    setReadingProgress(null);
+    lastSavedPageRef.current = null;
+    latestPageRef.current = 1;
+
+    const loadReadingProgress = async () => {
+      if (!id || !token || isAdmin) {
+        if (!controller.signal.aborted) {
+          setReadingProgress({ researchId: String(id), page: 1 });
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${API_URL}/api/reading-progress/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: controller.signal,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Unable to load reading progress (HTTP ${response.status})`);
+        }
+
+        const data = await response.json();
+        if (controller.signal.aborted) return;
+
+        const page = Number(data.lastPage);
+        setReadingProgress({
+          researchId: String(id),
+          page: Number.isSafeInteger(page) && page > 0 ? page : 1,
+        });
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        console.error("READING PROGRESS LOAD ERROR:", error);
+        // Do not overwrite stored progress if the GET request failed.
+        // The PDF remains readable, but saving is disabled for this visit.
+      }
+    };
+
+    loadReadingProgress();
+    return () => controller.abort();
+  }, [API_URL, id, token, isAdmin]);
+
   // Fetch the active paper first, then load related papers from its program.
   useEffect(() => {
     const controller = new AbortController();
@@ -183,6 +241,8 @@ export default function FullView() {
     setPdfError("");
     setNumPages(0);
     setPageNumber(1);
+    resumeReadyRef.current = false;
+    setResumeReady(false);
     pageRefs.current = [];
     pdfDocumentRef.current = null;
     searchRequestRef.current += 1;
@@ -396,7 +456,6 @@ export default function FullView() {
     pdfDocumentRef.current = pdf;
 
     setNumPages(pdf.numPages);
-    setPageNumber(1);
     setPdfError("");
 
     // Reset search when opening a PDF
@@ -414,6 +473,109 @@ export default function FullView() {
     recordViewingHistory();
   };
 
+  // Restore the page only after the PDF's page placeholders exist.
+  // Scroll events and autosaves remain disabled until restoration finishes.
+  useEffect(() => {
+    if (
+      !numPages ||
+      !pdfWidth ||
+      readingProgress?.researchId !== String(id)
+    ) return;
+
+    const targetPage = Math.min(
+      numPages,
+      Math.max(1, readingProgress.page)
+    );
+    let frameId;
+    let attempts = 0;
+    let cancelled = false;
+
+    const restore = () => {
+      if (cancelled) return;
+      const container = pdfContainerRef.current;
+      const target = pageRefs.current[targetPage - 1];
+
+      if (container && target) {
+        container.scrollTop +=
+          target.getBoundingClientRect().top -
+          container.getBoundingClientRect().top - 10;
+        latestPageRef.current = targetPage;
+        lastSavedPageRef.current = targetPage;
+        setPageNumber(targetPage);
+        resumeReadyRef.current = true;
+        setResumeReady(true);
+        return;
+      }
+
+      if (++attempts < 180) {
+        frameId = requestAnimationFrame(restore);
+      } else {
+        console.error("Unable to locate the saved PDF page.");
+      }
+    };
+
+    frameId = requestAnimationFrame(restore);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frameId);
+    };
+  }, [id, numPages, pdfWidth, readingProgress]);
+
+  // Debounce page saves so scrolling doesn't create excessive API calls.
+  useEffect(() => {
+    if (!resumeReady || !token || !id || isAdmin || !numPages) return;
+    if (lastSavedPageRef.current === pageNumber) return;
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/reading-progress/${id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ page: pageNumber }),
+            signal: controller.signal,
+          }
+        );
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        lastSavedPageRef.current = pageNumber;
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("READING PROGRESS SAVE ERROR:", error);
+        }
+      }
+    }, 600);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [API_URL, id, token, isAdmin, pageNumber, resumeReady, numPages]);
+
+  // Flush the latest page when leaving the viewer or changing research.
+  // keepalive allows the request to continue during page navigation.
+  useEffect(() => {
+    if (!id || !token || isAdmin) return;
+    return () => {
+      if (!resumeReadyRef.current) return;
+      const page = latestPageRef.current;
+      if (page === lastSavedPageRef.current) return;
+      fetch(`${API_URL}/api/reading-progress/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ page }),
+        keepalive: true,
+      }).catch((error) => console.error("READING PROGRESS FLUSH ERROR:", error));
+    };
+  }, [API_URL, id, token, isAdmin]);
+
   // Scroll to the selected PDF page
   const scrollToPage = (targetPage) => {
     const container = pdfContainerRef.current;
@@ -430,6 +592,7 @@ export default function FullView() {
       behavior: "smooth",
     });
 
+    latestPageRef.current = targetPage;
     setPageNumber(targetPage);
   };
   
@@ -532,7 +695,7 @@ export default function FullView() {
   const handlePdfScroll = () => {
     const container = pdfContainerRef.current;
 
-    if (!container || !numPages) return;
+    if (!container || !numPages || !resumeReadyRef.current) return;
 
     const top =
       container.getBoundingClientRect().top + 30;
@@ -553,6 +716,7 @@ export default function FullView() {
       }
     });
 
+    latestPageRef.current = nearest;
     setPageNumber((previous) =>
       previous === nearest ? previous : nearest
     );
