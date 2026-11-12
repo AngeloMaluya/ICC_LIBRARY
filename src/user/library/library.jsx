@@ -24,26 +24,27 @@ export const Library = ({ isAdmin = false }) => {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Read the selected education level from the URL
   const educationLevel =
     searchParams.get("level") === "shs" ? "shs" : "college";
 
   const [researches, setResearches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
-  // Delay searching until the user stops typing
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] =
+    useState("");
+
+  // Debounce search to reduce Gemini API calls
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 400);
+      setDebouncedSearchTerm(searchTerm.trim());
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Manage research summary popups
+  // Research summary popups
   const {
     selectedResearch,
     showPopup,
@@ -52,12 +53,11 @@ export const Library = ({ isAdmin = false }) => {
     closePopup,
   } = useResearchPopups(API_URL);
 
-  // Set the browser page title
   useEffect(() => {
     document.title = "ICC Library";
   }, []);
 
-  // Fetch research from the backend
+  // Fetch research using AI hybrid search or normal listing
   useEffect(() => {
     const controller = new AbortController();
 
@@ -66,20 +66,37 @@ export const Library = ({ isAdmin = false }) => {
         setLoading(true);
         setError("");
 
-        const params = new URLSearchParams();
-
-        // Include the search keyword
-        if (debouncedSearchTerm.trim()) {
-          params.set("search", debouncedSearchTerm.trim());
-        }
-
-        const endpoint = isAdmin
-          ? `${API_URL}/api/research/admin-list`
-          : `${API_URL}/api/research?${params.toString()}`;
-
         const token = sessionStorage.getItem("authToken");
 
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        const search = debouncedSearchTerm.trim();
+
+        let endpoint;
+
+        if (isAdmin) {
+          // Preserve the existing admin research listing
+          endpoint = `${API_URL}/api/research/admin-list`;
+
+        } else if (search) {
+          // Gemini semantic + keyword hybrid search
+          const params = new URLSearchParams({
+            q: search,
+          });
+
+          endpoint =
+            `${API_URL}/api/research/search?${params.toString()}`;
+
+        } else {
+          // Normal research listing when search is empty
+          endpoint = `${API_URL}/api/research`;
+        }
+
         const response = await fetch(endpoint, {
+          method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -91,9 +108,17 @@ export const Library = ({ isAdmin = false }) => {
             .json()
             .catch(() => ({}));
 
+          if (response.status === 401) {
+            sessionStorage.removeItem("authToken");
+            sessionStorage.removeItem("libraryUser");
+
+            navigate("/login");
+            return;
+          }
+
           throw new Error(
             errorData.message ||
-              `Failed to fetch research (HTTP ${response.status})`
+            `Failed to fetch research (HTTP ${response.status})`
           );
         }
 
@@ -101,19 +126,35 @@ export const Library = ({ isAdmin = false }) => {
 
         if (controller.signal.aborted) return;
 
-        // Support both array and object API responses
-        const list = Array.isArray(data)
-          ? data
-          : Array.isArray(data.researches)
-          ? data.researches
-          : [];
+        let list = [];
+
+        if (Array.isArray(data)) {
+          list = data;
+        } else if (Array.isArray(data.results)) {
+          // Hybrid search response
+          list = data.results;
+        } else if (Array.isArray(data.researches)) {
+          list = data.researches;
+        }
 
         setResearches(list);
+
       } catch (error) {
-        if (error.name === "AbortError") return;
+        if (
+          error.name === "AbortError" ||
+          controller.signal.aborted
+        ) {
+          return;
+        }
 
         console.error("Error fetching research:", error);
-        setError(error.message || "Unable to load research.");
+
+        setError(
+          error.message || "Unable to load research."
+        );
+
+        setResearches([]);
+
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false);
@@ -123,9 +164,9 @@ export const Library = ({ isAdmin = false }) => {
 
     fetchResearches();
 
-    // Cancel outdated requests
     return () => controller.abort();
-  }, [API_URL, debouncedSearchTerm, isAdmin]);
+
+  }, [API_URL, debouncedSearchTerm, isAdmin, navigate]);
 
   // Filter research by education level
   const filteredByLevel = researches.filter((research) => {
@@ -145,30 +186,26 @@ export const Library = ({ isAdmin = false }) => {
     );
   });
 
-  // Apply the administrator's local search filter
+  // Preserve local keyword search for administrators.
+  // Student results are already ranked by the backend AI.
+  const filteredResearches = isAdmin
+  ? filteredByLevel.filter((research) => {
+      const term = debouncedSearchTerm.toLowerCase().trim();
 
-  // Filter research by the entered search keyword
-  const filteredResearches = filteredByLevel.filter((research) => {
-    const term = debouncedSearchTerm.toLowerCase().trim();
+      if (!term) return true;
 
-    // Display all research in the selected education level
-    // when the search bar is empty.
-    if (!term) return true;
-
-    // Search only relevant research information
-    const searchableFields = [
-      research.title,
-      research.author,
-      research.program,
-      research.year,
-    ];
-
-    return searchableFields.some((value) =>
-      String(value ?? "")
-        .toLowerCase()
-        .includes(term)
-    );
-  });
+      return [
+        research.title,
+        research.author,
+        research.program,
+        research.year,
+      ].some((value) =>
+        String(value ?? "")
+          .toLowerCase()
+          .includes(term)
+      );
+    })
+  : filteredByLevel;
 
   return (
     <div className="library-layout">
@@ -187,7 +224,6 @@ export const Library = ({ isAdmin = false }) => {
         />
       </main>
 
-      {/* Research summary popup */}
       <ResearchPopups
         showPopup={showPopup}
         selectedResearch={selectedResearch}

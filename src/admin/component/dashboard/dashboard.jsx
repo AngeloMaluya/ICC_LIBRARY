@@ -109,23 +109,6 @@ const Dashboard = () => {
     <div className="admin-dashboard-layout">
       <main className="admin-dashboard-main">
 
-        {/* SEARCH BAR */}
-        <div className="admin-search">
-          <FaSearch />
-
-          <input
-            type="text"
-            placeholder="Search programs..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        {/* ERROR MESSAGE */}
-        {error && (
-          <p className="admin-dashboard-error">{error}</p>
-        )}
-
         {/* STATISTICS SECTION */}
         <section className="admin-section">
           <div className="admin-stats-grid">
