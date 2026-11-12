@@ -80,22 +80,23 @@ const Sidebar = ({ role = "student" }) => {
     <aside className="library-sidebar">
       {/* Sidebar logo and branding */}
       <div className="sidebar-brand">
-        <button
-          type="button"
-          className="logo-button"
-          onClick={() => navigate(homePath)}
-          aria-label={isAdmin ? "Go to Dashboard" : "Go to Library"}
-        >
+       
           <img
             src={Logo}
             alt="ICC Logo"
             className="sidebar-logo"
           />
-        </button>
+     
 
         <div className="brand-text">
-          <strong>ICC</strong>
-          <span>LIBRARY</span>
+           <button
+          type="button"
+          className="logo-button"
+          onClick={() => navigate(homePath)}
+          aria-label={isAdmin ? "Go to Dashboard" : "Go to Library"}
+        >
+          <strong>ICC CRID</strong>
+             </button>
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+import { generateEmbedding } from "../utils/embeddings.js";
 import {
   verifyAuthenticatedToken,
   verifyAdminToken,
@@ -169,6 +170,73 @@ router.get("/admin-list", verifyAdminToken, async (req, res) => {
     });
   }
 });
+
+// A.I search engine
+router.get("/search", verifyAuthenticatedToken, async (req, res) => {
+  try {
+    const search = String(req.query.q || "").trim();
+    const program = String(req.query.program || "").trim();
+
+    if (!search) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a search query.",
+      });
+    }
+
+    if (search.length > 200) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query is too long.",
+      });
+    }
+
+    const queryEmbedding = await generateEmbedding(
+      search,
+      "RETRIEVAL_QUERY"
+    );
+
+    const { data, error } = await supabase.rpc(
+      "hybrid_search_research",
+      {
+        query_text: search,
+        query_embedding: queryEmbedding,
+        filter_program: program || null,
+        match_count: 50,
+      }
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    const results = (data || []).map((research) => ({
+      id: research.id,
+      title: research.title,
+      author: research.author,
+      year: research.year,
+      program: research.program,
+      summary: research.summary,
+      pdf_url: research.pdf_url,
+      poster_url: research.poster_url,
+      created_at: research.created_at,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      results,
+    });
+
+  } catch (error) {
+    console.error("HYBRID SEARCH ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "AI search failed.",
+    });
+  }
+});
+
 
 /* =========================================================
    GET SINGLE RESEARCH
@@ -533,6 +601,44 @@ router.post(
           error: databaseError.message,
         });
       }
+
+        /* =========================================================
+          GENERATE SEMANTIC SEARCH EMBEDDING
+        ========================================================= */
+
+        try {
+          const searchableText = `
+            Title: ${research.title}
+            Author: ${research.author}
+            Program: ${research.program}
+            Summary: ${research.summary}
+          `;
+
+          const embedding = await generateEmbedding(
+            searchableText,
+            "RETRIEVAL_DOCUMENT"
+          );
+
+          const { error: embeddingError } = await supabase
+            .from("summarized")
+            .update({ embedding })
+            .eq("id", research.id);
+
+          if (embeddingError) {
+            throw embeddingError;
+          }
+
+          console.log(
+            "Research embedding saved successfully:",
+            research.id
+          );
+
+        } catch (embeddingError) {
+          console.error(
+            "RESEARCH EMBEDDING ERROR:",
+            embeddingError
+          );
+        }
 
       /* =================================================
          SUCCESS RESPONSE
