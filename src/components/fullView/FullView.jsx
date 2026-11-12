@@ -172,6 +172,74 @@ export default function FullView() {
   const pdfUrl = research?.pdf_url;
   const token = sessionStorage.getItem("authToken");
 
+  // Popularity and semantic recommendations
+  const [mostViewed, setMostViewed] = useState([]);
+  const [loadingMostViewed, setLoadingMostViewed] = useState(true);
+
+useEffect(() => {
+  if (!id || !token) return;
+
+  const controller = new AbortController();
+
+  const fetchRecommendations = async () => {
+    setLoadingMostViewed(true);
+    setLoadingRecommendations(true);
+    setMostViewed([]);
+    setRecommendations([]);
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
+
+    const [popularResult, relatedResult] =
+      await Promise.allSettled([
+        fetch(`${API_URL}/api/research/most-viewed`, {
+          headers,
+          signal: controller.signal,
+        }).then(async (response) => {
+          if (!response.ok) throw new Error("Most viewed request failed");
+          return response.json();
+        }),
+
+        fetch(`${API_URL}/api/research/${id}/related`, {
+          headers,
+          signal: controller.signal,
+        }).then(async (response) => {
+          if (!response.ok) throw new Error("Related research request failed");
+          return response.json();
+        }),
+      ]);
+
+    if (controller.signal.aborted) return;
+
+    if (popularResult.status === "fulfilled") {
+      setMostViewed(
+        (popularResult.value.researches || []).filter(
+          (item) => String(item.id) !== String(id)
+        )
+      );
+    } else {
+      console.error("MOST VIEWED ERROR:", popularResult.reason);
+    }
+
+    if (relatedResult.status === "fulfilled") {
+      setRecommendations(
+        relatedResult.value.recommendations || []
+      );
+    } else {
+      console.error("RELATED RESEARCH ERROR:", relatedResult.reason);
+    }
+
+    setLoadingMostViewed(false);
+    setLoadingRecommendations(false);
+  };
+
+  fetchRecommendations();
+
+  return () => controller.abort();
+}, [API_URL, id, token]);
+
+
   // Store the rendered PDF page references
   const setPageRef = useCallback((index, element) => {
     pageRefs.current[index] = element;
@@ -227,16 +295,12 @@ export default function FullView() {
     return () => controller.abort();
   }, [API_URL, id, token, isAdmin]);
 
-  // Fetch the active paper first, then load related papers from its program.
+  // Load only the active research. Recommendations have their own request above.
   useEffect(() => {
     const controller = new AbortController();
-    const headers = { Authorization: `Bearer ${token}` };
 
-    // Clear the previous paper when navigating to another research ID.
     setLoading(true);
-    setLoadingRecommendations(true);
     setResearch(null);
-    setRecommendations([]);
     setError("");
     setPdfError("");
     setNumPages(0);
@@ -258,87 +322,32 @@ export default function FullView() {
     if (!token) {
       setError("Authentication required. Please log in again.");
       setLoading(false);
-      setLoadingRecommendations(false);
       return () => controller.abort();
     }
 
-    const loadResearchAndRecommendations = async () => {
-      let researchLoaded = false;
-
+    const loadResearch = async () => {
       try {
-        // Load the research currently open in FullView.
         const response = await fetch(`${API_URL}/api/research/${id}`, {
-          headers,
+          headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         });
 
-        if (!response.ok) {
-          throw new Error("Unable to load research.");
-        }
+        if (!response.ok) throw new Error("Unable to load research.");
 
         const data = await response.json();
-        const activeResearch = data.research || data;
-        if (controller.signal.aborted) return;
-
-        setResearch(activeResearch);
-        researchLoaded = true;
-        setLoading(false);
-
-        // Only request recommendations from the same academic program.
-        const program = activeResearch.program?.trim();
-        if (!program) {
-          setRecommendations([]);
-          return;
-        }
-
-        const params = new URLSearchParams({ program });
-        const recommendationsResponse = await fetch(
-          `${API_URL}/api/research?${params.toString()}`,
-          { headers, signal: controller.signal }
-        );
-
-        if (!recommendationsResponse.ok) {
-          throw new Error("Unable to load recommendations.");
-        }
-
-        const recommendationsData = await recommendationsResponse.json();
-        const list =
-          recommendationsData.researches ||
-          recommendationsData.research ||
-          recommendationsData;
-
-        // Exclude the open paper and verify the program matches.
-        const relatedResearches = Array.isArray(list)
-          ? list.filter(
-              (item) =>
-                String(item.id) !== String(id) &&
-                String(item.program || "").trim().toLowerCase() ===
-                  program.toLowerCase()
-            )
-          : [];
-
         if (!controller.signal.aborted) {
-          setRecommendations(relatedResearches);
+          setResearch(data.research || data);
         }
       } catch (error) {
-        if (error.name === "AbortError" || controller.signal.aborted) return;
-
+        if (controller.signal.aborted) return;
         console.error("FULLVIEW FETCH ERROR:", error);
-        // A recommendation failure must not hide a successfully loaded PDF.
-        if (!researchLoaded) {
-          setError(error.message || "Unable to load research.");
-        } else {
-          setRecommendations([]);
-        }
+        setError(error.message || "Unable to load research.");
       } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-          setLoadingRecommendations(false);
-        }
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
-    loadResearchAndRecommendations();
+    loadResearch();
     return () => controller.abort();
   }, [API_URL, id, token]);
 
@@ -481,6 +490,9 @@ export default function FullView() {
       !pdfWidth ||
       readingProgress?.researchId !== String(id)
     ) return;
+
+    // Restore only once per document, not again on resize or zoom.
+    if (resumeReadyRef.current) return;
 
     const targetPage = Math.min(
       numPages,
@@ -779,8 +791,7 @@ export default function FullView() {
     }
   };
 
-  // Open another research paper
-// Open recommended research using the correct role layout
+  // Open recommended research using the correct role layout
 const openResearch = (researchId) => {
   navigate(
     isAdmin
@@ -1180,27 +1191,22 @@ const openResearch = (researchId) => {
           </div>
 
           {/* Recommended research papers */}
+
           <aside className="full-view-recommendations">
-            <h3>You might also like</h3>
 
-            {loadingRecommendations && (
-              <p>Loading recommendations...</p>
-            )}
+            <h3>Most Viewed Research</h3>
 
-            {/* Show a message when no same-program papers are available. */}
-            {!loadingRecommendations && recommendations.length === 0 && (
-              <p className="no-recommendations">No related research available.</p>
-            )}
-
-            {!loadingRecommendations &&
-              recommendations.map((item) => (
+            {loadingMostViewed ? (
+              <p>Loading popular research...</p>
+            ) : mostViewed.length === 0 ? (
+              <p>No popular research available.</p>
+            ) : (
+              mostViewed.map((item) => (
                 <button
                   type="button"
                   className="recommendation-item"
-                  key={item.id}
-                  onClick={() =>
-                    openResearch(item.id)
-                  }
+                  key={`popular-${item.id}`}
+                  onClick={() => openResearch(item.id)}
                 >
                   <div className="recommendation-thumbnail">
                     <span>PDF</span>
@@ -1208,16 +1214,44 @@ const openResearch = (researchId) => {
 
                   <div className="recommendation-details">
                     <strong>{item.title}</strong>
-                    <small>
-                      {item.author || "Unknown Author"}
-                    </small>
-                    <small>
-                      {item.year || "Unknown Year"}
-                    </small>
+                    <small>{item.author || "Unknown Author"}</small>
+                    <small>{item.view_count} views</small>
                   </div>
                 </button>
-              ))}
+              ))
+            )}
+
+            <hr />
+
+            <h3>Related Research</h3>
+
+            {loadingRecommendations ? (
+              <p>Finding related research...</p>
+            ) : recommendations.length === 0 ? (
+              <p>No semantically related research found.</p>
+            ) : (
+              recommendations.map((item) => (
+                <button
+                  type="button"
+                  className="recommendation-item"
+                  key={`related-${item.id}`}
+                  onClick={() => openResearch(item.id)}
+                >
+                  <div className="recommendation-thumbnail">
+                    <span>PDF</span>
+                  </div>
+
+                  <div className="recommendation-details">
+                    <strong>{item.title}</strong>
+                    <small>{item.author || "Unknown Author"}</small>
+                    <small>{item.program || "Unknown Program"}</small>
+                  </div>
+                </button>
+              ))
+            )}
+
           </aside>
+
         </div>
       </main>
 

@@ -237,6 +237,116 @@ router.get("/search", verifyAuthenticatedToken, async (req, res) => {
   }
 });
 
+//most-viewed
+router.get(
+  "/most-viewed",
+  verifyAuthenticatedToken,
+  async (req, res) => {
+    try {
+      const { data: rankings, error: rankingError } =
+        await supabase.rpc("most_viewed_research", {
+          match_count: 5,
+        });
+
+      if (rankingError) throw rankingError;
+
+      if (!rankings?.length) {
+        return res.json({
+          success: true,
+          researches: [],
+        });
+      }
+
+      const ids = rankings.map((item) => item.research_id);
+
+      const { data: researches, error: researchError } =
+        await supabase
+          .from("summarized")
+          .select("id, title, author, year, program, poster_url")
+          .in("id", ids);
+
+      if (researchError) throw researchError;
+
+      const researchMap = new Map(
+        (researches || []).map((item) => [
+          String(item.id),
+          item,
+        ])
+      );
+
+      const results = rankings
+        .map((ranking) => {
+          const research = researchMap.get(
+            String(ranking.research_id)
+          );
+
+          return research
+            ? {
+                ...research,
+                view_count: Number(ranking.view_count),
+              }
+            : null;
+        })
+        .filter(Boolean);
+
+      return res.json({
+        success: true,
+        researches: results,
+      });
+    } catch (error) {
+      console.error("MOST VIEWED ERROR:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Unable to load most viewed research.",
+      });
+    }
+  }
+);
+
+
+
+router.get(
+  "/:id/related",
+  verifyAuthenticatedToken,
+  async (req, res) => {
+    try {
+      const researchId = Number(req.params.id);
+
+      if (!Number.isSafeInteger(researchId) || researchId < 1) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid research ID.",
+        });
+      }
+
+      const { data, error } = await supabase.rpc(
+        "related_research",
+        {
+          active_research_id: researchId,
+          match_count: 5,
+          minimum_similarity: 0.70,
+        }
+      );
+
+      if (error) throw error;
+
+      return res.json({
+        success: true,
+        recommendations: data || [],
+      });
+    } catch (error) {
+      console.error("RELATED RESEARCH ERROR:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Unable to load related research.",
+      });
+    }
+  }
+);
+
+
 
 /* =========================================================
    GET SINGLE RESEARCH
