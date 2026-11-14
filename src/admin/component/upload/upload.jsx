@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { pdfjs } from "react-pdf";
 
@@ -327,6 +327,9 @@ const Upload = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+  document.title = "Admin Uploads";
+}, []);
 
   return (
     <div className="admin-layout">

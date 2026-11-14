@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect} from "react";
 import {
   FiChevronLeft,
   FiChevronRight,
@@ -201,6 +201,9 @@ export default function Reports() {
       label: program,
     })),
   ];
+    useEffect(() => {
+  document.title = "Admin Uploads";
+}, []);
 
   return (
     <div className="admin-reports-layout">

@@ -16,7 +16,7 @@ export const Landing = () => {
       <main className="landing-content">
         <section className="header">
           <h1>
-           <span>ICC LIBRARY</span>
+           <span>ICC RESEARCH LIBRARY</span>
           </h1>
 
           <p>

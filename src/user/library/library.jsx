@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 import "./base_lib.css";
 
@@ -53,10 +54,26 @@ export const Library = ({ isAdmin = false }) => {
     closePopup,
   } = useResearchPopups(API_URL);
 
-  useEffect(() => {
-    document.title = "ICC Library";
-  }, []);
+useEffect(() => {
+  const token = sessionStorage.getItem("authToken");
 
+  if (!token) {
+    document.title = "ICC Digital Library";
+    return;
+  }
+
+  try {
+    const decoded = jwtDecode(token);
+
+    document.title =
+      decoded.role === "admin"
+        ? "Progam Research"
+        : "ICC Digital Library";
+  } catch (error) {
+    console.error("Invalid token:", error);
+    document.title = "ICC Digital Library";
+  }
+}, []);
   // Fetch research using AI hybrid search or normal listing
   useEffect(() => {
     const controller = new AbortController();

@@ -1,8 +1,8 @@
+
 import { Outlet } from "react-router-dom";
 import Sidebar from "../../components/sidebar/sidebar.jsx";
+import "./AdminLayout.css";
 
-
-// Shared layout for all admin pages
 const AdminLayout = () => {
   return (
     <div className="admin-layout">

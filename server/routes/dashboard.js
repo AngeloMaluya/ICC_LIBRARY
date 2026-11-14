@@ -1,3 +1,4 @@
+
 import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import { verifyAdminToken } from "../middleware/authMiddleware.js";
@@ -10,44 +11,67 @@ const supabase = createClient(
 );
 
 const PROGRAMS = [
-  "BSCS", "BSBA", "BSED", "BEED", "BSTM", "BSCrim"
+  "BSCS",
+  "BSBA",
+  "BSED",
+  "BEED",
+  "BSTM",
+  "BSCrim",
+  "STEM",
+  "ABM",
+  "HUMSS",
+  "GAS",
+  "HE",
+  "ICT",
 ];
 
 // Get administrator dashboard statistics
 router.get("/stats", verifyAdminToken, async (req, res) => {
   try {
-    const [researchResult, studentsResult, uploadsResult, ...programResults] =
-      await Promise.all([
-        // Count all research records
+    const [
+      researchResult,
+      studentsResult,
+      uploadsResult,
+      viewsResult,
+      ...programResults
+    ] = await Promise.all([
+      // Count all research records
+      supabase
+        .from("summarized")
+        .select("*", { count: "exact", head: true }),
+
+      // Count registered student accounts
+      supabase
+        .from("users")
+        .select("*", { count: "exact", head: true })
+        .eq("role", "student"),
+
+      // Count research records with PDF files
+      supabase
+        .from("summarized")
+        .select("*", { count: "exact", head: true })
+        .not("pdf_url", "is", null),
+
+      // Count all recorded PDF views
+      supabase
+        .from("viewing_history")
+        .select("*", { count: "exact", head: true }),
+
+      // Count research papers per program/strand
+      ...PROGRAMS.map((program) =>
         supabase
           .from("summarized")
-          .select("*", { count: "exact", head: true }),
-
-        // Count student accounts
-        supabase
-          .from("users")
           .select("*", { count: "exact", head: true })
-          .eq("role", "student"),
+          .eq("program", program)
+      ),
+    ]);
 
-        // Count research records with PDF files
-        supabase
-          .from("summarized")
-          .select("*", { count: "exact", head: true })
-          .not("pdf_url", "is", null),
-
-        // Count research papers in each program
-        ...PROGRAMS.map((program) =>
-          supabase
-            .from("summarized")
-            .select("*", { count: "exact", head: true })
-            .eq("program", program)
-        ),
-      ]);
-
+    // Check for database errors
     const results = [
       researchResult,
       studentsResult,
       uploadsResult,
+      viewsResult,
       ...programResults,
     ];
 
@@ -62,6 +86,7 @@ router.get("/stats", verifyAdminToken, async (req, res) => {
       });
     }
 
+    // Build program research counts
     const programCounts = Object.fromEntries(
       PROGRAMS.map((program, index) => [
         program,
@@ -69,16 +94,19 @@ router.get("/stats", verifyAdminToken, async (req, res) => {
       ])
     );
 
-    return res.status(200).json({
-      success: true,
-      stats: {
-        totalResearch: researchResult.count ?? 0,
-        totalStudents: studentsResult.count ?? 0,
-        totalPrograms: PROGRAMS.length,
-        totalUploads: uploadsResult.count ?? 0,
-      },
-      programCounts,
-    });
+    // Return dashboard statistics
+      return res.status(200).json({
+        success: true,
+        stats: {
+          totalResearch: researchResult.count ?? 0,
+          totalStudents: studentsResult.count ?? 0,
+          totalUsers: studentsResult.count ?? 0,
+          totalPrograms: PROGRAMS.length,
+          totalUploads: uploadsResult.count ?? 0,
+          totalViews: viewsResult.count ?? 0,
+        },
+        programCounts,
+      });
   } catch (error) {
     console.error("DASHBOARD ERROR:", error);
 

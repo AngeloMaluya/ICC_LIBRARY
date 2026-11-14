@@ -34,7 +34,7 @@ export default function Saved() {
   const [removingId, setRemovingId] = useState(null);
 
   useEffect(() => {
-    document.title = "Saved Research - ICC Library";
+    document.title = "Saved Research";
 
     const controller = new AbortController();
 
