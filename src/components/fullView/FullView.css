@@ -515,3 +515,8 @@
 .bookmark-modal-actions button:hover {
   background: #d9b94a;
 }
+
+.toolbar button svg {
+  width: 20px;
+  height: 20px;
+}

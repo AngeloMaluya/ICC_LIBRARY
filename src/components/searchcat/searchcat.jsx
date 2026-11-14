@@ -1,5 +1,5 @@
 
-import { FaSearch } from "react-icons/fa";
+import { IoSearchOutline } from "react-icons/io5";
 import "./searchcat.css";
 
 // College programs
@@ -128,7 +128,7 @@ export default function SearchCat({
 
       {/* SEARCH BAR */}
       <div className="search-box">
-        <FaSearch className="search-icon" />
+        <IoSearchOutline className="search-icon" />
 
         <input
           type="text"

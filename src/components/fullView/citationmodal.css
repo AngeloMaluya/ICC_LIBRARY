@@ -1,0 +1,132 @@
+
+/* =========================================
+   CITATION POPUP OVERLAY
+========================================= */
+
+.citation-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 20px;
+  box-sizing: border-box;
+
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* =========================================
+   CITATION MODAL
+========================================= */
+
+.citation-modal {
+  width: 100%;
+  max-width: 620px;
+  max-height: 85vh;
+
+  overflow-y: auto;
+
+  background: #ffffff;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* =========================================
+   MODAL HEADER
+========================================= */
+
+.citation-header {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 48px;
+
+  background: #f4f4f4;
+  border-bottom: 1px solid #d5d5d5;
+}
+
+.citation-header h2 {
+  margin: 0;
+
+  color: #666666;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.citation-close {
+  position: absolute;
+  left: 14px;
+
+  padding: 4px 8px;
+
+  background: transparent;
+  border: none;
+
+  color: #777777;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.citation-close:hover {
+  color: #111111;
+}
+
+/* =========================================
+   CITATION CONTENT
+========================================= */
+
+.citation-body {
+  padding: 22px 24px 26px;
+}
+
+.citation-row {
+  display: grid;
+  grid-template-columns: 85px minmax(0, 1fr) 65px;
+  align-items: start;
+
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.citation-style {
+  color: #777777;
+  font-size: 13px;
+  text-align: right;
+}
+
+.citation-text {
+  margin: 0;
+
+  color: #333333;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.citation-copy {
+  padding: 4px 6px;
+
+  background: transparent;
+  border: none;
+
+  color: #0d4b8e;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.citation-copy:hover {
+  text-decoration: underline;
+}
+
+.citation-error {
+  color: #b42318;
+  font-size: 12px;
+}

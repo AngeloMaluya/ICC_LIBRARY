@@ -2,6 +2,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Document, Page, pdfjs } from "react-pdf";
 
+import CitationModal from "./citationmodal.jsx";
+import { RiDoubleQuotesL } from "react-icons/ri";
+
+import { IoSearchOutline, IoBookmarkOutline, IoBookmark } from "react-icons/io5";
+import { CiZoomIn, CiZoomOut  } from "react-icons/ci";
+import { MdOutlineKeyboardArrowUp, MdOutlineKeyboardArrowDown } from "react-icons/md";
+
 import "./FullView.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -175,6 +182,8 @@ export default function FullView() {
   // Popularity and semantic recommendations
   const [mostViewed, setMostViewed] = useState([]);
   const [loadingMostViewed, setLoadingMostViewed] = useState(true);
+
+  const [showCitation, setShowCitation] = useState(false);
 
 useEffect(() => {
   if (!id || !token) return;
@@ -898,7 +907,9 @@ const openResearch = (researchId) => {
           <header className="full-view-header">
             <div className="full-view-search-wrapper">
               <div className="full-view-search">
-                <span>⌕</span>
+                <span>
+                  <IoSearchOutline />
+                </span>
 
                 <input
                   type="text"
@@ -993,7 +1004,7 @@ const openResearch = (researchId) => {
                 setSearchOpen((value) => !value)
               }
             >
-              ⌕
+              <IoSearchOutline />
             </button>
 
             <div className="toolbar-divider" />
@@ -1004,7 +1015,7 @@ const openResearch = (researchId) => {
               onClick={() => changePage(-1)}
               disabled={pageNumber <= 1}
             >
-              ⌃
+              <MdOutlineKeyboardArrowUp/>
             </button>
 
             <span className="toolbar-page-number">
@@ -1019,7 +1030,7 @@ const openResearch = (researchId) => {
                 !numPages || pageNumber >= numPages
               }
             >
-              ⌄
+               <MdOutlineKeyboardArrowDown/>
             </button>
 
             <div className="toolbar-divider" />
@@ -1033,11 +1044,25 @@ const openResearch = (researchId) => {
                   onClick={toggleBookmark}
                   disabled={bookmarkUpdating}
                 >
-                  {bookmarked ? "★" : "☆"}
+                  {bookmarked ? <IoBookmark /> : <IoBookmarkOutline />}
                 </button>
+
                 <div className="toolbar-divider" />
               </>
             )}
+
+            {/* CITATION BUTTON */}
+              <button
+                type="button"
+                title="Cite this research"
+                aria-label="Cite this research"
+                onClick={() => setShowCitation(true)}
+                disabled={!research}
+              >
+                <RiDoubleQuotesL />
+              </button>
+
+              <div className="toolbar-divider" />
 
             <button
               type="button"
@@ -1052,7 +1077,7 @@ const openResearch = (researchId) => {
               }
               disabled={scale <= 0.5}
             >
-              ⊖
+              <CiZoomOut />
             </button>
 
             <span className="toolbar-zoom">
@@ -1072,7 +1097,7 @@ const openResearch = (researchId) => {
               }
               disabled={scale >= 2}
             >
-              ⊕
+              <CiZoomIn />
             </button>
           </section>
 
@@ -1286,6 +1311,13 @@ const openResearch = (researchId) => {
           </div>
         </div>
       )}
+              {/* CITATION POPUP */}
+        {showCitation && (
+          <CitationModal
+            research={research}
+            onClose={() => setShowCitation(false)}
+          />
+        )}
     </div>
   );
 }

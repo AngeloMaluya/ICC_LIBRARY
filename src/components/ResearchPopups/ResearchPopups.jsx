@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import "./researchpopup.css";
 
+import { IoBookmarkOutline, IoBookmark } from "react-icons/io5";
+
 const ResearchPopups = ({
   showPopup,
   selectedResearch,
@@ -193,7 +195,7 @@ const ResearchPopups = ({
                 }
               >
                 <span aria-hidden="true">
-                  {bookmarked ? "★" : "☆"}
+                  {bookmarked ? <IoBookmark /> : <IoBookmarkOutline />}
                 </span>
 
                 {checkingBookmark
