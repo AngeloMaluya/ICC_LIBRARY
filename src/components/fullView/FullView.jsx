@@ -1052,6 +1052,8 @@ const openResearch = (researchId) => {
             )}
 
             {/* CITATION BUTTON */}
+            {!isAdmin && (
+              <>
               <button
                 type="button"
                 title="Cite this research"
@@ -1063,6 +1065,8 @@ const openResearch = (researchId) => {
               </button>
 
               <div className="toolbar-divider" />
+              </>
+            )}
 
             <button
               type="button"

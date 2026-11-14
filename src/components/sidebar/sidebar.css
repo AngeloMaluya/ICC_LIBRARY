@@ -26,31 +26,6 @@
   gap: 8px;
 }
 
-.logo-button {
-  all: unset;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.logo-button:hover {
-  transform: scale(1.2);
-}
-
-.logo-button:active {
-  transform: scale(0.8);
-}
-
-.logo-button:focus-visible {
-  outline: 2px solid #ffffff;
-  outline-offset: 4px;
-  border-radius: 4px;
-}
-
 .sidebar-logo {
   display: block;
   width: 34px;

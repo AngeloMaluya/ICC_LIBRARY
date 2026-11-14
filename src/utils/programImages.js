@@ -5,6 +5,14 @@ const PROGRAM_IMAGES = {
   BEED: "/programs_placeholders/BEED.png",
   BSTM: "/programs_placeholders/BSTM.png",
   BSCRIM: "/programs_placeholders/CRIM.png",
+
+  STEM: "/programs_placeholders/STEM.png",
+  ABM: "/programs_placeholders/ABM.png",
+  HUMSS: "/programs_placeholders/HUMSS.png",
+  GAS: "/programs_placeholders/GAS.png",
+  HE: "/programs_placeholders/HE.png",
+  ICT: "/programs_placeholders/ICT.png",
+
 };
 
 const DEFAULT_IMAGE = PROGRAM_IMAGES.BSCS;

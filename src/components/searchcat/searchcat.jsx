@@ -92,25 +92,17 @@ export default function SearchCat({
     );
   };
 
-  // Switch education levels without automatically selecting a program
+  // Switch education levels for both admin and students
   const handleEducationLevel = (level) => {
     // Clear the previous search
     setSearchTerm("");
 
-    if (isAdmin) {
-      // Keep admin navigation within the admin area.
-      // Admin level switching requires its parent to pass
-      // a selectedEducationLevel value and update callback.
-      if (typeof window !== "undefined") {
-        // No navigation is needed for admin program filtering.
-      }
-      return;
-    }
+    // Keep the correct route for each user role
+    const basePath = isAdmin ? "/program" : "/library";
 
-    // Navigate to the main library with the selected level.
-    // This prevents the tab from resetting to College.
-    navigate(`/library?level=${level}`);
+    navigate(`${basePath}?level=${level}`);
   };
+
 
   // Handle program or strand selection
   const handleProgramClick = (program) => {

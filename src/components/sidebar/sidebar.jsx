@@ -5,6 +5,10 @@ import { FiLogOut } from "react-icons/fi";
 import { GoUpload } from "react-icons/go";
 import { GiGraduateCap } from "react-icons/gi";
 
+import { IoLibraryOutline, IoLibrary } from "react-icons/io5";
+
+import { TbLayoutDashboard, TbLayoutDashboardFilled  } from "react-icons/tb";
+
 import {
   FaRegUser,
   FaUser,
@@ -18,6 +22,12 @@ import { logout } from "../../utils/auth.js";
 
 // Student navigation menu
 const studentMenu = [
+  {
+    label: "Library",
+    icon: <IoLibraryOutline/>,
+    activeIcon: <IoLibrary/>,
+    path: "/library"
+  },
   {
     label: "Profile",
     icon: <FaRegUser />,
@@ -40,6 +50,12 @@ const studentMenu = [
 
 // Admin navigation menu
 const adminMenu = [
+  {
+    label: "Dashboard",
+    icon: <TbLayoutDashboard />,
+    activeIcon: <TbLayoutDashboardFilled />,
+    path: "/dashboard",
+  },
   {
     label: "Uploads",
     icon: <GoUpload />,
@@ -89,14 +105,7 @@ const Sidebar = ({ role = "student" }) => {
      
 
         <div className="brand-text">
-           <button
-          type="button"
-          className="logo-button"
-          onClick={() => navigate(homePath)}
-          aria-label={isAdmin ? "Go to Dashboard" : "Go to Library"}
-        >
           <strong>ICC CRID</strong>
-             </button>
         </div>
       </div>
 

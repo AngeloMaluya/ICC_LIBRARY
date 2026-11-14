@@ -185,10 +185,8 @@ useEffect(() => {
 
   }, [API_URL, debouncedSearchTerm, isAdmin, navigate]);
 
-  // Filter research by education level
+  // Filter research by education level for both admin and students
   const filteredByLevel = researches.filter((research) => {
-    if (isAdmin) return true;
-
     const program = String(research.program || "")
       .trim()
       .toLowerCase();
@@ -202,6 +200,7 @@ useEffect(() => {
       (item) => item.toLowerCase() === program
     );
   });
+
 
   // Preserve local keyword search for administrators.
   // Student results are already ranked by the backend AI.
