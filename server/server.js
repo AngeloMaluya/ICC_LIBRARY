@@ -11,7 +11,7 @@ import historyRoutes from "./routes/history.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import savedRoutes from "./routes/saved.js";
 import citationRoutes from "./routes/citations.js";
-
+import reportsRoutes from "./routes/reports.js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -155,6 +155,8 @@ app.get("/api/test-db", async (req, res) => {
 app.use("/api/dashboard", dashboardRoutes);
 
 app.use("/api/reading-progress", readingProgressRoutes);
+
+app.use("/api/reports", reportsRoutes);
 
 app.listen(PORT, () => {
 });

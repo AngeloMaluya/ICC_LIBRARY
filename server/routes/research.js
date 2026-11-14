@@ -1,9 +1,11 @@
-
 import { generateEmbedding } from "../utils/embeddings.js";
+import { classifyResearchTheme } from "../utils/themeclassifier.js";
+
 import {
   verifyAuthenticatedToken,
   verifyAdminToken,
 } from "../middleware/authMiddleware.js";
+
 
 import express from "express";
 import multer from "multer";
@@ -937,6 +939,115 @@ router.post(
               : "Failed to save research information.",
           error: databaseError.message,
         });
+      }
+        //A.I themes
+            try {
+        // Retrieve existing AI-discovered themes from
+        // previously uploaded research papers.
+
+        const existingThemeNames = new Map();
+
+        const themePageSize = 500;
+        const maxThemeRows = 5000;
+
+        for (
+          let start = 0;
+          start < maxThemeRows;
+          start += themePageSize
+        ) {
+          const {
+            data: themeRows,
+            error: themeLookupError,
+          } = await supabase
+            .from("summarized")
+            .select("ai_theme")
+            .not("ai_theme", "is", null)
+            .order("id", { ascending: true })
+            .range(
+              start,
+              start + themePageSize - 1
+            );
+
+          if (themeLookupError) {
+            throw themeLookupError;
+          }
+
+          for (const row of themeRows || []) {
+            const theme = String(
+              row.ai_theme || ""
+            ).trim();
+
+            if (theme) {
+              existingThemeNames.set(
+                theme.toLowerCase(),
+                theme
+              );
+            }
+          }
+
+          if (
+            (themeRows || []).length < themePageSize
+          ) {
+            break;
+          }
+        }
+
+        // Ask Gemini to discover the paper's
+        // primary research theme.
+
+        const classification =
+          await classifyResearchTheme({
+            title: research.title,
+            summary: research.summary || "",
+            content: pdfText,
+            existingThemes: [
+              ...existingThemeNames.values(),
+            ],
+          });
+
+        // Save the discovered theme in Supabase.
+
+        const { error: themeSaveError } =
+          await supabase
+            .from("summarized")
+            .update({
+              ai_theme: classification.ai_theme,
+              ai_theme_description:
+                classification.ai_theme_description,
+              ai_keywords:
+                classification.ai_keywords,
+            })
+            .eq("id", research.id);
+
+        if (themeSaveError) {
+          throw themeSaveError;
+        }
+
+        // Update the response object so the frontend
+        // receives the new classification.
+
+        research.ai_theme =
+          classification.ai_theme;
+
+        research.ai_theme_description =
+          classification.ai_theme_description;
+
+        research.ai_keywords =
+          classification.ai_keywords;
+
+        console.log(
+          `AI theme saved for research ${research.id}: ${classification.ai_theme}`
+        );
+
+      } catch (themeError) {
+        console.error(
+          `AI THEME CLASSIFICATION ERROR (${research.id}):`,
+          themeError
+        );
+
+        // Research is already saved successfully.
+        // A failed classification can be retried
+        // using classifyExistingResearch.js.
       }
 
       /* =============================================

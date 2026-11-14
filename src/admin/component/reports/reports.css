@@ -1,29 +1,43 @@
 
+/* ========================================
+   ADMIN REPORTS PAGE
+======================================== */
+
 .admin-reports-layout {
   display: flex;
-  min-height: 100vh;
+  flex: 1;
+  width: 100%;
+  min-height: 100%;
   background: #ffffff;
   font-family: "Plus Jakarta Sans", sans-serif;
+  box-sizing: border-box;
 }
 
-.reports-sidebar {
-  flex: 0 0 240px;
-  min-width: 0;
-}
+/* ========================================
+   MAIN CONTENT
+======================================== */
 
 .reports-main {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-width: 0;
-  padding: 42px 35px;
+  min-height: 100vh;
+  padding: 45px 35px 14px;
   color: #111111;
+  box-sizing: border-box;
 }
+
+/* ========================================
+   PAGE HEADER
+======================================== */
 
 .reports-page-header {
   display: flex;
   flex-direction: column;
   border-bottom: 1px solid #c9c9c9;
-  padding-bottom: 14px;
-  margin-bottom: 25px;
+  padding-bottom: 13px;
+  margin-bottom: 20px;
 }
 
 .reports-page-header h1 {
@@ -34,10 +48,14 @@
 }
 
 .reports-page-header p {
-  margin: 3px 0 0;
+  margin: 2px 0 0;
   color: #888888;
   font-size: 12px;
 }
+
+/* ========================================
+   REPORT SELECTION
+======================================== */
 
 .reports-selection h2,
 .reports-detail h2 {
@@ -53,10 +71,10 @@
 }
 
 .reports-option {
-  width: 100%;
   display: flex;
   align-items: center;
   gap: 16px;
+  width: 100%;
   min-height: 73px;
   padding: 15px 20px;
   border: 1px solid #d7d7d7;
@@ -66,7 +84,8 @@
   text-align: left;
   cursor: pointer;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.08);
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s ease,
+              border-color 0.2s ease;
 }
 
 .reports-option:hover {
@@ -82,9 +101,9 @@
 
 .reports-option-text {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 3px;
-  flex: 1;
 }
 
 .reports-option-text strong {
@@ -102,6 +121,10 @@
   font-size: 21px;
 }
 
+/* ========================================
+   REPORT DETAIL HEADER
+======================================== */
+
 .reports-detail-header {
   flex-direction: row;
   align-items: flex-start;
@@ -114,6 +137,10 @@
 }
 
 .reports-back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   border: none;
   background: transparent;
   padding: 2px 0;
@@ -122,16 +149,30 @@
   font-size: 24px;
 }
 
+.reports-back-button:hover {
+  color: #08396d;
+}
+
+/* ========================================
+   REPORT DETAIL CONTENT
+======================================== */
+
 .reports-detail {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  width: 100%;
 }
 
 .reports-detail > h2 {
   margin: 0;
   font-size: 14px;
+  font-weight: 700;
 }
+
+/* ========================================
+   REPORT FILTERS
+======================================== */
 
 .reports-filter-grid {
   display: grid;
@@ -180,6 +221,118 @@
   color: #aaaaaa;
 }
 
+/* ========================================
+   DATE FILTERS
+======================================== */
+
+.reports-date-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.reports-date-grid .report-filter {
+  width: 100%;
+}
+
+/* ========================================
+   SECTION DIVIDER
+======================================== */
+
+.reports-section-divider {
+  width: 100%;
+  height: 1px;
+  background: #c9c9c9;
+  margin: 5px 0 0;
+}
+
+/* ========================================
+   RESEARCH VIEWS REPORT
+======================================== */
+
+.reports-most-viewed-title {
+  margin: 0 !important;
+  font-size: 15px !important;
+  font-weight: 700;
+  color: #111111;
+}
+
+.reports-most-viewed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.reports-view-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 15px;
+  background: #ffffff;
+  border: 1px solid #d7d7d7;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.reports-view-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.reports-view-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.reports-view-details strong {
+  font-size: 12px;
+  font-weight: 700;
+  color: #111111;
+  overflow-wrap: anywhere;
+}
+
+.reports-view-details small {
+  font-size: 10px;
+  color: #888888;
+}
+
+.reports-view-count {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111111;
+}
+
+/* ========================================
+   VIEW COUNT PROGRESS BAR
+======================================== */
+
+.reports-progress-track {
+  width: 100%;
+  height: 7px;
+  background: #dddddd;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.reports-progress-fill {
+  height: 100%;
+  background: #0d4b8e;
+  border-radius: 20px;
+  transition: width 0.3s ease;
+}
+
+/* ========================================
+   RESEARCH COLLECTION
+======================================== */
+
 .reports-data-heading {
   margin-top: 5px !important;
 }
@@ -208,10 +361,12 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .reports-research-row strong {
   font-size: 12px;
+  overflow-wrap: anywhere;
 }
 
 .reports-research-row small {
@@ -235,6 +390,10 @@
   border-radius: 3px;
   font-size: 10px;
 }
+
+/* ========================================
+   USER ACTIVITY TABLE
+======================================== */
 
 .reports-table-container {
   min-height: 260px;
@@ -274,6 +433,10 @@
   padding: 40px 10px !important;
 }
 
+/* ========================================
+   LOADING, ERROR, EMPTY STATES
+======================================== */
+
 .reports-empty {
   text-align: center;
   color: #999999;
@@ -281,14 +444,33 @@
   padding: 35px 10px;
 }
 
+.reports-status {
+  margin: 0;
+  padding: 10px;
+  border-radius: 5px;
+  background: #f3f6fa;
+  color: #0d4b8e;
+  font-size: 12px;
+  text-align: center;
+}
+
+.reports-error {
+  background: #fff2f2;
+  color: #b42318;
+}
+
+/* ========================================
+   PRINT REPORT BUTTON
+======================================== */
+
 .reports-print-button {
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  width: 100%;
   min-height: 38px;
-  margin-top: 3px;
+  margin-top: auto;
   border: none;
   border-radius: 5px;
   background: #0d4b8e;
@@ -299,6 +481,57 @@
   cursor: pointer;
 }
 
-.reports-print-button:hover {
+.reports-print-button svg {
+  font-size: 19px;
+}
+
+.reports-print-button:hover:not(:disabled) {
   background: #08396d;
+}
+
+.reports-print-button:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+
+/* ========================================
+   PRINT STYLING
+======================================== */
+
+@media print {
+  .reports-print-button,
+  .reports-back-button,
+  .reports-selection,
+  .reports-sidebar,
+  .reports-search,
+  .report-filter,
+  .reports-date-grid {
+    display: none !important;
+  }
+
+  .reports-main {
+    min-height: 0;
+    padding: 0;
+  }
+
+  .admin-reports-layout {
+    display: block;
+  }
+
+  .reports-view-card,
+  .reports-research-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .reports-progress-fill {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .reports-progress-track {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
 }
