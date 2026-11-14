@@ -1312,12 +1312,13 @@ const openResearch = (researchId) => {
         </div>
       )}
               {/* CITATION POPUP */}
-        {showCitation && (
-          <CitationModal
-            research={research}
-            onClose={() => setShowCitation(false)}
-          />
-        )}
+              {showCitation && (
+                <CitationModal
+                  research={research}
+                  isAdmin={isAdmin}
+                  onClose={() => setShowCitation(false)}
+                />
+              )}
     </div>
   );
 }

@@ -33,6 +33,7 @@ router.get("/stats", verifyAdminToken, async (req, res) => {
       studentsResult,
       uploadsResult,
       viewsResult,
+      citationsResult,
       ...programResults
     ] = await Promise.all([
       // Count all research records
@@ -57,6 +58,11 @@ router.get("/stats", verifyAdminToken, async (req, res) => {
         .from("viewing_history")
         .select("*", { count: "exact", head: true }),
 
+      // Count all citation copy actions
+      supabase
+        .from("citation_actions")
+        .select("*", { count: "exact", head: true }),
+
       // Count research papers per program/strand
       ...PROGRAMS.map((program) =>
         supabase
@@ -67,13 +73,14 @@ router.get("/stats", verifyAdminToken, async (req, res) => {
     ]);
 
     // Check for database errors
-    const results = [
-      researchResult,
-      studentsResult,
-      uploadsResult,
-      viewsResult,
-      ...programResults,
-    ];
+      const results = [
+        researchResult,
+        studentsResult,
+        uploadsResult,
+        viewsResult,
+        citationsResult,
+        ...programResults,
+      ];
 
     const failed = results.find((result) => result.error);
 
@@ -95,18 +102,19 @@ router.get("/stats", verifyAdminToken, async (req, res) => {
     );
 
     // Return dashboard statistics
-      return res.status(200).json({
-        success: true,
-        stats: {
-          totalResearch: researchResult.count ?? 0,
-          totalStudents: studentsResult.count ?? 0,
-          totalUsers: studentsResult.count ?? 0,
-          totalPrograms: PROGRAMS.length,
-          totalUploads: uploadsResult.count ?? 0,
-          totalViews: viewsResult.count ?? 0,
-        },
-        programCounts,
-      });
+    return res.status(200).json({
+      success: true,
+      stats: {
+        totalResearch: researchResult.count ?? 0,
+        totalStudents: studentsResult.count ?? 0,
+        totalUsers: studentsResult.count ?? 0,
+        totalPrograms: PROGRAMS.length,
+        totalUploads: uploadsResult.count ?? 0,
+        totalViews: viewsResult.count ?? 0,
+        totalCitations: citationsResult.count ?? 0,
+      },
+      programCounts,
+    });
   } catch (error) {
     console.error("DASHBOARD ERROR:", error);
 

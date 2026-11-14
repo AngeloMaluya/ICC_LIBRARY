@@ -10,6 +10,8 @@ import authRoutes from "./routes/auth.js";
 import historyRoutes from "./routes/history.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import savedRoutes from "./routes/saved.js";
+import citationRoutes from "./routes/citations.js";
+
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -63,6 +65,10 @@ app.use(
 app.use(
   "/api/saved",
   savedRoutes
+);
+
+app.use(
+  "/api/citations", citationRoutes
 );
 
 const ai = new GoogleGenAI({

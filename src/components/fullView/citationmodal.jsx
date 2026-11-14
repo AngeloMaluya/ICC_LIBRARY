@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import "./CitationModal.css";
+import "./citationmodal.css";
 
 const formatAuthors = (author) =>
   String(author || "Unknown author").trim();
@@ -10,7 +9,7 @@ const cleanYear = (year) => {
   return /^\d{4}$/.test(value) ? value : "n.d.";
 };
 
-export default function CitationModal({ research, onClose }) {
+export default function CitationModal({ research, onClose, isAdmin }) {
   const [copied, setCopied] = useState("");
 
   if (!research) return null;
@@ -28,14 +27,48 @@ export default function CitationModal({ research, onClose }) {
     Vancouver: `${author}. ${title}. ${institution}; ${year}.`,
   };
 
-  const copyCitation = async (style, citation) => {
-    try {
-      await navigator.clipboard.writeText(citation);
-      setCopied(style);
-    } catch {
-      setCopied("failed");
+
+const copyCitation = async (style, citation) => {
+  try {
+    // Copy citation to clipboard
+    await navigator.clipboard.writeText(citation);
+
+    setCopied(style);
+
+    // Only track student citation actions
+    if (isAdmin) return;
+
+    const token = sessionStorage.getItem("authToken");
+
+    if (!token || !research?.id) {
+      console.warn("Citation copied but tracking unavailable.");
+      return;
     }
-  };
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/citations`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          researchId: research.id,
+          citationStyle: style,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      console.error("Failed to record citation action.");
+    }
+  } catch (error) {
+    console.error("CITATION ERROR:", error);
+
+    setCopied("failed");
+  }
+};
 
   return (
     <div
