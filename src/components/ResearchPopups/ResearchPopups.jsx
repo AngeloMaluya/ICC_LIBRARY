@@ -158,7 +158,11 @@ const ResearchPopups = ({
             <div className="research-details">
               <div className="research-popup-info">
                 <h2>{selectedResearch.title}</h2>
-
+                    {selectedResearch.catalog_number && (
+                      <p className="research-catalog-number">
+                        {selectedResearch.catalog_number}
+                      </p>
+                    )}
                 <p className="research-author">
                   {selectedResearch.author || "Unknown Author"}
                 </p>

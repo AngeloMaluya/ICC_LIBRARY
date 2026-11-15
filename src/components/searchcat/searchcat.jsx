@@ -269,6 +269,11 @@ export default function SearchCat({
                   >
                     {research.title}
                   </h3>
+                    {research.catalog_number && (
+                  <p className="research-catalog-number">
+                    {research.catalog_number}
+                  </p>
+                )}
 
                   {/* RESEARCH AUTHOR */}
                   <p>
