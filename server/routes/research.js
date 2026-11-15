@@ -1,5 +1,6 @@
 import { generateEmbedding } from "../utils/embeddings.js";
 import { classifyResearchTheme } from "../utils/themeclassifier.js";
+import { generateTitleMark } from "../utils/cutter.js";
 
 import {
   verifyAuthenticatedToken,
@@ -27,74 +28,6 @@ const supabase = createClient(
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
-
-/* =========================================================
-   CATALOG CALL NUMBER GENERATOR
-========================================================= */
-
-// Remove an initial English article and extract the
-// first three letters of the title.
-const getTitleMark = (title) => {
-  const cleaned = String(title || "")
-    .trim()
-    .replace(/^(the|an|a)\s+/i, "")
-    .replace(/[^a-zA-Z]/g, "")
-    .toLowerCase();
-
-  if (cleaned.length < 3) {
-    throw new Error(
-      "The research title must contain at least three letters."
-    );
-  }
-
-  return cleaned.slice(0, 3);
-};
-
-// Validate a Cutter number supplied according to
-// the school's approved Cutter Table.
-const validateCutterNumber = (cutterNumber) => {
-  const cutter = String(cutterNumber || "")
-    .trim()
-    .toUpperCase();
-
-  if (!/^[A-Z][0-9]+$/.test(cutter)) {
-    throw new Error(
-      "Invalid Cutter number. Example: R433."
-    );
-  }
-
-  return cutter;
-};
-
-// Generate a catalog call number.
-// Example: THS R433lev 2025 c.1
-const generateCatalogNumber = ({
-  title,
-  year,
-  cutterNumber,
-  copyNumber = 1,
-}) => {
-  const cutter = validateCutterNumber(cutterNumber);
-  const titleMark = getTitleMark(title);
-  const numericYear = Number(year);
-
-  if (
-    !Number.isInteger(numericYear) ||
-    numericYear < 1800 ||
-    numericYear > 2100
-  ) {
-    throw new Error("Invalid catalog publication year.");
-  }
-
-  if (
-    !Number.isSafeInteger(copyNumber) ||
-    copyNumber < 1
-  ) {
-    throw new Error("Invalid copy number.");
-  }
-
-  return `THS ${cutter}${titleMark} ${numericYear} c.${copyNumber}`;
-};
 
 /* =========================================================
    MULTER CONFIGURATION
@@ -571,6 +504,12 @@ router.post(
         cutterNumber,
       } = req.body;
 
+      console.log("========== BACKEND DEBUG ==========");
+      console.log("Request Cutter:", cutterNumber);
+      console.log("Request Title:", title);
+      console.log("Request Year:", year);
+      console.log("===================================");
+
       if (
         !title?.trim() ||
         !author?.trim() ||
@@ -583,6 +522,7 @@ router.post(
           message: "Please complete all research fields.",
         });
       }
+      
 
       //validate educlevel
       const COLLEGE_PROGRAM_CODES = [
@@ -632,77 +572,138 @@ router.post(
             success: false,
             message: "Invalid research year.",
           });
-        }
+        } 
+            
+            /* =========================================================
+              CATALOG CALL NUMBER GENERATOR
+            ========================================================= */
+
+            // Validate the manually supplied Cutter-Sanborn number.
+            const validateCutterNumber = (cutterNumber) => {
+              const cutter = String(cutterNumber || "")
+                .trim()
+                .toUpperCase();
+
+              if (!/^[A-Z][0-9]+$/.test(cutter)) {
+                throw new Error(
+                  "Invalid Cutter number. Example: R433."
+                );
+              }
+
+              return cutter;
+            };
+
+            // Generate the complete catalog call number.
+            const generateCatalogNumber = ({
+              title,
+              year,
+              cutterNumber,
+              copyNumber = 1,
+            }) => {
+              const cutter = validateCutterNumber(cutterNumber);
+
+              // Skip initial articles and extract three letters.
+              const titleMark = generateTitleMark(title);
+
+              if (titleMark.length < 3) {
+                throw new Error(
+                  "The title must contain at least three letters after removing initial articles."
+                );
+              }
+
+              const numericYear = Number(year);
+
+              if (
+                !Number.isInteger(numericYear) ||
+                numericYear < 1800 ||
+                numericYear > 2100
+              ) {
+                throw new Error("Invalid catalog publication year.");
+              }
+
+              const numericCopy = Number(copyNumber);
+
+              if (
+                !Number.isSafeInteger(numericCopy) ||
+                numericCopy < 1
+              ) {
+                throw new Error("Invalid copy number.");
+              }
+
+              return `THS ${cutter}${titleMark} ${numericYear} c.${numericCopy}`;
+            };
+
 
       /* =============================================
-         GENERATE CATALOG CALL NUMBER
+         MANUAL OR AI-ASSISTED CUTTER NUMBER
       ============================================= */
 
-      let generatedCatalogNumber = null;
+      let finalCutterNumber = String(cutterNumber || "").trim().toUpperCase();
+      let cutterSource = "manual";
 
-      // The Cutter number is optional until the
-      // approved Cutter Table is integrated.
-      if (String(cutterNumber || "").trim()) {
+      // Use the administrator's entry when provided. Otherwise ask Gemini.
+      if (!finalCutterNumber) {
+        cutterSource = "ai";
         try {
-          generatedCatalogNumber =
-            generateCatalogNumber({
-              title: title.trim(),
-              year: numericYear,
-              cutterNumber,
-              copyNumber: 1,
-            });
-        } catch (catalogError) {
-          return res.status(400).json({
-            success: false,
-            message: catalogError.message,
+          const cutterInteraction = await ai.interactions.create({
+            model: "gemini-3.1-flash-lite",
+            input: `You are assisting an academic librarian with a provisional Cutter-Sanborn-style suggestion.
+Use the FIRST listed author's surname. Do not invent an author.
+Author: ${author.trim()}
+Research title: ${title.trim()}
+Return ONLY one uppercase ASCII letter followed by 1 to 4 digits, for example R433.
+No commentary, formatting, punctuation or spaces.`,
           });
-        }
 
-        // Reject an existing call number.
-        // The database unique index also protects
-        // against simultaneous duplicate inserts.
-        const {
-          data: existingCatalog,
-          error: catalogCheckError,
-        } = await supabase
-          .from("summarized")
-          .select("id")
-          .eq(
-            "catalog_number",
-            generatedCatalogNumber
-          )
-          .limit(1);
+          const suggestedCutter = String(cutterInteraction.output_text || "")
+            .trim()
+            .toUpperCase();
 
-        if (catalogCheckError) {
-          throw catalogCheckError;
-        }
-
-        if (existingCatalog?.length) {
-          return res.status(409).json({
+          if (!/^[A-Z][0-9]{1,4}$/.test(suggestedCutter)) {
+            throw new Error("Gemini returned an invalid Cutter suggestion.");
+          }
+          finalCutterNumber = suggestedCutter;
+        } catch (cutterError) {
+          console.error("AI CUTTER GENERATION ERROR:", cutterError);
+          return res.status(503).json({
             success: false,
-            message:
-              "This catalog call number already exists. Please review the Cutter number and catalog metadata.",
+            message: "AI could not suggest a Cutter number. Enter one manually and retry.",
           });
         }
       }
 
-      console.log(
-        "PDF received:",
-        pdfFile.originalname
-      );
-
-      console.log(
-        "PDF size:",
-        pdfFile.size,
-        "bytes"
-      );
-
-      if (posterFile) {
-        console.log(
-          "Poster received:",
-          posterFile.originalname
-        );
+      let generatedCatalogNumber;
+      try {
+        generatedCatalogNumber = generateCatalogNumber({
+          title: title.trim(),
+          year: numericYear,
+          cutterNumber: finalCutterNumber,
+          copyNumber: 1,
+        });
+      } catch (catalogError) {
+        return res.status(400).json({
+          success: false,
+          message: catalogError.message,
+        });
       }
+
+      const { data: existingCatalog, error: catalogCheckError } = await supabase
+        .from("summarized")
+        .select("id")
+        .eq("catalog_number", generatedCatalogNumber)
+        .limit(1);
+
+      if (catalogCheckError) throw catalogCheckError;
+      if (existingCatalog?.length) {
+        return res.status(409).json({
+          success: false,
+          message: "This catalog call number already exists. Enter a different Cutter number.",
+        });
+      }
+
+      console.log("CUTTER SOURCE:", cutterSource);
+      console.log("FINAL CUTTER:", finalCutterNumber);
+      console.log("FINAL CATALOG NUMBER:", generatedCatalogNumber);
 
       /* =============================================
          EXTRACT PDF TEXT

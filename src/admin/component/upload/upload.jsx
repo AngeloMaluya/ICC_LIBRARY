@@ -191,16 +191,20 @@ const Upload = () => {
     setLoading(true);
     setMessage("");
     try {
-      const formData = new FormData();
-        formData.append("pdf", pdf);
-        formData.append("title", form.title.trim());
-        formData.append("author", form.author.trim());
-        formData.append("year", form.year);
-        formData.append("educationLevel", form.educationLevel);
-        formData.append("program", form.program);
-        if (form.cutterNumber.trim()) {
-          formData.append("cutterNumber", form.cutterNumber.trim().toUpperCase());
-        }
+          const formData = new FormData();
+          formData.append("pdf", pdf);
+          formData.append("title", form.title.trim());
+          formData.append("author", form.author.trim());
+          formData.append("year", form.year);
+          formData.append("educationLevel", form.educationLevel);
+          formData.append("program", form.program);
+          if (form.cutterNumber.trim()) {
+            formData.append(
+              "cutterNumber",
+              form.cutterNumber.trim().toUpperCase()
+            );
+          }
+
         if (poster) {
           let posterToUpload = poster;
           if (
@@ -218,6 +222,16 @@ const Upload = () => {
           formData.append("poster", posterToUpload);
         }
         setMessage("Uploading research...");
+
+        console.log("========== FRONTEND DEBUG ==========");
+console.log("Title:", form.title);
+console.log("Cutter Number:", form.cutterNumber);
+console.log(
+  "FormData Cutter:",
+  formData.get("cutterNumber")
+);
+console.log("====================================");
+
       const token = sessionStorage.getItem("authToken");
       if (!token) {
         throw new Error(
@@ -348,13 +362,13 @@ const Upload = () => {
             <option value="">Select Year</option>
 
             {Array.from(
-              { length: new Date().getFullYear() - 2000 + 1 },
-              (_, index) => 2000 + index
-            ).map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
+                { length: new Date().getFullYear() - 2000 + 1 },
+                (_, index) => new Date().getFullYear() - index
+              ).map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
           </select>
         </div>
 

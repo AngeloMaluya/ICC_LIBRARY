@@ -8,16 +8,12 @@ const supabase = createClient(
   process.env.SUPABASE_SECRET_KEY
 );
 
-// =====================================================
-// CONFIGURATION
-// =====================================================
-
 const PAGE_SIZE = 50;
 const DELAY_MS = 1500;
 
 // null = process all matching research papers
 // 5 = test with five research papers
-const MAX_RESEARCH = 5;
+const MAX_RESEARCH = null;
 
 // false = only classify papers without an AI theme
 // true = reclassify papers, including old classifications
