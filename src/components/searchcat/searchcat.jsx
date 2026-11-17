@@ -51,30 +51,34 @@ export default function SearchCat({
   handleViewResearch,
   getProgramImage,
   activeProgram,
+  selectedProgram = "",
+  onProgramSelect,
   heading,
   emptyMessage = "No research found.",
   isAdmin = false,
   educationLevel: selectedEducationLevel,
 }) {
-
+  // Students use activeProgram; admins use selectedProgram.
+  const currentProgram = isAdmin
+    ? selectedProgram
+    : activeProgram;
   // Determine the education level of an active program
-  const getProgramEducationLevel = () => {
-    const program = String(activeProgram || "")
-      .trim()
-      .toLowerCase();
+    const getProgramEducationLevel = () => {
+      const program = String(currentProgram || "")
+        .trim()
+        .toLowerCase();
 
-    return shsStrands.some(
-      (strand) => strand.toLowerCase() === program
-    )
-      ? "shs"
-      : "college";
-  };
-
+      return shsStrands.some(
+        (strand) => strand.toLowerCase() === program
+      )
+        ? "shs"
+        : "college";
+    };
   // Use the active program's level when viewing a program.
   // Otherwise, use the level passed by Library.jsx.
-  const educationLevel = activeProgram
-    ? getProgramEducationLevel()
-    : selectedEducationLevel || "college";
+const educationLevel = currentProgram
+  ? getProgramEducationLevel()
+  : selectedEducationLevel || "college";
 
   // Display programs based on the selected education level
   const displayedPrograms =
@@ -104,15 +108,17 @@ export default function SearchCat({
 
 
   // Handle program or strand selection
-  const handleProgramClick = (program) => {
-    if (isAdmin) {
-      // Admin searches research using the selected program
-      setSearchTerm(program);
-    } else {
-      // Students navigate to the selected program or strand
-      navigate(`/library/${program}`);
-    }
-  };
+    const handleProgramClick = (program) => {
+      if (isAdmin) {
+        // Admin selects the program without changing the search bar.
+        setSearchTerm("");
+
+        onProgramSelect?.(program);
+      } else {
+        // Preserve existing student navigation.
+        navigate(`/library/${program}`);
+      }
+    };
 
   return (
     <div className="library-content">
@@ -173,13 +179,13 @@ export default function SearchCat({
             onClick={() =>
               handleProgramClick(program)
             }
-            className={
-              activeProgram &&
-              program.toLowerCase() ===
-                activeProgram.toLowerCase()
-                ? "active-program"
-                : ""
-            }
+              className={
+                currentProgram &&
+                program.toLowerCase() ===
+                  currentProgram.toLowerCase()
+                  ? "active-program"
+                  : ""
+              }
           >
             {program}
           </button>
@@ -187,15 +193,15 @@ export default function SearchCat({
       </div>
 
       {/* OPTIONAL PAGE HEADING */}
-      {(heading || activeProgram) && (
-        <div className="program-heading">
-          <h1>
-            {activeProgram
-              ? programFullNames[activeProgram] || activeProgram
-              : heading?.title}
-          </h1>
-        </div>
-      )}
+        {(heading || currentProgram) && (
+          <div className="program-heading">
+            <h1>
+              {currentProgram
+                ? programFullNames[currentProgram] || currentProgram
+                : heading?.title}
+            </h1>
+          </div>
+        )}
 
       {/* RESEARCH AREA */}
       <div className="recommend-section">

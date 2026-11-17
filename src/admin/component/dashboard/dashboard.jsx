@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import "./dashboard.css";
 
 const PROGRAMS = [
@@ -18,6 +20,7 @@ const PROGRAMS = [
 
 const Dashboard = () => {
   const API_URL = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
 
   /* =========================================
      DASHBOARD STATE
@@ -119,28 +122,32 @@ const Dashboard = () => {
      STATISTICS CARDS
   ========================================= */
 
-  const statistics = [
-    {
-      title: "Total Research",
-      value: stats.totalResearch,
-      description: "Stored research documents",
-    },
-    {
-      title: "Total Views",
-      value: stats.totalViews,
-      description: "Research PDF views",
-    },
-    {
-      title: "Cite Actions",
-      value: stats.totalCitations,
-      description: "Citation tool uses",
-    },
-    {
-      title: "Total Users",
-      value: stats.totalUsers ?? stats.totalStudents,
-      description: "Registered accounts",
-    },
-  ];
+    const statistics = [
+      {
+        title: "Total Research",
+        value: stats.totalResearch,
+        description: "Stored research documents",
+        path: "/catalog",
+      },
+      {
+        title: "Total Views",
+        value: stats.totalViews,
+        description: "Research PDF views",
+        path: "/reports?report=viewing",
+      },
+      {
+        title: "Cite Actions",
+        value: stats.totalCitations,
+        description: "Citation tool uses",
+        path: "/reports?report=citations",
+      },
+      {
+        title: "Total Users",
+        value: stats.totalUsers ?? stats.totalStudents,
+        description: "Registered accounts",
+        path: "/reports?report=accounts",
+      },
+    ];
 
   /* =========================================
      RESEARCH COLLECTION PER PROGRAM
@@ -189,28 +196,30 @@ const Dashboard = () => {
               DASHBOARD STATISTICS
           ===================================== */}
 
-          <section className="admin-stats-grid">
-            {statistics.map((stat) => (
-              <div
-                className="admin-stat-card"
-                key={stat.title}
-              >
-                <div className="admin-stat-top">
-                  <h2>
-                    {formatValue(stat.value)}
-                  </h2>
+     <section className="admin-stats-grid">
+        {statistics.map((stat) => (
+          <button
+            type="button"
+            className="admin-stat-card"
+            key={stat.title}
+            onClick={() => navigate(stat.path)}
+          >
+            <div className="admin-stat-top">
+              <h2>
+                {formatValue(stat.value)}
+              </h2>
 
-                  <span>
-                    {stat.title}
-                  </span>
-                </div>
+              <span>
+                {stat.title}
+              </span>
+            </div>
 
-                <p>
-                  {stat.description}
-                </p>
-              </div>
-            ))}
-          </section>
+            <p>
+              {stat.description}
+            </p>
+          </button>
+        ))}
+      </section>
 
           {/* =====================================
               RESEARCH COLLECTION
@@ -236,52 +245,68 @@ const Dashboard = () => {
             ) : (
               <div className="admin-program-list">
 
-                {programData.map((program) => (
-                  <div
-                    className="admin-program-row"
-                    key={program.code}
-                  >
+               <div className="admin-program-list">
+  {programData.map((program) => {
+    const isSHS = [
+      "STEM",
+      "ABM",
+      "HUMSS",
+      "GAS",
+      "HE",
+      "ICT",
+    ].includes(program.code);
 
-                    {/* PROGRAM NAME AND COUNT */}
+    const level = isSHS ? "shs" : "college";
 
-                    <div className="admin-program-label">
-                      <span>
-                        {program.name}
-                      </span>
+    return (
+      <button
+        type="button"
+        className="admin-program-row"
+        key={program.code}
+        disabled={loading}
+        onClick={() => {
+          navigate(
+            `/program?level=${level}&program=${encodeURIComponent(
+              program.code
+            )}`
+          );
+        }}
+      >
+          {/* PROGRAM NAME AND COUNT */}
+          <div className="admin-program-label">
+            <span>{program.name}</span>
 
-                      <strong>
-                        {loading
-                          ? "..."
-                          : program.count.toLocaleString()}
-                      </strong>
-                    </div>
+            <strong>
+              {loading
+                ? "..."
+                : program.count.toLocaleString()}
+            </strong>
+          </div>
 
-                    {/* PROGRAM PROGRESS BAR */}
+          {/* PROGRAM PROGRESS BAR */}
+          <div className="admin-progress-track">
+            <div
+              className="admin-progress-fill"
+              style={{
+                width: loading
+                  ? "0%"
+                  : `${(program.count / maxCount) * 100}%`,
+              }}
+            />
+          </div>
+        </button>
+      );
+    })}
+  </div>
 
-                    <div className="admin-progress-track">
-                      <div
-                        className="admin-progress-fill"
-                        style={{
-                          width: loading
-                            ? "0%"
-                            : `${
-                                (program.count / maxCount) * 100
-                              }%`,
-                        }}
-                      />
-                    </div>
+</div>
+)}
 
-                  </div>
-                ))}
+</section>
 
-              </div>
-            )}
-
-          </section>
-
-        </div>
-      </main>
-    </div>
+</div>
+</main>
+</div>
   );
 };
 

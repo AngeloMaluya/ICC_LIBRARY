@@ -27,6 +27,26 @@ export const Library = ({ isAdmin = false }) => {
 
   const educationLevel =
     searchParams.get("level") === "shs" ? "shs" : "college";
+    
+  const selectedProgram = searchParams.get("program") || "";
+  const handleProgramSelect = (program) => {
+    if (!isAdmin) {
+      navigate(program ? `/library/${program}` : "/library");
+      return;
+    }
+
+    const params = new URLSearchParams(searchParams);
+
+    params.set("level", educationLevel);
+
+    if (program) {
+      params.set("program", program);
+    } else {
+      params.delete("program");
+    }
+
+    navigate(`/program?${params.toString()}`);
+  };
 
   const [researches, setResearches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -204,40 +224,50 @@ useEffect(() => {
 
   // Preserve local keyword search for administrators.
   // Student results are already ranked by the backend AI.
-  const filteredResearches = isAdmin
-  ? filteredByLevel.filter((research) => {
-      const term = debouncedSearchTerm.toLowerCase().trim();
+const filteredResearches = filteredByLevel.filter((research) => {
+  const matchesProgram =
+    !isAdmin ||
+    !selectedProgram ||
+    String(research.program || "").toLowerCase() ===
+      selectedProgram.toLowerCase();
 
-      if (!term) return true;
+  if (!matchesProgram) return false;
 
-      return [
-        research.title,
-        research.author,
-        research.program,
-        research.year,
-      ].some((value) =>
-        String(value ?? "")
-          .toLowerCase()
-          .includes(term)
-      );
-    })
-  : filteredByLevel;
+  if (!isAdmin) return true;
+
+  const term = debouncedSearchTerm.toLowerCase().trim();
+
+  if (!term) return true;
+
+  return [
+    research.title,
+    research.author,
+    research.program,
+    research.year,
+  ].some((value) =>
+    String(value ?? "")
+      .toLowerCase()
+      .includes(term)
+  );
+});
 
   return (
     <div className="library-layout">
       <main className="library-main">
-        <SearchCat
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          navigate={navigate}
-          loading={loading}
-          error={error}
-          filteredResearches={filteredResearches}
-          handleViewResearch={handleViewResearch}
-          getProgramImage={getProgramImage}
-          educationLevel={educationLevel}
-          isAdmin={isAdmin}
-        />
+      <SearchCat
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        navigate={navigate}
+        loading={loading}
+        error={error}
+        filteredResearches={filteredResearches}
+        handleViewResearch={handleViewResearch}
+        getProgramImage={getProgramImage}
+        educationLevel={educationLevel}
+        selectedProgram={selectedProgram}
+        onProgramSelect={handleProgramSelect}
+        isAdmin={isAdmin}
+      />
       </main>
 
       <ResearchPopups

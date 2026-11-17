@@ -210,3 +210,59 @@
   color: #b42318;
   font-size: 13px;
 }
+
+/* CLICKABLE STATISTIC CARDS */
+
+button.admin-stat-card {
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button.admin-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+button.admin-stat-card:focus-visible {
+  outline: 3px solid #e8c95c;
+  outline-offset: 3px;
+}
+
+/* CLICKABLE PROGRAM ROWS */
+
+button.admin-program-row {
+  display: block;
+  width: 100%;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+button.admin-program-row:hover {
+  opacity: 0.8;
+}
+
+button.admin-program-row:hover .admin-progress-fill {
+  filter: brightness(1.15);
+}
+
+button.admin-program-row:focus-visible {
+  outline: 2px solid #0d4b8e;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+button.admin-program-row:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
