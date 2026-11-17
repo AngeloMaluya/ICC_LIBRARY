@@ -12,6 +12,7 @@ import dashboardRoutes from "./routes/dashboard.js";
 import savedRoutes from "./routes/saved.js";
 import citationRoutes from "./routes/citations.js";
 import reportsRoutes from "./routes/reports.js";
+import accountsRoutes from "./routes/accounts.js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -157,6 +158,8 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reading-progress", readingProgressRoutes);
 
 app.use("/api/reports", reportsRoutes);
+
+app.use("/api/accounts", accountsRoutes);
 
 app.listen(PORT, () => {
 });

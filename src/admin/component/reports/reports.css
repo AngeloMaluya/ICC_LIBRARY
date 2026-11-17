@@ -535,3 +535,335 @@
     -webkit-print-color-adjust: exact;
   }
 }
+
+
+/* =====================================
+   CLICKABLE RESEARCH THEMES
+===================================== */
+
+.reports-theme-clickable {
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.reports-theme-clickable:hover {
+  border-color: #0b4ea2;
+  box-shadow: 0 3px 12px rgba(11, 78, 162, 0.12);
+}
+
+.reports-theme-clickable:focus-visible {
+  outline: 3px solid #0b4ea2;
+  outline-offset: 3px;
+}
+
+/* =====================================
+   THEME RESEARCH MODAL
+===================================== */
+
+.theme-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.48);
+  box-sizing: border-box;
+}
+
+.theme-modal {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  max-width: 1120px;
+  height: 75vh;
+  max-height: 760px;
+
+  background: #ffffff;
+  border: 2px solid #1684ed;
+  border-radius: 12px;
+
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.theme-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 22px 25px 10px;
+}
+
+.theme-modal-header h2 {
+  margin: 0;
+  color: #0d4b8e;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.theme-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: none;
+  border: none;
+  color: #0d4b8e;
+  cursor: pointer;
+  font-size: 25px;
+}
+
+.theme-modal-heading {
+  text-align: center;
+  padding: 5px 24px 20px;
+}
+
+.theme-modal-heading h3 {
+  margin: 0 0 8px;
+  font-size: 21px;
+  color: #111111;
+}
+
+.theme-modal-heading p {
+  margin: 0;
+  color: #777777;
+  font-size: 13px;
+}
+
+.theme-modal-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 15px 35px;
+}
+
+.theme-research-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+
+  padding: 18px;
+  margin-bottom: 12px;
+
+  border: 1px solid #dddddd;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.theme-research-icon {
+  color: #0d4b8e;
+  font-size: 24px;
+}
+
+.theme-research-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.theme-research-details h4 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #111111;
+}
+
+.theme-research-details p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #555555;
+}
+
+.theme-research-catalog {
+  color: #0d4b8e !important;
+  font-weight: 600;
+}
+
+.theme-modal-status {
+  text-align: center;
+  color: #666666;
+  padding: 30px;
+}
+
+.theme-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+
+  padding: 15px 25px;
+  background: #ffffff;
+}
+
+.theme-modal-footer button {
+  padding: 10px 24px;
+  background: #0d4b8e;
+  color: white;
+
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.theme-modal-footer button:hover {
+  background: #08396e;
+}
+
+@media (max-width: 768px) {
+  .theme-modal {
+    height: 85vh;
+  }
+
+  .theme-modal-content {
+    padding: 12px 16px;
+  }
+
+  .theme-modal-header {
+    padding: 16px;
+  }
+
+  .theme-modal-header h2 {
+    font-size: 18px;
+  }
+}
+
+/* Hide modal during report printing */
+@media print {
+  .theme-modal-overlay {
+    display: none !important;
+  }
+}
+
+/* =====================================
+   CLICKABLE RESEARCH TITLES
+===================================== */
+
+.theme-research-title {
+  margin: 0 0 10px;
+}
+
+.theme-research-title-button {
+  display: inline;
+  padding: 0;
+
+  background: none;
+  border: none;
+
+  color: #111111;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.theme-research-title-button:hover {
+  color: #0d4b8e;
+  text-decoration: underline;
+}
+
+.theme-research-title-button:focus-visible {
+  outline: 2px solid #0d4b8e;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* =====================================
+   CLICKABLE RESEARCH TITLES
+===================================== */
+
+.reports-research-title {
+  padding: 0;
+  background: none;
+  border: none;
+
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  text-align: left;
+
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.reports-research-title:hover {
+  color: #0d4b8e;
+  text-decoration: underline;
+}
+
+.reports-research-title:focus-visible {
+  outline: 2px solid #0d4b8e;
+  outline-offset: 3px;
+}
+
+
+/* =====================================
+   REUSABLE REPORT STATISTICS
+===================================== */
+
+.reports-stats-section {
+  width: 100%;
+  margin: 12px 0 20px;
+  margin-bottom: 0px;
+}
+
+.reports-stats-heading {
+  margin: 0 0 8px;
+  color: #111;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.reports-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.reports-stats-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  min-height: 85px;
+  padding: 16px;
+
+  background: #fff;
+  border: 1px solid #d5d5d5;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.reports-stats-label {
+  font-size: 14px;
+  font-weight: 400;
+  color: #111;
+}
+
+.reports-stats-value {
+  font-size: 23px;
+  font-weight: 700;
+  color: #000;
+}
+
+@media (max-width: 900px) {
+  .reports-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .reports-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .reports-stats-card {
+    break-inside: avoid;
+  }
+}

@@ -39,7 +39,7 @@ export const generateCatalogNumber = ({
     throw new Error("A valid Cutter number is required.");
   }
 
-  const titleMark = getTitleMark(title);
+  const titleMark = generateTitleMark(title).toLowerCase();
 
   if (titleMark.length !== 3) {
     throw new Error("Title must contain at least 3 letters.");

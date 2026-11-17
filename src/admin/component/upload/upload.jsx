@@ -198,6 +198,7 @@ const Upload = () => {
           formData.append("year", form.year);
           formData.append("educationLevel", form.educationLevel);
           formData.append("program", form.program);
+          formData.append("accessionNumber",form.accessionNumber.trim());
           if (form.cutterNumber.trim()) {
             formData.append(
               "cutterNumber",
@@ -417,9 +418,21 @@ console.log("====================================");
           </select>
         </div>
       )}
+      {/*Accession Number*/}
+        <div className="form-group">
+            <label htmlFor="cutterNumber">Accession Number</label>
+             <input
+              type="text"
+              name="accessionNumber"
+              value={form.accessionNumber}
+              onChange={handleChange}
+              placeholder="Enter accession number"
+              required
+            />
+          </div>
           {/* CUTTER NUMBER */}
           <div className="form-group">
-            <label htmlFor="cutterNumber">Cutter Number (Optional)</label>
+            <label htmlFor="cutterNumber">Call Number (Optional)</label>
             <input
               id="cutterNumber"
               type="text"

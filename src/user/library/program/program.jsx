@@ -32,7 +32,6 @@ export const Program = () => {
     handleViewResearch,
     handleViewPdfText,
     closePopup,
-    closePdfPopup,
   } = useResearchPopups(API_URL);
 
   // PROGRAM NAME

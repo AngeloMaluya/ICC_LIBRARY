@@ -49,7 +49,6 @@ export default function SearchCat({
   error,
   filteredResearches,
   handleViewResearch,
-  handleViewPdfText,
   getProgramImage,
   activeProgram,
   heading,

@@ -15,10 +15,13 @@ import {
   FaRegBookmark,
   FaBookmark,
   FaHistory,
+  FaRegFolderOpen,
+  FaFolderOpen,
 } from "react-icons/fa";
 
 import "./sidebar.css";
 import { logout } from "../../utils/auth.js";
+import { FaRegFolderClosed } from "react-icons/fa6";
 
 // Student navigation menu
 const studentMenu = [
@@ -71,6 +74,12 @@ const adminMenu = [
   {
     label: "Programs",
     icon: <GiGraduateCap />,
+    path: "/program",
+  },
+  {
+    label: "Catalog",
+    icon: <FaRegFolderClosed />,
+    activeIcon: <FaRegFolderOpen/>,
     path: "/program",
   },
 ];

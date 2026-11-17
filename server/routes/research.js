@@ -504,11 +504,41 @@ router.post(
         cutterNumber,
       } = req.body;
 
-      console.log("========== BACKEND DEBUG ==========");
-      console.log("Request Cutter:", cutterNumber);
-      console.log("Request Title:", title);
-      console.log("Request Year:", year);
-      console.log("===================================");
+        /* =============================================
+          VALIDATE MANUAL ACCESSION NUMBER
+        ============================================= */
+
+        const accessionNumber = String(
+          req.body.accessionNumber ?? ""
+        ).trim();
+
+        if (!accessionNumber) {
+          return res.status(400).json({
+            success: false,
+            message: "Accession number is required.",
+          });
+        }
+
+        // Check whether the accession number is already registered.
+        const {
+          data: existingAccession,
+          error: accessionCheckError,
+        } = await supabase
+          .from("summarized")
+          .select("id")
+          .eq("accession_number", accessionNumber)
+          .limit(1);
+
+        if (accessionCheckError) {
+          throw accessionCheckError;
+        }
+
+        if (existingAccession?.length) {
+          return res.status(409).json({
+            success: false,
+            message: "This accession number is already registered.",
+          });
+        }
 
       if (
         !title?.trim() ||
@@ -648,11 +678,11 @@ router.post(
           const cutterInteraction = await ai.interactions.create({
             model: "gemini-3.1-flash-lite",
             input: `You are assisting an academic librarian with a provisional Cutter-Sanborn-style suggestion.
-Use the FIRST listed author's surname. Do not invent an author.
-Author: ${author.trim()}
-Research title: ${title.trim()}
-Return ONLY one uppercase ASCII letter followed by 1 to 4 digits, for example R433.
-No commentary, formatting, punctuation or spaces.`,
+                Use the FIRST listed author's surname. Do not invent an author.
+                Author: ${author.trim()}
+                Research title: ${title.trim()}
+                Return ONLY one uppercase ASCII letter followed by 1 to 4 digits, for example R433.
+                No commentary, formatting, punctuation or spaces.`,
           });
 
           const suggestedCutter = String(cutterInteraction.output_text || "")
@@ -908,6 +938,7 @@ No commentary, formatting, punctuation or spaces.`,
             summary,
             content: pdfText,
             catalog_number: generatedCatalogNumber,
+            accession_number: accessionNumber,
           },
         ])
         .select()
@@ -1045,12 +1076,7 @@ No commentary, formatting, punctuation or spaces.`,
           `AI THEME CLASSIFICATION ERROR (${research.id}):`,
           themeError
         );
-
-        // Research is already saved successfully.
-        // A failed classification can be retried
-        // using classifyExistingResearch.js.
       }
-
       /* =============================================
          GENERATE SEMANTIC SEARCH EMBEDDING
       ============================================= */
