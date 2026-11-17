@@ -227,6 +227,11 @@ export default function ViewingHistory() {
                                 {research.title || "Untitled Research"}
                               </h3>
 
+                              {research.catalog_number && (
+                                <p className="history-card-catalog">
+                                  {research.catalog_number}
+                                </p>
+                              )}
                               <p className="history-card-year">
                                 {research.year || "Unknown Year"}
                               </p>

@@ -97,30 +97,35 @@ router.post("/:researchId", verifyStudentToken, async (req, res) => {
    GET VIEWING HISTORY
 ========================================================= */
 
+/* =========================================================
+   GET VIEWING HISTORY
+========================================================= */
+
 router.get("/", verifyStudentToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
     const { data, error } = await supabase
-  .from("viewing_history")
-  .select(`
-    id,
-    viewed_at,
-    research_id,
-    summarized (
-      id,
-      title,
-      author,
-      year,
-      program,
-      summary,
-      pdf_url,
-      poster_url
-    )
-  `)
-  .eq("user_id", userId)
-  .order("viewed_at", 
-    { ascending: false });
+      .from("viewing_history")
+      .select(`
+        id,
+        viewed_at,
+        research_id,
+        summarized (
+          id,
+          title,
+          author,
+          year,
+          program,
+          summary,
+          pdf_url,
+          poster_url,
+          catalog_number,
+          accession_number
+        )
+      `)
+      .eq("user_id", userId)
+      .order("viewed_at", { ascending: false });
 
     if (error) {
       console.error("GET HISTORY ERROR:", error);

@@ -168,10 +168,16 @@
   overflow-wrap: anywhere;
 }
 
-.history-card-year {
+.history-card-year{
   margin: 0 0 4px;
   color: #777777;
   font-size: 12px;
+}
+.history-card-catalog {
+  margin: 3px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0d4b8e;
 }
 
 .history-program {

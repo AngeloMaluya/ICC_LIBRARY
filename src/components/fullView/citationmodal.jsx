@@ -19,14 +19,43 @@ export default function CitationModal({ research, onClose, isAdmin }) {
   const year = cleanYear(research.year);
   const institution = "Immaculada Concepcion College";
 
-  const citations = {
-    MLA: `${author}. "${title}." ${institution}, ${year}.`,
-    APA: `${author}. (${year}). ${title} [Research paper]. ${institution}.`,
-    Chicago: `${author}. "${title}." Research paper, ${institution}, ${year}.`,
-    Harvard: `${author} (${year}) ${title}. Research paper, ${institution}.`,
-    Vancouver: `${author}. ${title}. ${institution}; ${year}.`,
-  };
 
+  const formatAPAAuthors = (authors) => {
+  if (!authors) return "Unknown Author";
+
+  const authorList = authors
+    .split(/,|\band\b|&/i)
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+  const formattedAuthors = authorList.map((name) => {
+    const parts = name.split(/\s+/);
+
+    if (parts.length === 1) return name;
+
+    const lastName = parts.pop();
+
+    const initials = parts
+      .map((part) => `${part.charAt(0).toUpperCase()}.`)
+      .join(" ");
+
+    return `${lastName}, ${initials}`;
+  });
+
+  if (formattedAuthors.length === 1) {
+    return formattedAuthors[0];
+  }
+
+  return (
+    formattedAuthors.slice(0, -1).join(", ") +
+    ", & " +
+    formattedAuthors.at(-1)
+  );
+};
+
+const citations = {
+  APA: `${formatAPAAuthors(author)} (${year}). ${title} [Research paper]. ${institution}.`,
+};
 
 const copyCitation = async (style, citation) => {
   try {

@@ -969,11 +969,12 @@ const openResearch = (researchId) => {
                 </p>
 
                 <h1>{research.title}</h1>
+                
                   {research.catalog_number && (
-                  <p className="research-catalog-number">
-                    {research.catalog_number}
-                  </p>
-                )}
+                    <p className="research-catalog-number">
+                      {research.catalog_number}
+                    </p>
+                  )}
 
                 <p>
                   <strong>Author:</strong>{" "}
