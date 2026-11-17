@@ -33,6 +33,7 @@ import Dashboard from "./admin/component/dashboard/dashboard";
 import Upload from "./admin/component/upload/upload";
 import AdminProgram from "./admin/component/program/program";
 import Reports from "./admin/component/reports/reports";
+import Catalog from "./admin/component/catalog/catalog"
 
 import { Analytics } from "@vercel/analytics/react";
 
@@ -71,6 +72,8 @@ function App() {
             <Route path="/upload" element={<Upload />} />
             <Route path="/program" element={<AdminProgram />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/catalog" element={<Catalog/>} />
+            
 
             {/* Admin PDF viewer with admin sidebar */}
             <Route
