@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { FiChevronLeft, FiEye, FiPrinter, FiUsers } from "react-icons/fi";
 import { LuSwatchBook } from "react-icons/lu";
 import { FaQuoteLeft } from "react-icons/fa";
@@ -44,7 +45,7 @@ const INITIAL_FILTERS = {
 
 export default function Reports() {
     const API_URL = import.meta.env.VITE_API_URL;
-    const [activeReport, setActiveReport] = useState(null);
+ 
     const [filters, setFilters] = useState({ ...INITIAL_FILTERS });
     const [viewingRecords, setViewingRecords] = useState([]);
     const [themeRecords, setThemeRecords] = useState([]);
@@ -54,6 +55,16 @@ export default function Reports() {
     const [activityRecords, setActivityRecords] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const [activeReport, setActiveReport] = useState(() => {
+      const report = searchParams.get("report");
+    
+      return ["viewing", "collection", "citations", "accounts", "activity"].includes(report)
+        ? report
+        : null;
+    });
 
     useEffect(() => { document.title = "Admin Reports"; }, []);
     const updateFilter = (name, value) => setFilters(prev => ({ ...prev, [name]: value }));
