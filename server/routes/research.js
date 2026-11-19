@@ -632,8 +632,8 @@ router.post(
             }) => {
               const cutter = validateCutterNumber(cutterNumber);
 
-              // Skip initial articles and extract three letters.
-              const titleMark = generateTitleMark(title);
+              // Skip initial articles and extract three lowercase letters.
+              const titleMark = generateTitleMark(title).toLowerCase();
 
               if (titleMark.length < 3) {
                 throw new Error(
