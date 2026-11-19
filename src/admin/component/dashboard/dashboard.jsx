@@ -123,31 +123,31 @@ const Dashboard = () => {
   ========================================= */
 
     const statistics = [
-      {
-        title: "Total Research",
-        value: stats.totalResearch,
-        description: "Stored research documents",
-        path: "/catalog",
-      },
-      {
-        title: "Total Views",
-        value: stats.totalViews,
-        description: "Research PDF views",
-        path: "/reports?report=viewing",
-      },
-      {
-        title: "Cite Actions",
-        value: stats.totalCitations,
-        description: "Citation tool uses",
-        path: "/reports?report=citations",
-      },
-      {
-        title: "Total Users",
-        value: stats.totalUsers ?? stats.totalStudents,
-        description: "Registered accounts",
-        path: "/reports?report=accounts",
-      },
-    ];
+        {
+          title: "Total Research",
+          value: stats.totalResearch,
+          description: "Stored research documents",
+          path: "/reports?report=collection",
+        },
+        {
+          title: "Total Views",
+          value: stats.totalViews,
+          description: "Research PDF views",
+          path: "/reports?report=viewing",
+        },
+        {
+          title: "Cite Actions",
+          value: stats.totalCitations,
+          description: "Citation tool uses",
+          path: "/reports?report=citations",
+        },
+        {
+          title: "Total Users",
+          value: stats.totalUsers ?? stats.totalStudents,
+          description: "Registered accounts",
+          path: "/reports?report=accounts",
+        },
+      ];
 
   /* =========================================
      RESEARCH COLLECTION PER PROGRAM
