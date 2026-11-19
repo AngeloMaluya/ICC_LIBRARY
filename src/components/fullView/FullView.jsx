@@ -970,9 +970,9 @@ const openResearch = (researchId) => {
 
                 <h1>{research.title}</h1>
                 
-                  {research.catalog_number && (
+                  {research.accession_number && (
                     <p className="research-catalog-number">
-                      {research.catalog_number}
+                      {research.accession_number}
                     </p>
                   )}
 

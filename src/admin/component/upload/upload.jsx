@@ -57,7 +57,7 @@ const COLLEGE_PROGRAMS = [
 
 const SHS_STRANDS = [
   { value: "STEM", label: "Science, Technology, Engineering, and Mathematics" },
-  { value: "ABM", label: "Accountancy, Business, and Management" },
+  { value: "ABM", label: "Accountancy, Businesccss and Management" },
   { value: "HUMSS", label: "Humanities and Social Sciences" },
   { value: "GAS", label: "General Academic Strand" },
   { value: "HE", label: "Home Economics" },
@@ -198,11 +198,10 @@ const Upload = () => {
           formData.append("year", form.year);
           formData.append("educationLevel", form.educationLevel);
           formData.append("program", form.program);
-          formData.append("accessionNumber",form.accessionNumber.trim());
-          if (form.cutterNumber.trim()) {
+          if (form.accessionNumber.trim()) {
             formData.append(
               "cutterNumber",
-              form.cutterNumber.trim().toUpperCase()
+              form.accessionNumber.trim().toUpperCase()
             );
           }
 
@@ -418,26 +417,14 @@ console.log("====================================");
           </select>
         </div>
       )}
-      {/*Accession Number*/}
-        <div className="form-group">
-            <label htmlFor="cutterNumber">Accession Number</label>
-             <input
+          {/* CUTTER NUMBER */}
+          <div className="form-group">
+            <label htmlFor="cutterNumber">Accession Number (Optional)</label>
+            <input
+              id="accessionNumber"
               type="text"
               name="accessionNumber"
               value={form.accessionNumber}
-              onChange={handleChange}
-              placeholder="Enter accession number"
-              required
-            />
-          </div>
-          {/* CUTTER NUMBER */}
-          <div className="form-group">
-            <label htmlFor="cutterNumber">Call Number (Optional)</label>
-            <input
-              id="cutterNumber"
-              type="text"
-              name="cutterNumber"
-              value={form.cutterNumber}
               onChange={handleChange}
               placeholder="Example: R433"
               pattern="[A-Za-z][0-9]+"

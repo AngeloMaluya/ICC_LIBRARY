@@ -120,7 +120,6 @@ router.get("/", verifyStudentToken, async (req, res) => {
           summary,
           pdf_url,
           poster_url,
-          catalog_number,
           accession_number
         )
       `)

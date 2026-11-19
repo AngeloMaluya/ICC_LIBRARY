@@ -99,7 +99,7 @@ router.get(
           summary,
           pdf_url,
           poster_url,
-          catalog_number,
+          accession_number,
           created_at
         `)
         .order("created_at", {
@@ -167,7 +167,7 @@ router.get(
       const { data, error } = await supabase
         .from("summarized")
         .select(
-          "id, title, author, year, program, summary, pdf_url, poster_url, created_at, catalog_number"
+          "id, title, author, year, program, summary, pdf_url, poster_url, created_at, accession_number"
         )
         .order("created_at", {
           ascending: false,
@@ -249,8 +249,8 @@ router.get(
           summary: research.summary,
           pdf_url: research.pdf_url,
           poster_url: research.poster_url,
-          catalog_number:
-            research.catalog_number ?? null,
+          accession_number:
+            research.accession_number ?? null,
           created_at: research.created_at,
         })
       );
@@ -605,7 +605,7 @@ router.post(
         } 
             
             /* =========================================================
-              CATALOG CALL NUMBER GENERATOR
+              accession_number GENERATOR
             ========================================================= */
 
             // Validate the manually supplied Cutter-Sanborn number.
@@ -623,12 +623,11 @@ router.post(
               return cutter;
             };
 
-            // Generate the complete catalog call number.
-            const generateCatalogNumber = ({
+            // Generate the complete accession number.
+            const generateAccessionNumber = ({
               title,
               year,
               cutterNumber,
-              copyNumber = 1,
             }) => {
               const cutter = validateCutterNumber(cutterNumber);
 
@@ -648,7 +647,7 @@ router.post(
                 numericYear < 1800 ||
                 numericYear > 2100
               ) {
-                throw new Error("Invalid catalog publication year.");
+                throw new Error("Invalid Accession publication year.");
               }
 
               const numericCopy = Number(copyNumber);
@@ -702,38 +701,38 @@ router.post(
         }
       }
 
-      let generatedCatalogNumber;
+      let generateAccessionNumberr;
       try {
-        generatedCatalogNumber = generateCatalogNumber({
+        generateAccessionNumber = generateAccessionNumber({
           title: title.trim(),
           year: numericYear,
           cutterNumber: finalCutterNumber,
           copyNumber: 1,
         });
-      } catch (catalogError) {
+      } catch (accessionError) {
         return res.status(400).json({
           success: false,
-          message: catalogError.message,
+          message: accessionError.message,
         });
       }
 
-      const { data: existingCatalog, error: catalogCheckError } = await supabase
+      const { data: existingAccesssion, error: accesssionCheckError } = await supabase
         .from("summarized")
         .select("id")
-        .eq("catalog_number", generatedCatalogNumber)
+        .eq("accession_number", generatedAccessionNumber)
         .limit(1);
 
-      if (catalogCheckError) throw catalogCheckError;
-      if (existingCatalog?.length) {
+      if (accessionCheckError) throw accessionCheckError;
+      if (existingAccession?.length) {
         return res.status(409).json({
           success: false,
-          message: "This catalog call number already exists. Enter a different Cutter number.",
+          message: "This accession number already exists. Enter a different Cutter number.",
         });
       }
 
       console.log("CUTTER SOURCE:", cutterSource);
       console.log("FINAL CUTTER:", finalCutterNumber);
-      console.log("FINAL CATALOG NUMBER:", generatedCatalogNumber);
+      console.log("FINAL ACCESSION NUMBER:", generatedAccessionNumber);
 
       /* =============================================
          EXTRACT PDF TEXT
@@ -937,8 +936,7 @@ router.post(
             poster_url: posterUrl,
             summary,
             content: pdfText,
-            catalog_number: generatedCatalogNumber,
-            accession_number: accessionNumber,
+            accession_number: generateAccessionNumber,
           },
         ])
         .select()
@@ -967,7 +965,7 @@ router.post(
           success: false,
           message:
             databaseError.code === "23505"
-              ? "A duplicate catalog number was detected."
+              ? "A duplicate accession number was detected."
               : "Failed to save research information.",
           error: databaseError.message,
         });

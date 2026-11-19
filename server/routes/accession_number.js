@@ -20,7 +20,7 @@ const posterTypes = {
   "image/webp": "webp",
   "application/pdf": "pdf",
 };
-
+ 
 const uploadPoster = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
@@ -32,7 +32,7 @@ const uploadPoster = multer({
   },
 }).single("poster");
 
-// GET /api/catalog
+// GET /api/accession
 router.get("/", async (req, res) => {
   try {
     const records = [];
@@ -44,7 +44,6 @@ router.get("/", async (req, res) => {
         .select(`
           id,
           accession_number,
-          catalog_number,
           title,
           author,
           year,
@@ -62,16 +61,16 @@ router.get("/", async (req, res) => {
 
     return res.json({ success: true, records });
   } catch (error) {
-    console.error("CATALOG LIST ERROR:", error);
+    console.error("ACCESSION LIST ERROR:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Failed to load catalog.",
+      message: "Failed to load accession.",
     });
   }
 });
 
-// PATCH /api/catalog/:id
+// PATCH /api/accession/:id
 router.patch("/:id", (req, res) => {
   uploadPoster(req, res, async (uploadError) => {
     if (uploadError) {
@@ -112,9 +111,6 @@ router.patch("/:id", (req, res) => {
       const accessionNumber = String(
         req.body.accession_number || ""
       ).trim();
-      const catalogNumber = String(
-        req.body.catalog_number || ""
-      ).trim();
       const year = Number(req.body.year);
       const educationLevel = String(
     req.body.education_level || ""
@@ -124,7 +120,6 @@ router.patch("/:id", (req, res) => {
     !title ||
     !author ||
     !accessionNumber ||
-    !catalogNumber ||
     !["college", "shs"].includes(educationLevel) ||
     !Number.isInteger(year) ||
     year < 2000 ||
@@ -132,16 +127,16 @@ router.patch("/:id", (req, res) => {
     ){
         return res.status(400).json({
           success: false,
-          message: "Please provide valid catalog information.",
+          message: "Please provide valid accession number.",
         });
       }
 
       const { data: duplicates, error: duplicateError } =
         await supabase
           .from("summarized")
-          .select("id, accession_number, catalog_number")
+          .select("id, accession_number")
           .or(
-            `accession_number.eq.${JSON.stringify(accessionNumber)},catalog_number.eq.${JSON.stringify(catalogNumber)}`
+            `accession_number.eq.${JSON.stringify(accessionNumber)}`
           )
           .neq("id", id);
 
@@ -150,8 +145,7 @@ router.patch("/:id", (req, res) => {
       if (
         (duplicates || []).some(
           (row) =>
-            row.accession_number === accessionNumber ||
-            row.catalog_number === catalogNumber
+            row.accession_number === accessionNumber 
         )
       ) {
         return res.status(409).json({
@@ -164,7 +158,6 @@ router.patch("/:id", (req, res) => {
         title,
         author,
         accession_number: accessionNumber,
-        catalog_number: catalogNumber,
         education_level: educationLevel,
         year,
     };
@@ -202,7 +195,6 @@ router.patch("/:id", (req, res) => {
         .select(`
         id,
         accession_number,
-        catalog_number,
         title,
         author,
         year,
@@ -222,11 +214,11 @@ router.patch("/:id", (req, res) => {
 
       return res.json({
         success: true,
-        message: "Catalog record updated successfully.",
+        message: "Accession number record updated successfully.",
         record: data,
       });
     } catch (error) {
-      console.error("CATALOG UPDATE ERROR:", error);
+      console.error("ACCESSION NUMBER UPDATE ERROR:", error);
 
       return res.status(
         error.code === "23505" ? 409 : 500
@@ -235,7 +227,7 @@ router.patch("/:id", (req, res) => {
         message:
           error.code === "23505"
             ? "Accession number or call number already exists."
-            : "Failed to update catalog record.",
+            : "Failed to update Accession Number record.",
       });
     }
   });
