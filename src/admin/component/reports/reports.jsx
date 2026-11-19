@@ -68,7 +68,13 @@ export default function Reports() {
 
     useEffect(() => { document.title = "Admin Reports"; }, []);
     const updateFilter = (name, value) => setFilters(prev => ({ ...prev, [name]: value }));
-    const openReport = id => { setFilters({ ...INITIAL_FILTERS }); setError(""); setActiveReport(id); };
+    
+    const openReport = (id) => {
+      setFilters({ ...INITIAL_FILTERS });
+      setError("");
+      setSearchParams({ report: id });
+    };
+    
     const selectedReport = REPORT_TYPES.find(r => r.id === activeReport);
     useEffect(() => {
         if (!activeReport)
