@@ -79,7 +79,7 @@ const axisMax =
               horizontal={false}
             />
 
-            <XAxis
+            <YAxis
               type="number"
               domain={[0, axisMax]}
               ticks={Array.from(
@@ -89,7 +89,7 @@ const axisMax =
               allowDecimals={false}
             />
 
-            <YAxis
+            <XAxis
               dataKey="code"
               type="category"
               width={75}
