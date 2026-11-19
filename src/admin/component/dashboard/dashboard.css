@@ -6,30 +6,24 @@
 .admin-dashboard-layout {
   display: flex;
   flex: 1 1 auto;
-
   width: 100%;
   min-width: 0;
   min-height: 100vh;
-
   background: #ffffff;
   box-sizing: border-box;
 }
 
 .admin-dashboard-main {
   flex: 1 1 auto;
-
   width: 100%;
   min-width: 0;
-
   padding: 35px 40px;
   box-sizing: border-box;
-
   background: #ffffff;
 }
 
 .admin-dashboard-content {
   width: 100%;
-  max-width: none;
   margin: 0;
   box-sizing: border-box;
 }
@@ -41,14 +35,13 @@
 .admin-stats-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-
   gap: 12px;
   width: 100%;
   margin-bottom: 16px;
 }
 
 /* =========================================
-   STATISTICS CARDS
+   CLICKABLE STATISTICS CARDS
 ========================================= */
 
 .admin-stat-card {
@@ -56,31 +49,44 @@
   flex-direction: column;
   justify-content: space-between;
 
+  width: 100%;
   min-width: 0;
   min-height: 105px;
-
   padding: 18px 24px;
   box-sizing: border-box;
 
   background: #104578;
   color: #ffffff;
-
+  border: none;
   border-radius: 10px;
 
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+
   box-shadow: 0 3px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.admin-stat-card:focus-visible {
+  outline: 3px solid #e8c95c;
+  outline-offset: 3px;
 }
 
 .admin-stat-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   gap: 15px;
 }
 
 .admin-stat-top h2 {
   margin: 0;
-
   color: #ffffff;
   font-size: 28px;
   font-weight: 700;
@@ -88,7 +94,6 @@
 
 .admin-stat-top span {
   color: #ffffff;
-
   font-size: 13px;
   font-weight: 600;
   text-align: right;
@@ -96,26 +101,24 @@
 
 .admin-stat-card p {
   margin: 8px 0 0;
-
   color: #ffffff;
   font-size: 12px;
   line-height: 1.5;
 }
 
 /* =========================================
-   RESEARCH COLLECTION SECTION
+   RESEARCH COLLECTION SECTIONS
 ========================================= */
 
 .admin-collection-section {
   width: 100%;
-
-  padding: 20px 22px;
+  margin-top: 20px;
+  padding: 20px;
   box-sizing: border-box;
 
-  border: 1px solid #bdbdbd;
-  border-radius: 10px;
-
   background: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 12px;
 }
 
 .admin-collection-heading {
@@ -123,81 +126,65 @@
 }
 
 .admin-collection-heading h2 {
-  margin: 0 0 5px;
-
+  margin: 0 0 6px;
   color: #111111;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .admin-collection-heading p {
   margin: 0;
-
-  color: #858585;
+  color: #888888;
   font-size: 13px;
   line-height: 1.5;
 }
 
 /* =========================================
-   PROGRAM / STRAND LIST
+   RECHARTS CONTAINER
 ========================================= */
 
-.admin-program-list {
-  display: flex;
-  flex-direction: column;
-
-  gap: 16px;
+.admin-chart-container {
   width: 100%;
-}
-
-.admin-program-row {
-  width: 100%;
-}
-
-.admin-program-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 15px;
-  margin-bottom: 6px;
-}
-
-.admin-program-label span {
-  color: #111111;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.admin-program-label strong {
-  flex-shrink: 0;
-
-  color: #111111;
-  font-size: 13px;
-  font-weight: 600;
+  min-width: 0;
+  margin-top: 20px;
+  padding: 20px 12px;
+  box-sizing: border-box;
 }
 
 /* =========================================
-   PROGRESS BARS
+   CLICKABLE CHART BARS
 ========================================= */
 
-.admin-progress-track {
-  width: 100%;
-  height: 9px;
-
-  overflow: hidden;
-  border-radius: 20px;
-
-  background: #dddddd;
+.admin-chart-container .recharts-bar-rectangle {
+  cursor: pointer;
 }
 
-.admin-progress-fill {
-  height: 100%;
-  border-radius: inherit;
+.admin-chart-container .recharts-bar-rectangle:hover {
+  opacity: 0.8;
+}
 
-  background: #104578;
+/* =========================================
+   REMOVE BLACK CHART OUTLINE
+========================================= */
 
-  transition: width 0.4s ease;
+/* Remove browser focus outline on mouse click */
+.admin-chart-container .recharts-wrapper:focus:not(:focus-visible),
+.admin-chart-container .recharts-surface:focus:not(:focus-visible),
+.admin-chart-container svg:focus:not(:focus-visible) {
+  outline: none !important;
+}
+
+/* Recharts can make chart elements focusable */
+.admin-chart-container .recharts-wrapper:focus,
+.admin-chart-container .recharts-surface:focus {
+  outline: none;
+}
+
+/* Preserve visible focus for keyboard navigation */
+.admin-chart-container .recharts-wrapper:focus-visible,
+.admin-chart-container .recharts-surface:focus-visible {
+  outline: 2px solid #0d4b8e;
+  outline-offset: 2px;
 }
 
 /* =========================================
@@ -206,63 +193,20 @@
 
 .admin-dashboard-message {
   margin: 15px 0;
-
   color: #b42318;
   font-size: 13px;
 }
 
-/* CLICKABLE STATISTIC CARDS */
-
-button.admin-stat-card {
-  font-family: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-  border: none;
-  width: 100%;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* Remove black focus outlines from Recharts */
+.admin-chart-container .recharts-wrapper,
+.admin-chart-container .recharts-surface,
+.admin-chart-container .recharts-surface *,
+.admin-chart-container svg,
+.admin-chart-container svg * {
+  outline: none !important;
 }
 
-button.admin-stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-button.admin-stat-card:focus-visible {
-  outline: 3px solid #e8c95c;
-  outline-offset: 3px;
-}
-
-/* CLICKABLE PROGRAM ROWS */
-
-button.admin-program-row {
-  display: block;
-  width: 100%;
-  font-family: inherit;
-  color: inherit;
-  text-align: left;
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-button.admin-program-row:hover {
-  opacity: 0.8;
-}
-
-button.admin-program-row:hover .admin-progress-fill {
-  filter: brightness(1.15);
-}
-
-button.admin-program-row:focus-visible {
-  outline: 2px solid #0d4b8e;
-  outline-offset: 4px;
-  border-radius: 4px;
-}
-
-button.admin-program-row:disabled {
-  cursor: wait;
-  opacity: 0.6;
+/* Remove focus outlines from clickable chart elements */
+.admin-chart-container [tabindex]:focus {
+  outline: none !important;
 }

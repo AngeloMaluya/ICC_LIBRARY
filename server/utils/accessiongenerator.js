@@ -93,7 +93,7 @@ export const generateCutterNumber = (author, { expansionDigits = 0, surnameFirst
   return `${initial}${digits}`;
 };
 
-export const generateAccesssionNumber = ({ title, author, year, cutterNumber, copyNumber = 1, expansionDigits = 0 }) => {
+export const generateAccessionNumber = ({ title, author, year, cutterNumber, expansionDigits = 0 }) => {
   
   if (!title || !author || !year) throw new Error("Missing catalog metadata");
   
@@ -108,7 +108,6 @@ export const generateAccesssionNumber = ({ title, author, year, cutterNumber, co
   const publicationYear = Number(year);
   
   if (!Number.isInteger(publicationYear) || publicationYear < 1800 || publicationYear > 2100) throw new Error("Invalid publication year");
-  if (!Number.isInteger(copyNumber) || copyNumber < 1) throw new Error("Invalid copy number");
   
   return `THS ${cutter}${titleMark} ${publicationYear}`;
 };

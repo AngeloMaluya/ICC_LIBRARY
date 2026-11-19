@@ -1,6 +1,6 @@
 import { generateEmbedding } from "../utils/embeddings.js";
 import { classifyResearchTheme } from "../utils/themeclassifier.js";
-import { generateTitleMark } from "../utils/cutter.js";
+import { generateAccessionNumber } from "../utils/accessiongenerator.js";
 
 import {
   verifyAuthenticatedToken,
@@ -504,42 +504,6 @@ router.post(
         cutterNumber,
       } = req.body;
 
-        /* =============================================
-          VALIDATE MANUAL ACCESSION NUMBER
-        ============================================= */
-
-        const accessionNumber = String(
-          req.body.accessionNumber ?? ""
-        ).trim();
-
-        if (!accessionNumber) {
-          return res.status(400).json({
-            success: false,
-            message: "Accession number is required.",
-          });
-        }
-
-        // Check whether the accession number is already registered.
-        const {
-          data: existingAccession,
-          error: accessionCheckError,
-        } = await supabase
-          .from("summarized")
-          .select("id")
-          .eq("accession_number", accessionNumber)
-          .limit(1);
-
-        if (accessionCheckError) {
-          throw accessionCheckError;
-        }
-
-        if (existingAccession?.length) {
-          return res.status(409).json({
-            success: false,
-            message: "This accession number is already registered.",
-          });
-        }
-
       if (
         !title?.trim() ||
         !author?.trim() ||
@@ -604,110 +568,19 @@ router.post(
           });
         } 
             
-            /* =========================================================
-              accession_number GENERATOR
-            ========================================================= */
-
-            // Validate the manually supplied Cutter-Sanborn number.
-            const validateCutterNumber = (cutterNumber) => {
-              const cutter = String(cutterNumber || "")
-                .trim()
-                .toUpperCase();
-
-              if (!/^[A-Z][0-9]+$/.test(cutter)) {
-                throw new Error(
-                  "Invalid Cutter number. Example: R433."
-                );
-              }
-
-              return cutter;
-            };
-
-            // Generate the complete accession number.
-            const generateAccessionNumber = ({
-              title,
-              year,
-              cutterNumber,
-            }) => {
-              const cutter = validateCutterNumber(cutterNumber);
-
-              // Skip initial articles and extract three lowercase letters.
-              const titleMark = generateTitleMark(title).toLowerCase();
-
-              if (titleMark.length < 3) {
-                throw new Error(
-                  "The title must contain at least three letters after removing initial articles."
-                );
-              }
-
-              const numericYear = Number(year);
-
-              if (
-                !Number.isInteger(numericYear) ||
-                numericYear < 1800 ||
-                numericYear > 2100
-              ) {
-                throw new Error("Invalid Accession publication year.");
-              }
-
-              const numericCopy = Number(copyNumber);
-
-              if (
-                !Number.isSafeInteger(numericCopy) ||
-                numericCopy < 1
-              ) {
-                throw new Error("Invalid copy number.");
-              }
-
-              return `THS ${cutter}${titleMark} ${numericYear} c.${numericCopy}`;
-            };
-
-
       /* =============================================
-         MANUAL OR AI-ASSISTED CUTTER NUMBER
+         GENERATE ACCESSION NUMBER (NO COPY SUFFIX)
+         Manual Cutter if provided; otherwise table-based suggestion.
       ============================================= */
-
-      let finalCutterNumber = String(cutterNumber || "").trim().toUpperCase();
-      let cutterSource = "manual";
-
-      // Use the administrator's entry when provided. Otherwise ask Gemini.
-      if (!finalCutterNumber) {
-        cutterSource = "ai";
-        try {
-          const cutterInteraction = await ai.interactions.create({
-            model: "gemini-3.1-flash-lite",
-            input: `You are assisting an academic librarian with a provisional Cutter-Sanborn-style suggestion.
-                Use the FIRST listed author's surname. Do not invent an author.
-                Author: ${author.trim()}
-                Research title: ${title.trim()}
-                Return ONLY one uppercase ASCII letter followed by 1 to 4 digits, for example R433.
-                No commentary, formatting, punctuation or spaces.`,
-          });
-
-          const suggestedCutter = String(cutterInteraction.output_text || "")
-            .trim()
-            .toUpperCase();
-
-          if (!/^[A-Z][0-9]{1,4}$/.test(suggestedCutter)) {
-            throw new Error("Gemini returned an invalid Cutter suggestion.");
-          }
-          finalCutterNumber = suggestedCutter;
-        } catch (cutterError) {
-          console.error("AI CUTTER GENERATION ERROR:", cutterError);
-          return res.status(503).json({
-            success: false,
-            message: "AI could not suggest a Cutter number. Enter one manually and retry.",
-          });
-        }
-      }
-
-      let generateAccessionNumberr;
+      let generatedAccessionNumber;
       try {
-        generateAccessionNumber = generateAccessionNumber({
+        generatedAccessionNumber = generateAccessionNumber({
           title: title.trim(),
+          author: author.trim(),
           year: numericYear,
-          cutterNumber: finalCutterNumber,
-          copyNumber: 1,
+          ...(String(cutterNumber || "").trim()
+            ? { cutterNumber: String(cutterNumber).trim().toUpperCase() }
+            : {}),
         });
       } catch (accessionError) {
         return res.status(400).json({
@@ -716,23 +589,22 @@ router.post(
         });
       }
 
-      const { data: existingAccesssion, error: accesssionCheckError } = await supabase
-        .from("summarized")
-        .select("id")
-        .eq("accession_number", generatedAccessionNumber)
-        .limit(1);
+      const { data: existingGeneratedAccession, error: accessionCheckError } =
+        await supabase
+          .from("summarized")
+          .select("id")
+          .eq("accession_number", generatedAccessionNumber)
+          .limit(1);
 
       if (accessionCheckError) throw accessionCheckError;
-      if (existingAccession?.length) {
+      if (existingGeneratedAccession?.length) {
         return res.status(409).json({
           success: false,
           message: "This accession number already exists. Enter a different Cutter number.",
         });
       }
 
-      console.log("CUTTER SOURCE:", cutterSource);
-      console.log("FINAL CUTTER:", finalCutterNumber);
-      console.log("FINAL ACCESSION NUMBER:", generatedAccessionNumber);
+      console.log("GENERATED ACCESSION NUMBER:", generatedAccessionNumber);
 
       /* =============================================
          EXTRACT PDF TEXT
@@ -936,7 +808,7 @@ router.post(
             poster_url: posterUrl,
             summary,
             content: pdfText,
-            accession_number: generateAccessionNumber,
+            accession_number: generatedAccessionNumber,
           },
         ])
         .select()

@@ -275,7 +275,7 @@ const educationLevel = currentProgram
                     {research.title}
                   </h3>
                     {research.accession_number && (
-                  <p className="research-catalog-number">
+                  <p className="research-accession-number">
                     {research.accession_number}
                   </p>
                 )}

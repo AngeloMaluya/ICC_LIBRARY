@@ -443,6 +443,53 @@ router.get("/themes", async (req, res) => {
         }
       });
 
+/* =========================================================
+   RESEARCH PAPERS BY AI THEME
+   GET /api/reports/themes/researches
+========================================================= */
+
+router.get("/themes/researches", async (req, res) => {
+  try {
+    const theme = String(req.query.theme || "").trim();
+
+    if (!theme) {
+      return res.status(400).json({
+        success: false,
+        message: "Theme is required.",
+      });
+    }
+
+    const records = await fetchAllRows(() =>
+      supabase
+        .from("summarized")
+        .select(`
+          id,
+          title,
+          author,
+          year,
+          program,
+          accession_number,
+          ai_theme
+        `)
+        .ilike("ai_theme", theme)
+        .order("year", { ascending: false })
+        .order("id", { ascending: true })
+    );
+
+    return res.status(200).json({
+      success: true,
+      records,
+    });
+
+  } catch (error) {
+    console.error("THEME RESEARCH ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load research papers by theme.",
+    });
+  }
+});
 
 router.get("/citations", async (req, res) => {
   try {

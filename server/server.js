@@ -162,7 +162,7 @@ app.use("/api/reports", reportsRoutes);
 
 app.use("/api/accounts", accountsRoutes);
 
-app.use("/api/accession", accessionRoutes);
+app.use("/api/catalog", accessionRoutes);
 
 app.listen(PORT, () => {
 });

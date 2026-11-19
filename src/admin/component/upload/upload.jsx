@@ -198,10 +198,10 @@ const Upload = () => {
           formData.append("year", form.year);
           formData.append("educationLevel", form.educationLevel);
           formData.append("program", form.program);
-          if (form.accessionNumber.trim()) {
+         if (form.cutterNumber.trim()) {
             formData.append(
               "cutterNumber",
-              form.accessionNumber.trim().toUpperCase()
+              form.cutterNumber.trim().toUpperCase()
             );
           }
 
@@ -424,7 +424,7 @@ console.log("====================================");
               id="accessionNumber"
               type="text"
               name="accessionNumber"
-              value={form.accessionNumber}
+              value={form.cutterNumber}
               onChange={handleChange}
               placeholder="Example: R433"
               pattern="[A-Za-z][0-9]+"

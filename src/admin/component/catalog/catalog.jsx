@@ -59,7 +59,6 @@ export default function Catalog() {
     return records.filter((research) =>
       [
         research.accession_number,
-        research.catalog_number,
         research.title,
         research.author,
         research.year,
@@ -126,7 +125,6 @@ export default function Catalog() {
           <thead>
             <tr>
               <th>Accession Number</th>
-              <th>Call Number</th>
               <th>Title of the Research</th>
               <th>Author</th>
               <th>Publication Year</th>
@@ -153,10 +151,6 @@ export default function Catalog() {
                 <tr key={research.id}>
                   <td>
                     {research.accession_number || "—"}
-                  </td>
-
-                  <td>
-                    {research.catalog_number || "—"}
                   </td>
 
                   <td className="catalog-title-cell">

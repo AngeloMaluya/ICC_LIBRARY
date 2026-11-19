@@ -199,9 +199,9 @@ export default function ThemeResearchModal({
                     {research.year || "N/A"}
                   </p>
 
-                  {research.catalog_number && (
+                  {research.accession_number && (
                     <p className="theme-research-catalog">
-                      {research.catalog_number}
+                      {research.accession_number}
                     </p>
                   )}
                 </div>

@@ -1,22 +1,132 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  LabelList,
+} from "recharts";
+
 import "./dashboard.css";
 
 const PROGRAMS = [
-  { code: "BSCS", name: "BS Computer Science" },
-  { code: "BSBA", name: "BS Business Administration" },
-  { code: "BSED", name: "BS Secondary Education" },
+  { code: "BSCS", name: "Bachelor of Science in Computer Science" },
+  { code: "BSBA", name: "Bachelor of Science in Business Administration" },
+  { code: "BSED", name: "Bachelor of Secondary Education" },
   { code: "BEED", name: "Bachelor of Elementary Education" },
-  { code: "BSTM", name: "BS Tourism Management" },
-  { code: "BSCrim", name: "BS Criminology" },
-  { code: "STEM", name: "STEM" },
-  { code: "ABM", name: "ABM" },
-  { code: "HUMSS", name: "HUMSS" },
-  { code: "GAS", name: "GAS" },
-  { code: "HE", name: "Home Economics" },
-  { code: "ICT", name: "ICT" },
+  { code: "BSTM", name: "Bachelor of Science in Tourism Management" },
+  { code: "BSCrim", name: "Bachelor of Science in Criminology" },
 ];
+
+
+const SHS_PROGRAMS = [
+  { code: "STEM", name: "Science, Technology, Engineering, and Mathematics" },
+  { code: "ABM", name: "Accountancy, Business and Management" },
+  { code: "HUMSS", name: "Humanities and Social Sciences" },
+  { code: "GAS", name: "General Academic Strand" },
+  { code: "HE", name: "Home Economics" },
+  { code: "ICT", name: "Information and Communications Technology" },
+];
+
+const ProgramChart = ({ title, description, data, navigate }) => {
+  const handleBarClick = (entry) => {
+    const program = entry?.payload ?? entry;
+
+    if (!program?.code || !program?.level) return;
+
+    navigate(
+      `/program?level=${program.level}&program=${encodeURIComponent(
+        program.code
+      )}`
+    );
+  };
+
+const highestCount = Math.max(
+  0,
+  ...data.map((program) => program.count)
+);
+
+const axisMax =
+  Math.floor((highestCount + 10) / 20) * 20 + 10;
+
+  return (
+    <section className="admin-collection-section">
+      <div className="admin-collection-heading">
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </div>
+
+      <div className="admin-chart-container">
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart
+            data={data}
+            layout="vertical"
+            accessibilityLayer={false}
+            margin={{
+              top: 10,
+              right: 45,
+              left: 15,
+              bottom: 10,
+            }}
+          >
+            <CartesianGrid
+              strokeDasharray="3 3"
+              horizontal={false}
+            />
+
+            <XAxis
+              type="number"
+              domain={[0, axisMax]}
+              ticks={Array.from(
+                { length: Math.floor(axisMax / 10) + 1 },
+                (_, i) => i * 10
+              )}
+              allowDecimals={false}
+            />
+
+            <YAxis
+              dataKey="code"
+              type="category"
+              width={75}
+              tick={{ fontSize: 12 }}
+            />
+
+            <Tooltip
+              formatter={(value) => [
+                value,
+                "Research Papers",
+              ]}
+              labelFormatter={(code) =>
+                data.find((p) => p.code === code)?.name || code
+              }
+            />
+
+            <Bar
+              dataKey="count"
+              fill="#0D4B8E"
+              radius={[0, 5, 5, 0]}
+              maxBarSize={30}
+              cursor="pointer"
+              onClick={handleBarClick}
+            >
+              <LabelList
+                dataKey="count"
+                position="right"
+                style={{ fontSize: 12 }}
+              />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </section>
+  );
+};
+
 
 const Dashboard = () => {
   const API_URL = import.meta.env.VITE_API_URL;
@@ -152,16 +262,17 @@ const Dashboard = () => {
   /* =========================================
      RESEARCH COLLECTION PER PROGRAM
   ========================================= */
-
-  const programData = PROGRAMS.map((program) => ({
+  const collegeData = PROGRAMS.map((program) => ({
     ...program,
     count: Number(programCounts[program.code] ?? 0),
-  }));
+    level: "college",
+  })).sort((a, b) => b.count - a.count);
 
-  const maxCount = Math.max(
-    ...programData.map((program) => program.count),
-    1
-  );
+  const shsData = SHS_PROGRAMS.map((program) => ({
+    ...program,
+    count: Number(programCounts[program.code] ?? 0),
+    level: "shs",
+  })).sort((a, b) => b.count - a.count);
 
   /* =========================================
      FORMAT STATISTICS
@@ -220,89 +331,33 @@ const Dashboard = () => {
           </button>
         ))}
       </section>
-
-          {/* =====================================
-              RESEARCH COLLECTION
-          ===================================== */}
-
-          <section className="admin-collection-section">
-
-            <div className="admin-collection-heading">
-              <h2>
-                Research Collection per Program/Strand
-              </h2>
-
-              <p>
-                Number of uploaded research documents
-                grouped by academic program or strand.
-              </p>
-            </div>
+            {/* =====================================
+                COLLEGE RESEARCH COLLECTION
+            ===================================== */}
 
             {error ? (
-              <p className="admin-dashboard-message">
-                {error}
-              </p>
+              <p className="admin-dashboard-message">{error}</p>
             ) : (
-              <div className="admin-program-list">
+              <>
+                <ProgramChart
+                  title="Research Collection per College Program"
+                  description="Number of uploaded research documents grouped by college program."
+                  data={collegeData}
+                  navigate={navigate}
+                />
 
-               <div className="admin-program-list">
-  {programData.map((program) => {
-    const isSHS = [
-      "STEM",
-      "ABM",
-      "HUMSS",
-      "GAS",
-      "HE",
-      "ICT",
-    ].includes(program.code);
+                {/* =====================================
+                    SENIOR HIGH SCHOOL COLLECTION
+                ===================================== */}
 
-    const level = isSHS ? "shs" : "college";
-
-    return (
-      <button
-        type="button"
-        className="admin-program-row"
-        key={program.code}
-        disabled={loading}
-        onClick={() => {
-          navigate(
-            `/program?level=${level}&program=${encodeURIComponent(
-              program.code
-            )}`
-          );
-        }}
-      >
-          {/* PROGRAM NAME AND COUNT */}
-          <div className="admin-program-label">
-            <span>{program.name}</span>
-
-            <strong>
-              {loading
-                ? "..."
-                : program.count.toLocaleString()}
-            </strong>
-          </div>
-
-          {/* PROGRAM PROGRESS BAR */}
-          <div className="admin-progress-track">
-            <div
-              className="admin-progress-fill"
-              style={{
-                width: loading
-                  ? "0%"
-                  : `${(program.count / maxCount) * 100}%`,
-              }}
-            />
-          </div>
-        </button>
-      );
-    })}
-  </div>
-
-</div>
-)}
-
-</section>
+                <ProgramChart
+                  title="Research Collection per SHS Strand"
+                  description="Number of uploaded research documents grouped by Senior High School strand."
+                  data={shsData}
+                  navigate={navigate}
+                />
+              </>
+            )}
 
 </div>
 </main>
