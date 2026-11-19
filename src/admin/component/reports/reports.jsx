@@ -58,13 +58,20 @@ export default function Reports() {
     
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const [activeReport, setActiveReport] = useState(() => {
-      const report = searchParams.get("report");
+    const validReports = [
+      "viewing",
+      "collection",
+      "citations",
+      "accounts",
+      "activity",
+    ];
     
-      return ["viewing", "collection", "citations", "accounts", "activity"].includes(report)
-        ? report
-        : null;
-    });
+    const report = searchParams.get("report");
+    
+    const activeReport = validReports.includes(report)
+      ? report
+      : null;
+    
 
     useEffect(() => { document.title = "Admin Reports"; }, []);
     const updateFilter = (name, value) => setFilters(prev => ({ ...prev, [name]: value }));
