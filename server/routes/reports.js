@@ -352,14 +352,26 @@ router.get("/themes", async (req, res) => {
       }
     }
 
-    // Convert grouped themes to report records.
+        // Convert ALL AI-discovered themes to report records.
+    const records = [...themes.values()]
+      .map((item) => ({
+        theme: item.theme,
+        description: item.description,
+        keywords: [...item.keywords].slice(0, 5),
+        researchCount: item.researchCount,
+      }))
+      .sort(
+        (a, b) =>
+          b.researchCount - a.researchCount ||
+          a.theme.localeCompare(b.theme)
+      );
+
+            // Calculate 25% of the highest theme count
       const MIN_THEME_PERCENTAGE = 25;
 
       const highestThemeCount = Math.max(
         0,
-        ...[...themes.values()].map(
-          (item) => item.researchCount
-        )
+        ...records.map((item) => item.researchCount)
       );
 
       const minimumResearchCount = Math.max(
@@ -368,81 +380,71 @@ router.get("/themes", async (req, res) => {
           highestThemeCount * (MIN_THEME_PERCENTAGE / 100)
         )
       );
-      const records = [...themes.values()]
-        .map((item) => ({
-          theme: item.theme,
-          description: item.description,
-          keywords: [...item.keywords].slice(0, 5),
-          researchCount: item.researchCount,
-        }))
-        .filter(
-          (item) => item.researchCount >= minimumResearchCount
-        )
-        .sort(
-          (a, b) =>
-            b.researchCount - a.researchCount ||
-            a.theme.localeCompare(b.theme)
-        );
 
-          // Identify themes with relatively few papers.
-          // This is repository coverage analysis,
-          // not proof of an academic research gap.
-          const totalThemes = records.length;
+      // Only themes meeting the 25% threshold
+      const popularThemes = records.filter(
+        (item) => item.researchCount >= minimumResearchCount
+      );
+    // Count all discovered themes.
+    const totalThemes = records.length;
 
-          const averageResearchPerTheme =
-            totalThemes > 0
-              ? totalClassifiedResearch / totalThemes
-              : 0;
+    // Calculate average research papers per theme.
+    const averageResearchPerTheme =
+      totalThemes > 0
+        ? totalClassifiedResearch / totalThemes
+        : 0;
 
-          const underrepresentedThemes = records
-            .filter(
-              (item) =>
-                item.researchCount <
-                averageResearchPerTheme
-            )
-            .sort(
-              (a, b) =>
-                a.researchCount - b.researchCount ||
-                a.theme.localeCompare(b.theme)
-            )
-            .map((item) => ({
-              ...item,
-              status: "Underrepresented in repository",
-            }));
+    // Identify underrepresented themes.
+    const underrepresentedThemes = records
+      .filter(
+        (item) =>
+          item.researchCount < averageResearchPerTheme
+      )
+      .sort(
+        (a, b) =>
+          a.researchCount - b.researchCount ||
+          a.theme.localeCompare(b.theme)
+      )
+      .map((item) => ({
+        ...item,
+        status: "Underrepresented in repository",
+      }));
 
-          return res.json({
-            success: true,
+    // Return complete theme report.
+        return res.json({
+          success: true,
 
-            records,
+          records: popularThemes,
+          allThemes: records,
 
-            totalThemes,
-            totalResearch: filteredResearch.length,
-            totalClassifiedResearch,
-            totalUnclassifiedResearch,
+          totalThemes,
+          totalResearch: filteredResearch.length,
+          totalClassifiedResearch,
+          totalUnclassifiedResearch,
 
-            averageResearchPerTheme: Number(
-              averageResearchPerTheme.toFixed(2)
-            ),
+          averageResearchPerTheme: Number(
+            averageResearchPerTheme.toFixed(2)
+          ),
 
-            underrepresentedThemes,
+          underrepresentedThemes,
 
-            filters: {
-              search,
-              program,
-              startDate,
-              endDate,
-            },
-          });
-        } catch (error) {
-          console.error("THEME REPORT ERROR:", error);
+          filters: {
+            search,
+            program,
+            startDate,
+            endDate,
+          },
+        });
 
-          return res.status(500).json({
-            success: false,
-            message: "Unable to load research themes.",
-          });
-        }
+    } catch (error) {
+      console.error("THEME REPORT ERROR:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Unable to load research themes.",
       });
-
+    }
+    });
 /* =========================================================
    RESEARCH PAPERS BY AI THEME
    GET /api/reports/themes/researches
