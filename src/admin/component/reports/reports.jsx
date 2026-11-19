@@ -198,9 +198,14 @@ export default function Reports() {
             </> :
             <>
   <header className="reports-page-header reports-detail-header">
-    <button type="button" className="reports-back-button" onClick={() => setActiveReport(null)} aria-label="Back to reports">
-      <FiChevronLeft />
-    </button>
+   <button
+  type="button"
+  className="reports-back-button"
+  onClick={() => setSearchParams({})}
+  aria-label="Back to reports"
+>
+  <FiChevronLeft />
+</button>
     <div>
       <h1>{selectedReport?.title || (activeReport === "activity" ? "User Activity" : "Reports")}
       </h1>
