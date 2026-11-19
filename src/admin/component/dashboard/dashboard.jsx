@@ -65,7 +65,7 @@ const axisMax =
         <ResponsiveContainer width="100%" height={400}>
           <BarChart
             data={data}
-            layout="vertical"
+            layout="horizontal"
             accessibilityLayer={false}
             margin={{
               top: 10,
@@ -79,7 +79,7 @@ const axisMax =
               horizontal={false}
             />
 
-            <XAxis
+            <YAxis
               type="number"
               domain={[0, axisMax]}
               ticks={Array.from(
@@ -89,7 +89,7 @@ const axisMax =
               allowDecimals={false}
             />
 
-            <YAxis
+            <XAxis
               dataKey="code"
               type="category"
               width={75}
@@ -109,14 +109,14 @@ const axisMax =
             <Bar
               dataKey="count"
               fill="#0D4B8E"
-              radius={[0, 5, 5, 0]}
+              radius={[5, 5, 0, 0]}
               maxBarSize={30}
               cursor="pointer"
               onClick={handleBarClick}
             >
               <LabelList
                 dataKey="count"
-                position="right"
+                position="top"
                 style={{ fontSize: 12 }}
               />
             </Bar>
