@@ -29,6 +29,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://icc-library.vercel.app",
+      "https://icc-research.vercel.app",
     ],
     methods: [
       "GET",
