@@ -386,45 +386,49 @@ router.post("/google-login", async (req, res) => {
         });
       }
 
-      // Use the latest picture provided by Google
-      let currentUser = user;
-
-      if (
+      // Use the latest verified Google profile picture
+      const latestPicture =
         typeof payload.picture === "string" &&
-        payload.picture.trim() &&
-        payload.picture !== user.profile_picture
-      ) {
-        const { data: updatedUser, error: updateError } =
-          await supabase
-            .from("users")
-            .update({
-              profile_picture: payload.picture,
-            })
-            .eq("id", user.id)
-            .select(USER_FIELDS)
-            .single();
+        payload.picture.trim()
+          ? payload.picture
+          : user.profile_picture;
 
-        if (updateError) {
-          console.error(
-            "GOOGLE PROFILE PICTURE UPDATE ERROR:",
-            updateError
-          );
-        } else {
-          currentUser = updatedUser;
-        }
-      }
+      const currentUser = {
+        ...user,
+        profile_picture: latestPicture,
+      };
 
-      // Generate access token using the database role
+      // Generate access token
       const token = createAccessToken(currentUser);
 
-      return res.status(200).json({
+      // Return login response immediately
+      res.status(200).json({
         success: true,
         exists: true,
         token,
         user: formatUser(currentUser),
       });
-    }
 
+      // Synchronize profile picture in the background
+      if (latestPicture !== user.profile_picture) {
+        try {
+          const { error: updateError } = await supabase
+            .from("users")
+            .update({
+              profile_picture: latestPicture,
+            })
+            .eq("id", user.id);
+
+          if (updateError) {
+            console.error(
+              "GOOGLE PROFILE PICTURE UPDATE ERROR:",
+              updateError
+            );
+          }
+        } catch (error) {
+          console.error("PROFILE SYNC ERROR:", error);
+        }
+      }
 
     // Administrator must already exist in the database
     if (isAdminEmail) {
@@ -433,7 +437,9 @@ router.post("/google-login", async (req, res) => {
         message: "Administrator account not found.",
       });
     }
-
+    return;
+  }
+  
     // New school account: continue student registration
     const signupToken = createSignupToken({
       email,

@@ -5,6 +5,20 @@ import "./profile.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const getCachedProfile = () => {
+  try {
+    if (!sessionStorage.getItem("authToken")) {
+      return null;
+    }
+
+    return JSON.parse(
+      sessionStorage.getItem("libraryUser") || "null"
+    );
+  } catch {
+    return null;
+  }
+};
+
 const programFullNames = {
   BSCS: "Bachelor of Science in Computer Science",
   BSBA: "Bachelor of Science in Business Administration",
@@ -158,157 +172,191 @@ function ResearchSection({
 }
 
 export default function Profile() {
-  const navigate = useNavigate();
-
-  const [profile, setProfile] = useState(null);
+  const navigate = useNavigate(); 
+  
+  const [profile, setProfile] = useState(getCachedProfile);
   const [recentResearch, setRecentResearch] = useState([]);
   const [recentSaved, setRecentSaved] = useState([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!profile);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [savedLoading, setSavedLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
-  useEffect(() => {
-    document.title = "My Profile";
+// Refresh profile information in the background.
+useEffect(() => {
+  document.title = "My Profile";
 
-    const controller = new AbortController();
-    const token = sessionStorage.getItem("authToken");
+  const controller = new AbortController();
+  const token = sessionStorage.getItem("authToken");
 
-    let storedUser = null;
+  const storedUser = getCachedProfile();
 
+  let email = storedUser?.email;
+
+  // Retrieve email from JWT if cached email is unavailable
+  if (!email && token) {
     try {
-      storedUser = JSON.parse(
-        sessionStorage.getItem("libraryUser") || "null"
+      const payload = token.split(".")[1];
+
+      const base64 = payload
+        .replace(/-/g, "+")
+        .replace(/_/g, "/");
+
+      email = JSON.parse(atob(base64)).email;
+    } catch (error) {
+      console.error("JWT DECODE ERROR:", error);
+    }
+  }
+
+  // Redirect unauthenticated users
+  if (!token || !email) {
+    setProfile(null);
+    navigate("/login", { replace: true });
+    return;
+  }
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  // Authenticated API request
+  const fetchJSON = async (url) => {
+    const response = await fetch(url, {
+      headers,
+      signal: controller.signal,
+    });
+
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      throw new Error("SESSION_EXPIRED");
+    }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Request failed."
       );
-    } catch {
-      storedUser = null;
     }
 
-    let email = storedUser?.email;
+    return data;
+  };
 
-    if (!email && token) {
-      try {
-        const payload = token.split(".")[1];
-        const base64 = payload
-          .replace(/-/g, "+")
-          .replace(/_/g, "/");
-
-        email = JSON.parse(atob(base64)).email;
-      } catch (error) {
-        console.error("JWT DECODE ERROR:", error);
-      }
-    }
-
-    if (!token || !email) {
-      navigate("/login");
+  // Handle API errors
+  const handleError = (error) => {
+    if (
+      error.name === "AbortError" ||
+      controller.signal.aborted
+    ) {
       return;
     }
 
-    const headers = {
-      Authorization: `Bearer ${token}`,
-    };
+    if (error.message === "SESSION_EXPIRED") {
+      controller.abort();
 
-    const fetchJSON = async (url) => {
-      const response = await fetch(url, {
-        headers,
-        signal: controller.signal,
-      });
+      sessionStorage.removeItem("authToken");
+      sessionStorage.removeItem("libraryUser");
 
-      if (response.status === 401) {
-        throw new Error("SESSION_EXPIRED");
+      setProfile(null);
+
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    console.error("PROFILE REQUEST ERROR:", error);
+  };
+
+  /* =========================================
+     REFRESH PROFILE IN THE BACKGROUND
+  ========================================= */
+
+  fetchJSON(
+    `${API_URL}/api/user/${encodeURIComponent(email)}`
+  )
+    .then((data) => {
+      if (!controller.signal.aborted && data.user) {
+        setProfile(data.user);
+
+        // Update cached profile information
+        sessionStorage.setItem(
+          "libraryUser",
+          JSON.stringify(data.user)
+        );
       }
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Request failed.");
+    })
+    .catch(handleError)
+    .finally(() => {
+      if (!controller.signal.aborted) {
+        setLoading(false);
       }
+    });
 
-      return data;
-    };
+  /* =========================================
+     RECENTLY VIEWED RESEARCH
+  ========================================= */
 
-    const handleError = (error) => {
-      if (error.name === "AbortError") return;
+  fetchJSON(`${API_URL}/api/history`)
+    .then((data) => {
+      const latest = (data.history || [])
+        .filter((item) => item.summarized)
+        .sort(
+          (a, b) =>
+            new Date(b.viewed_at) -
+            new Date(a.viewed_at)
+        )
+        .slice(0, 3);
 
-      if (error.message === "SESSION_EXPIRED") {
-        sessionStorage.removeItem("authToken");
-        sessionStorage.removeItem("libraryUser");
-        navigate("/login");
-        return;
+      if (!controller.signal.aborted) {
+        setRecentResearch(latest);
       }
+    })
+    .catch(handleError)
+    .finally(() => {
+      if (!controller.signal.aborted) {
+        setHistoryLoading(false);
+      }
+    });
 
-      console.error("PROFILE REQUEST ERROR:", error);
-    };
+  /* =========================================
+     RECENTLY SAVED RESEARCH
+  ========================================= */
 
-    // Load profile information.
-    fetchJSON(
-      `${API_URL}/api/user/${encodeURIComponent(email)}`
-    )
-      .then((data) => {
-        if (!controller.signal.aborted) {
-          setProfile(data.user || null);
-        }
-      })
-      .catch(handleError)
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
+  fetchJSON(`${API_URL}/api/saved`)
+    .then((data) => {
+      const records =
+        data.saved ||
+        data.savedResearch ||
+        data.researches ||
+        data.bookmarks ||
+        [];
 
-    // Load three latest viewing-history entries.
-    fetchJSON(`${API_URL}/api/history`)
-      .then((data) => {
-        const latest = (data.history || [])
-          .filter((item) => item.summarized)
-          .sort(
-            (a, b) =>
-              new Date(b.viewed_at) - new Date(a.viewed_at)
-          )
-          .slice(0, 3);
+      const latest = (
+        Array.isArray(records) ? records : []
+      )
+        .sort(
+          (a, b) =>
+            new Date(b.saved_at || b.created_at || 0) -
+            new Date(a.saved_at || a.created_at || 0)
+        )
+        .slice(0, 3);
 
-        if (!controller.signal.aborted) {
-          setRecentResearch(latest);
-        }
-      })
-      .catch(handleError)
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setHistoryLoading(false);
-        }
-      });
+      if (!controller.signal.aborted) {
+        setRecentSaved(latest);
+      }
+    })
+    .catch(handleError)
+    .finally(() => {
+      if (!controller.signal.aborted) {
+        setSavedLoading(false);
+      }
+    });
 
-    // Load three latest saved research entries.
-    fetchJSON(`${API_URL}/api/saved`)
-      .then((data) => {
-        const records =
-          data.saved ||
-          data.savedResearch ||
-          data.researches ||
-          data.bookmarks ||
-          [];
-
-        const latest = (Array.isArray(records) ? records : [])
-          .sort(
-            (a, b) =>
-              new Date(b.saved_at || b.created_at || 0) -
-              new Date(a.saved_at || a.created_at || 0)
-          )
-          .slice(0, 3);
-
-        if (!controller.signal.aborted) {
-          setRecentSaved(latest);
-        }
-      })
-      .catch(handleError)
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setSavedLoading(false);
-        }
-      });
-
-    return () => controller.abort();
-  }, [navigate]);
-
+  // Cancel pending requests when leaving the page
+  return () => controller.abort();
+}, [navigate]);
   if (loading) {
     return (
       <main className="profile-main">

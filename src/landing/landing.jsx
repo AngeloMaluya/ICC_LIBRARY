@@ -7,6 +7,22 @@ import Icon from "../assets/icon.png";
 export const Landing = () => {
   useEffect(() => {
     document.title = "ICC LIBRARY";
+
+    // Wake up the Render backend
+    const API_URL = import.meta.env.VITE_API_URL;
+
+    if (API_URL) {
+      fetch(`${API_URL.replace(/\/+$/, "")}/`)
+        .then((response) => {
+          if (response.ok) {
+          } else {
+            console.warn("Backend returned:", response.status);
+          }
+        })
+        .catch((error) => {
+          console.warn("Backend wake-up failed:", error);
+        });
+    }
   }, []);
 
   return (

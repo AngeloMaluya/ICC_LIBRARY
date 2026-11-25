@@ -11,13 +11,24 @@ export const Login = () => {
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
 
-  useEffect(() => {
-    document.title = "Login";
-  }, []);
+    useEffect(() => {
+      document.title = "Login";
+
+      if (API_URL) {
+        fetch(`${API_URL.replace(/\/+$/, "")}/`)
+          .catch((error) => {
+            console.warn("Backend wake-up failed:", error);
+          });
+      }
+    }, [API_URL]);
 
   const [showTerms, setShowTerms] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [pendingGoogleUser, setPendingGoogleUser] = useState(null);
+
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginMethod, setLoginMethod] = useState("");
+  
 
   // Save authenticated account
   const saveAuthenticatedUser = (data) => {
@@ -41,44 +52,60 @@ export const Login = () => {
   };
 
   // NORMAL EMAIL/PASSWORD LOGIN
-  const handleLogIn = async (e) => {
-    e.preventDefault();
+const handleLogIn = async (e) => {
+  e.preventDefault();
 
-    if (!termsAccepted) {
-      setShowTerms(true);
+  if (isLoggingIn) return;
+
+  if (!termsAccepted) {
+    setShowTerms(true);
+    return;
+  }
+
+  const email = e.currentTarget.elements.email.value.trim();
+  const password = e.currentTarget.elements.password.value;
+
+  setIsLoggingIn(true);
+  setLoginMethod("normal");
+
+  try {
+    const response = await fetch(`${API_URL}/api/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+      signal: AbortSignal.timeout(90000),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "Login failed.");
       return;
     }
 
-    const email = e.currentTarget.elements.email.value.trim();
-    const password = e.currentTarget.elements.password.value;
+    if (!data.token || !data.user) {
+      alert("Invalid login response from the server.");
+      return;
+    }
 
-    try {
-      const response = await fetch(`${API_URL}/api/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+    saveAuthenticatedUser(data);
 
-      const data = await response.json();
+  } catch (error) {
+    console.error("Normal Login Error:", error);
 
-      if (!response.ok) {
-        alert(data.message || "Login failed.");
-        return;
-      }
-
-      if (!data.token || !data.user) {
-        alert("Invalid login response from the server.");
-        return;
-      }
-
-      saveAuthenticatedUser(data);
-    } catch (error) {
-      console.error("Normal Login Error:", error);
+    if (error.name === "TimeoutError") {
+      alert("The server is taking too long to respond. Please try again.");
+    } else {
       alert("Unable to connect to the server. Please try again.");
     }
-  };
+
+  } finally {
+    setIsLoggingIn(false);
+    setLoginMethod("");
+  }
+};
 
   // GOOGLE LOGIN
   const handleGoogleLogin = async (credentialResponse) => {
@@ -102,69 +129,88 @@ export const Login = () => {
   };
 
   // PROCESS GOOGLE ACCOUNT
-  const processGoogleUser = async (credential) => {
-    try {
-      const response = await fetch(`${API_URL}/api/google-login`, {
+const processGoogleUser = async (credential) => {
+  if (isLoggingIn) return;
+
+  setIsLoggingIn(true);
+  setLoginMethod("google");
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/google-login`,
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ credential }),
-      });
+        signal: AbortSignal.timeout(90000),
+      }
+    );
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok) {
-        alert(data.message || "Google Login Failed.");
+    if (!response.ok) {
+      alert(data.message || "Google Login Failed.");
+      return;
+    }
+
+    // EXISTING REGISTERED ACCOUNT
+    if (data.exists) {
+      if (!data.token || !data.user) {
+        alert("Invalid Google login response.");
         return;
       }
 
-      // EXISTING REGISTERED ACCOUNT
-      if (data.exists) {
-        if (!data.token || !data.user) {
-          alert("Invalid Google login response.");
-          return;
-        }
+      saveAuthenticatedUser(data);
+      return;
+    }
 
-        saveAuthenticatedUser(data);
-        return;
-      }
+    // NEW STUDENT ACCOUNT
+    if (!data.signupToken || !data.googleUser) {
+      alert("Invalid Google registration response.");
+      return;
+    }
 
-      // NEW STUDENT ACCOUNT
-      if (!data.signupToken || !data.googleUser) {
-        alert("Invalid Google registration response.");
-        return;
-      }
+    sessionStorage.removeItem("authToken");
+    sessionStorage.removeItem("libraryUser");
 
-      sessionStorage.removeItem("authToken");
-      sessionStorage.removeItem("libraryUser");
+    sessionStorage.setItem(
+      "googleSignupToken",
+      data.signupToken
+    );
 
-      sessionStorage.setItem(
-        "googleSignupToken",
-        data.signupToken
-      );
+    sessionStorage.setItem(
+      "googleEmail",
+      data.googleUser.email
+    );
 
-      sessionStorage.setItem(
-        "googleEmail",
-        data.googleUser.email
-      );
+    sessionStorage.setItem(
+      "googlePicture",
+      data.googleUser.picture || ""
+    );
 
-      sessionStorage.setItem(
-        "googlePicture",
-        data.googleUser.picture || ""
-      );
+    sessionStorage.setItem(
+      "googleName",
+      data.googleUser.name || ""
+    );
 
-      sessionStorage.setItem(
-        "googleName",
-        data.googleUser.name || ""
-      );
+    navigate("/create");
 
-      navigate("/create");
-    } catch (error) {
-      console.error("Google Login Error:", error);
+  } catch (error) {
+    console.error("Google Login Error:", error);
+
+    if (error.name === "TimeoutError") {
+      alert("The server is taking too long to respond. Please try again.");
+    } else {
       alert("Unable to connect to the server. Please try again.");
     }
-  };
+
+  } finally {
+    setIsLoggingIn(false);
+    setLoginMethod("");
+  }
+};
 
   // TERMS CHECKBOX
   const handleTermsCheckbox = () => {
@@ -196,7 +242,33 @@ export const Login = () => {
 
   return (
     <div className="page">
-      <div className="login-container">
+            {isLoggingIn && (
+        <div
+          className="login-loading-overlay"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="login-loading-box">
+
+            <div className="login-loading-spinner"></div>
+
+            <h2>
+              {loginMethod === "google"
+                ? "Signing in with Google..."
+                : "Signing in..."}
+            </h2>
+
+            <p>Connecting to ICC Research Library.</p>
+
+            <span>
+              Please wait while we verify your account.
+            </span>
+
+          </div>
+        </div>
+      )}
+      <div className="login-container" 
+          inert={isLoggingIn}>
         {/* LEFT PANEL */}
         <div className="left-panel">
           <div className="illustration">
@@ -257,8 +329,11 @@ export const Login = () => {
             <button
               type="submit"
               className="signin"
+              disabled={isLoggingIn}
             >
-              Sign In
+              {isLoggingIn && loginMethod === "normal"
+                ? "Signing in..."
+                : "Sign In"}
             </button>
           </form>
 
@@ -268,7 +343,12 @@ export const Login = () => {
             <span></span>
           </div>
 
-          <div className="google-login">
+          <div
+            className={`google-login ${
+              isLoggingIn ? "google-login-disabled" : ""
+            }`}
+            inert={isLoggingIn}
+          >
             <GoogleLogin
               onSuccess={handleGoogleLogin}
               onError={() => {
