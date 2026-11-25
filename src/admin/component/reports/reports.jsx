@@ -686,16 +686,18 @@ export default function Reports() {
                     <UserActivity records={activityRecords} {...shared}/>}
             </section>
           </>}
-          <button
-            type="button"
-            className="reports-print-button"
-            onClick={printReport}
-            disabled={!activeReport || loading || exporting || Boolean(error)}
-            title="Export report to Excel"
+            {activeReport && (
+            <button
+                type="button"
+                className="reports-print-button"
+                onClick={printReport}
+                disabled={loading || exporting || Boolean(error)}
+                title="Export report to Excel"
             >
-            <FiPrinter />
-            {exporting ? " Exporting..." : " Print Report"}
+                <FiPrinter />
+                {exporting ? " Exporting..." : " Print Report"}
             </button>
+            )}
         </main>
       </div>;
 }
