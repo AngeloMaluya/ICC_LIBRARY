@@ -30,8 +30,8 @@ app.use(
       "http://localhost:5173",
       "https://icc-library.vercel.app",
       "https://icc-research.vercel.app",
-      "https://www.icc-crid.com/",
-      "https://icc-crid.com/"
+      "https://www.icc-crid.com",
+      "https://icc-crid.com"
     ],
     methods: [
       "GET",
